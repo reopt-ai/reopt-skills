@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "organization": "reopt",
+  "updatedAt": "2026-04-17",
+  "abstract": "Guidance for safe EAV schema workflows in reopt Brandapp projects, including drift inspection, sync, pull, watch mode, and destructive-change review.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}

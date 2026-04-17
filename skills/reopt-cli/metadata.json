@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "organization": "reopt",
+  "updatedAt": "2026-04-17",
+  "abstract": "Baseline operational guidance for the reopt CLI, including authentication, credential handling, global flags, schema discovery, and exit-code expectations.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}

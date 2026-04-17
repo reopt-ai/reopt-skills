@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "organization": "reopt",
+  "updatedAt": "2026-04-17",
+  "abstract": "Operational guidance for reopt Brandapp workflows, covering project linking, unlinking, doctor checks, listing, and term management.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}
