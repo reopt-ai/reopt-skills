@@ -1,14 +1,14 @@
 # reopt Skills
 
-A reusable skills repository for `reopt` engineering workflows, modeled after [`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills).
+A reusable skills repository for `reopt` engineering workflows.
 
 ## Prerequisites
 
-Most install skills consume `@reopt-ai/*` packages from the
-[reopt-ai GitHub Packages registry](https://npm.pkg.github.com). Those
-packages are currently **private** and will be made public once they
-stabilize. Until then, the install skills work only for contributors with
-`read:packages` access to the `reopt-ai` organization.
+Most install skills consume `@reopt-ai/*` packages and CLIs that are
+currently **private**. The skills-related modules and CLI are scheduled
+for public release in **May 2026**. Until then, the install skills work
+only for contributors with `read:packages` access to the `reopt-ai`
+organization.
 
 The CLI workflow skills (`reopt-cli`, `reopt-brandapp`, `reopt-eav`) do
 not require private package access.
