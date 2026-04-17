@@ -1,3 +1,67 @@
+# Dependencies
 node_modules
+
+# OS
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor swap / backup / local overrides
+*.swp
+*.swo
+*~
+.vscode/*.local.*
+.idea/*.local.*
+
+# Logs & temp
+*.log
+*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Skill artifacts (distribution is via the `skills` CLI; no zips committed)
 skills/*.zip
+
+# Environment files
+.env
+.env.*
+
+# Package-manager auth (tokens)
+.npmrc
+.yarnrc
+.yarnrc.yml
+.pypirc
+.netrc
+
+# Reopt CLI auth/config
+.reopt.json
+.reopt/
+
+# Private keys & certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.ppk
+
+# Cloud provider credentials
+.aws/
+.gcloud/
+gcp-*.json
+gha-creds-*.json
+service-account*.json
+
+# Generic secrets / credentials
+secrets/
+credentials/
+**/credentials.json
+*.secret
+*.secrets
