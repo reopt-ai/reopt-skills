@@ -2,16 +2,7 @@
 
 A reusable skills repository for `reopt` engineering workflows.
 
-## Prerequisites
-
-Most install skills consume `@reopt-ai/*` packages and CLIs that are
-currently **private**. The skills-related modules and CLI are scheduled
-for public release in **May 2026**. Until then, the install skills work
-only for contributors with `read:packages` access to the `reopt-ai`
-organization.
-
-The CLI workflow skills (`reopt-cli`, `reopt-brandapp`, `reopt-eav`) do
-not require private package access.
+> The skills-related modules and CLI are scheduled for public release in **May 2026**.
 
 ## Skills
 
