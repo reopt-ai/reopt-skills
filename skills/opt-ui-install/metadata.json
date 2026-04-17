@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "organization": "reopt",
+  "updatedAt": "2026-04-17",
+  "abstract": "Install or upgrade @reopt-ai/opt-ui in consumer projects.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}
