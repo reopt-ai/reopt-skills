@@ -1,8 +1,24 @@
 # reopt Skills
 
-A reusable skills repository for `reopt` engineering workflows.
+A reusable skills repository for `reopt` engineering workflows — installable into any agent runtime that supports the [`skills`](https://skills.sh) CLI (Claude Code, Cursor, Codex, Cline, Gemini CLI, and 15+ more).
 
 > The skills-related modules and CLI are scheduled for public release in **May 2026**.
+
+## Quickstart
+
+Install every skill into your agent runtime:
+
+```bash
+npx skills add reopt-ai/reopt-skills
+```
+
+Or install a single skill:
+
+```bash
+npx skills add reopt-ai/reopt-skills/reopt-eav
+```
+
+Skill pages on the directory: [`skills.sh/reopt-ai/reopt-skills`](https://skills.sh/reopt-ai/reopt-skills).
 
 ## Skills
 
@@ -57,24 +73,6 @@ Each skill lives in its own directory under `skills/<skill-name>/`:
 Directories prefixed with `_` (for example `skills/_shared/`) are shared
 scaffolding templates referenced by other skills. They are not installable
 as standalone skills and are skipped by the validator.
-
-## Install
-
-Distribute via the [`skills` CLI](https://skills.sh) — it clones the
-repository and copies the skill directory into your agent runtime.
-
-```bash
-npx skills add reopt-ai/reopt-skills
-```
-
-Install a specific skill only:
-
-```bash
-npx skills add reopt-ai/reopt-skills/reopt-eav
-```
-
-No zip archive is required — the CLI consumes the directory structure
-directly from git.
 
 ## Development
 
