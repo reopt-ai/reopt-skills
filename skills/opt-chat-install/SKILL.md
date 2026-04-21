@@ -8,6 +8,8 @@ description: |
   "chat install", "install chat", "set up AI chat",
   "opt-chat upgrade", "opt-chat update", "chat update".
   Current version: opt-chat 0.1.0.
+target: "@reopt-ai/opt-chat"
+targetMinVersion: "0.1.0"
 ---
 
 # opt-chat-install Skill

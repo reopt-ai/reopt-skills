@@ -8,6 +8,8 @@ description: |
   "harness install", "install harness", "set up harness",
   "opt-harness upgrade", "opt-harness update", "harness update".
   Current version: opt-harness 0.1.0.
+target: "@reopt-ai/opt-harness"
+targetMinVersion: "0.1.0"
 ---
 
 # opt-harness-install Skill

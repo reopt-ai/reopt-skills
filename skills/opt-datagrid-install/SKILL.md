@@ -11,6 +11,8 @@ description: |
   "opt-datagrid migrate", "datagrid migrate", "grid migration",
   "replace glide-data-grid", "replace ag-grid".
   Current version: opt-datagrid 1.1.0.
+target: "@reopt-ai/opt-datagrid"
+targetMinVersion: "1.1.0"
 ---
 
 # opt-datagrid-install Skill

@@ -1,6 +1,8 @@
 ---
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
+target: "@reopt-ai/brandapp-sdk"
+targetMinVersion: "1.6.0"
 ---
 
 # Brandapp SDK Install

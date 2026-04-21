@@ -5,7 +5,12 @@ Each skill declares the minimum `@reopt-ai/*` package version it assumes.
 version end-to-end (install → tsc → smoke). Update both columns in the
 PR that touches a skill.
 
-## Current state — 2026-04-17
+The **Target** column lists a single primary package (matches each skill's
+`target` / `targetMinVersion` frontmatter fields, which `pnpm validate`
+cross-checks). Companion packages that ship together are noted in the
+rightmost column.
+
+## Current state — 2026-04-21
 
 ### BrandApp SDK
 
@@ -18,11 +23,11 @@ PR that touches a skill.
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
-| `opt-ui-install` | `@reopt-ai/opt-ui`, `opt-ui-cli` | **1.2.1** | (unverified) | — | Surface CLI flow |
+| `opt-ui-install` | `@reopt-ai/opt-ui` | **1.2.1** | (unverified) | — | Ships with companion `opt-ui-cli` (Surface CLI flow) |
 | `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.1.0** | (unverified) | — | Migrate mode: glide-data-grid / ag-grid / react-data-grid / MUI DataGrid |
 | `opt-editor-install` | `@reopt-ai/opt-editor` | **0.8.0** | (unverified) | — | Pre-1.0 — breaking changes expected |
-| `opt-chat-install` | `@reopt-ai/opt-chat` | **0.1.0** | (unverified) | — | Pre-1.0 — breaking changes expected |
-| `opt-harness-install` | `@reopt-ai/opt-harness` | **0.1.0** | (unverified) | — | Pre-1.0 — breaking changes expected |
+| `opt-chat-install` | `@reopt-ai/opt-chat` | **0.1.0** | (unpublished) | — | **Package not yet published** — SKILL.md captures the planned v0.1.0 shape |
+| `opt-harness-install` | `@reopt-ai/opt-harness` | **0.1.0** | (unpublished) | — | **Package not yet published** — SKILL.md captures the planned v0.1.0 shape |
 
 ## Drift checklist
 

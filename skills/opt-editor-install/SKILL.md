@@ -8,6 +8,8 @@ description: |
   "editor install", "editor init",
   "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
   Current version: opt-editor 0.8.0.
+target: "@reopt-ai/opt-editor"
+targetMinVersion: "0.8.0"
 ---
 
 # opt-editor-install Skill

@@ -1,9 +1,6 @@
 ---
 name: reopt-cli
 description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
-metadata:
-  author: reopt
-  version: "1.0.0"
 ---
 
 # reopt CLI

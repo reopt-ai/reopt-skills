@@ -60,6 +60,7 @@ Scaffolding referenced by multiple skills — not installable on its own.
 | Path | Purpose |
 | --- | --- |
 | [`_shared/upgrade-pipeline.md`](./skills/_shared/upgrade-pipeline.md) | Common 7-step upgrade pipeline (currently used by `opt-editor-install`) |
+| [`_shared/breaking-changes-template.md`](./skills/_shared/breaking-changes-template.md) | Required shape for each install skill's `references/breaking-changes.md` |
 
 ## Structure
 

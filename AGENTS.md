@@ -41,7 +41,13 @@ Directories prefixed with `_` (e.g. `_shared`) are shared scaffolding consumed b
 ## Workflow
 
 1. Edit skill files under `skills/<skill-name>/`.
-2. Run `pnpm validate`.
+2. Run `pnpm validate`. The validator enforces:
+   - every skill has `SKILL.md` with `name` + `description` frontmatter
+     and a matching directory name;
+   - `metadata.json`, if present, is valid JSON;
+   - `requires:` entries point at real skills and do not form a cycle;
+   - `target` / `targetMinVersion` (when declared on installer skills)
+     agree with the matching row in `COMPATIBILITY.md`.
 3. Commit and push. Consumers pick up the change on their next `npx skills add` / `npx skills update`.
 
 ## Versioning
