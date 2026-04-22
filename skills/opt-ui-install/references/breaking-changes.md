@@ -1,9 +1,10 @@
-# Breaking Changes Registry
+# Breaking Changes Registry — @reopt-ai/opt-ui
 
-A registry of Breaking/Deprecated changes per version.
+A registry of Breaking / Deprecated / Added / Fixed changes per version.
 The `/opt-ui-install` skill reads this file during impact analysis in upgrade mode.
 
-> **Maintenance rule**: whenever an opt-ui release introduces a Breaking or Deprecated change, add an entry here.
+> **Maintenance rule**: whenever an opt-ui release introduces a Breaking or Deprecated
+> change, add an entry here in the same PR that bumps `COMPATIBILITY.md`.
 
 ## Registry format
 

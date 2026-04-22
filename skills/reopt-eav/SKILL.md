@@ -4,9 +4,6 @@ description: EAV schema status, sync, pull, and destructive-change guardrails fo
 requires:
   - reopt-cli
   - reopt-brandapp
-metadata:
-  author: reopt
-  version: "1.0.0"
 ---
 
 # reopt EAV

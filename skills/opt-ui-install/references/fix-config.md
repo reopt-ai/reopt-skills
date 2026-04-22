@@ -110,7 +110,7 @@ Available presets:
 
 ```bash
 # GitHub Personal Access Token (read:packages scope)
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+export GITHUB_TOKEN=<your-github-token>
 ```
 
 > **Security note**: Do not hardcode the token in `.npmrc`. Use the `${GITHUB_TOKEN}` environment variable reference, and either add `.npmrc` to `.gitignore` or rely on environment variables only.
@@ -199,21 +199,21 @@ export default nextConfig;
 
 ```bash
 # GitHub Personal Access Token (read:packages scope)
-export GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+export GITHUB_TOKEN=<your-github-token>
 ```
 
 To persist it:
 
 ```bash
 # Add to ~/.zshrc or ~/.bashrc
-echo 'export GITHUB_TOKEN=ghp_xxxxxxxxxxxx' >> ~/.zshrc
+echo 'export GITHUB_TOKEN=<your-github-token>' >> ~/.zshrc
 source ~/.zshrc
 ```
 
 Or add it to the project `.env` file and source it via `source .env`:
 
 ```bash
-echo 'GITHUB_TOKEN=ghp_xxxxxxxxxxxx' >> .env
+echo 'GITHUB_TOKEN=<your-github-token>' >> .env
 source .env
 ```
 

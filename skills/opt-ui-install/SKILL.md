@@ -9,6 +9,8 @@ description: |
   "opt-ui upgrade", "opt-ui update",
   "opt-ui surface", "opt-ui-cli add", "add Surface".
   Current version: opt-ui 1.2.1, opt-ui-cli 1.2.1.
+target: "@reopt-ai/opt-ui"
+targetMinVersion: "1.2.1"
 ---
 
 # opt-ui-install Skill

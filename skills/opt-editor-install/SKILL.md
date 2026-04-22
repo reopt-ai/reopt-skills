@@ -4,17 +4,12 @@ description: |
   Install @reopt-ai/opt-editor in a consumer project or upgrade it to the latest version.
   Not installed → initial setup (.npmrc, CSS, catalog, Editor component).
   Installed → detect version → analyze impact → edit code → verify.
-version: 1.0.0
-triggers:
-  - "opt-editor install"
-  - "opt-editor init"
-  - "opt-editor setup"
-  - "editor install"
-  - "editor init"
-  - "opt-editor upgrade"
-  - "opt-editor update"
-  - "editor upgrade"
-  - "editor update"
+  Triggers on: "opt-editor install", "opt-editor init", "opt-editor setup",
+  "editor install", "editor init",
+  "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
+  Current version: opt-editor 0.8.0.
+target: "@reopt-ai/opt-editor"
+targetMinVersion: "0.8.0"
 ---
 
 # opt-editor-install Skill

@@ -1,9 +1,10 @@
-# Breaking Changes Registry
+# Breaking Changes Registry — @reopt-ai/opt-datagrid
 
-Per-version registry of Breaking/Deprecated changes.
+Per-version registry of Breaking / Deprecated / Added / Fixed changes.
 The `/opt-datagrid-install` skill reads this file during impact analysis in upgrade mode.
 
-> **Maintenance rule**: whenever an opt-datagrid release introduces a Breaking or Deprecated change, add an entry here.
+> **Maintenance rule**: whenever an opt-datagrid release introduces a Breaking or Deprecated
+> change, add an entry here in the same PR that bumps `COMPATIBILITY.md`.
 
 ## Registry format
 

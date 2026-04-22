@@ -85,7 +85,7 @@ Set the env var:
 
 ```bash
 # ~/.zshrc or ~/.bashrc
-export GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
+export GITHUB_TOKEN="<your-github-token>"
 ```
 
 ```bash

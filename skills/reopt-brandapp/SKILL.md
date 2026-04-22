@@ -3,9 +3,6 @@ name: reopt-brandapp
 description: Brandapp linking, listing, doctor checks, and terms management for the reopt CLI. Use when a task involves `reopt brandapp list`, `link`, `unlink`, `doctor`, or `term list`.
 requires:
   - reopt-cli
-metadata:
-  author: reopt
-  version: "1.0.0"
 ---
 
 # reopt Brandapp

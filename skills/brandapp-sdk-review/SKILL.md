@@ -1,6 +1,8 @@
 ---
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
+target: "@reopt-ai/brandapp-sdk"
+targetMinVersion: "1.5.0"
 ---
 
 # Brandapp SDK Review
