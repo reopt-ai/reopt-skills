@@ -25,7 +25,50 @@ Each change carries these fields:
 
 ---
 
-## Version 1.1.0 (current)
+## Version 1.3.0 (current)
+
+No breaking changes — `1.1.0 → 1.3.0` is purely additive. Existing 1.1.x
+consumers can upgrade without code edits; the new props/fields are all
+optional.
+
+### Added
+
+- version: "1.3.0"
+  level: A
+  component: "DataGrid"
+  change: "columnSortState prop for ARIA aria-sort on column headers"
+  detail: "Pass the sort state per column id; opt-datagrid wires aria-sort=ascending|descending|none on the matching <th>. Auto-bridge available via useColumnSort.columnSortState."
+
+- version: "1.3.0"
+  level: A
+  component: "DataGrid"
+  change: "labels prop for i18n"
+  detail: "All hardcoded UI strings ('Add row', 'Search in grid', etc.) are now overridable via the new DataGridLabels object. Untouched keys fall back to the built-in English labels."
+
+- version: "1.3.0"
+  level: A
+  component: "useColumnSort"
+  change: "columnSortState field added to the hook result"
+  detail: "Pass useColumnSort().columnSortState directly to <DataGrid columnSortState={...}> for ARIA wiring without manually mapping state."
+
+- version: "1.3.0"
+  level: A
+  component: "Types"
+  change: "DataGridColumnSortState / DataGridColumnSortDirection / DataGridLabels exported"
+
+- version: "1.3.0"
+  level: A
+  component: "Cell"
+  change: "aria-readonly attribute on non-editable gridcells"
+  detail: "Read-only cells now expose aria-readonly=true for assistive tech. No code changes required for consumers."
+
+- version: "1.3.0"
+  level: F
+  component: "useDataGridRemoteDataSource"
+  change: "Error handling guide added to README"
+  detail: "Documents the existing onError / onPageError contract — no API change."
+
+## Version 1.1.0
 
 No breaking changes (v1.0.0 → v1.1.0 was additive).
 
@@ -34,20 +77,17 @@ No breaking changes (v1.0.0 → v1.1.0 was additive).
 - version: "1.1.0"
   level: A
   component: "DataGrid"
-  change: "Added useDataGridController / createDataGridController"
-  detail: "Imperative API for programmatic grid control"
+  change: "smoothScrollX / smoothScrollY props for CSS smooth scrolling"
 
 - version: "1.1.0"
   level: A
   component: "DataGrid"
-  change: "Added search (Ctrl+F)"
-  detail: "Built-in search with highlight and navigation"
+  change: "rightElement / rightElementProps for custom content after the grid body"
 
 - version: "1.1.0"
   level: A
   component: "DataGrid"
-  change: "Added clipboard support (Ctrl+C/V/X)"
-  detail: "Built-in clipboard support with paste validation"
+  change: "theme prop (DataGridTheme) for inline theme overrides"
 
 ---
 

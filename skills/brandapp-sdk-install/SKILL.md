@@ -258,6 +258,8 @@ import { createLazySDK } from "@reopt-ai/brandapp-sdk";
 import schema from "./eav.schema"; // Optional — enables a type-safe entity client
 
 // v1.3+ — no manual Proxy pattern required. Initializes on first property access.
+// In v1.6.1+ the SDK reports its real package version in `X-SDK-Version` (the
+// constant is now injected at build time), so request telemetry is reliable.
 export const sdk = createLazySDK(() => ({
   clientId: process.env.REOPT_CLIENT_ID!,
   clientSecret: process.env.REOPT_CLIENT_SECRET!,
@@ -528,6 +530,7 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 - `better-auth` is an optional peer dep — not required for EAV-only usage.
 - Prefer the `isReoptSDKError()` type guard for error handling (bundle-safe versus `instanceof` — works even when multiple SDK copies coexist).
 - v1.6+ splits 4xx into `BadRequestError` / `ForbiddenError` / `NotFoundError` / `ConflictError`, enabling per-status UX.
+- v1.6.1 adds React mutation hooks `useUpsertRecord`, `useBulkCreateRecords`, `useBulkUpdateRecords`, `useBulkDeleteRecords`, `useDeleteRecordsWhere` (mutation surface now matches `sdk.eav.records.*`); `sdk.files.upload()` accepts `{ signal, timeout }` per call.
 - Reference project: `apps/brandapp-playground/` (ships E2E tests + the `/health` SDK dashboard).
 
 ---
