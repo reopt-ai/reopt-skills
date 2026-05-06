@@ -10,24 +10,36 @@ The **Target** column lists a single primary package (matches each skill's
 cross-checks). Companion packages that ship together are noted in the
 rightmost column.
 
-## Current state — 2026-04-21
+## Current state — 2026-05-03
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-04-17 | 1.6.0 | `createLazySDK`, new 4xx error classes, webhook `toleranceMs`, dev-server instrumentation |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-04-16 | 1.6.0 | v1.6-specific rules (old `REQUEST_ERROR` branches, missing `toleranceMs`) pending |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-03 | 1.6.1 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks (`useUpsertRecord`, `useBulkCreateRecords`, …) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-03 | 1.6.1 | v1.6-specific rules (old `REQUEST_ERROR` branches, missing `toleranceMs`) still pending |
 
 ### Design / UI packages
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
 | `opt-ui-install` | `@reopt-ai/opt-ui` | **1.2.1** | (unverified) | — | Ships with companion `opt-ui-cli` (Surface CLI flow) |
-| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.1.0** | (unverified) | — | Migrate mode: glide-data-grid / ag-grid / react-data-grid / MUI DataGrid |
-| `opt-editor-install` | `@reopt-ai/opt-editor` | **0.8.0** | (unverified) | — | Pre-1.0 — breaking changes expected |
+| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.3.0** | (unverified) | — | Migrate mode: glide-data-grid / ag-grid / react-data-grid / MUI DataGrid. v1.3.0 adds `columnSortState`, `labels`, `useColumnSort.columnSortState` (additive) |
+| `opt-editor-install` | `@reopt-ai/opt-editor` | **1.0.0** | (unverified) | — | First stable release — `EditorMode` widened to include `"diff"` (sole breaking change for exhaustive switches); diff/suggestion review components added |
 | `opt-chat-install` | `@reopt-ai/opt-chat` | **0.1.0** | (unpublished) | — | **Package not yet published** — SKILL.md captures the planned v0.1.0 shape |
 | `opt-harness-install` | `@reopt-ai/opt-harness` | **0.1.0** | (unpublished) | — | **Package not yet published** — SKILL.md captures the planned v0.1.0 shape |
+
+### Tracked but no installer skill yet
+
+These packages exist in the reopt-design monorepo but do not yet have a
+dedicated installer skill. Add to this table when a new `@reopt-ai/*`
+package surfaces; promote to its own row + skill when consumer demand
+appears.
+
+| Package | Current version | Status | Notes |
+|---------|-----------------|--------|-------|
+| `@reopt-ai/opt-palette` | 0.1.0 | unpublished (no git tag) | OKLCH-based color engine — harmony rules, palette generation, dark-mode derivation, WCAG auto-fix. Installer skill TBD. |
+| `@reopt-ai/opt-devtool` | 0.1.0 | unpublished (no git tag) | Dev overlay for debugging opt-ui / opt-datagrid / opt-editor / opt-harness. Renamed from `@reopt-ai/opt-inspect`. Installer skill TBD. |
 
 ## Drift checklist
 
@@ -39,6 +51,7 @@ Run this every time a new `@reopt-ai/*` package ships:
 - [ ] Minimum Node / Next / peerDep bumped? → update Step 1 / 2 requirements
 - [ ] Bump "Min version" + "Last verified" cells above
 - [ ] CHANGELOG.md entry links the change to the package release
+- [ ] New `@reopt-ai/*` package discovered in the monorepo? → add a row to "Tracked but no installer skill yet" (or a full row + skill if it warrants one)
 
 ## Verification procedure
 

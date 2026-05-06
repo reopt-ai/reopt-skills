@@ -141,6 +141,26 @@ No breaking changes — purely additive.
 
 - **[D1]** `extractSSEText` — not needed when using the AI SDK (`streamText` handles SSE). Only use it when calling a raw provider API directly.
 
+### 1.0.0
+
+First stable release. One breaking change for consumers with exhaustive `EditorMode` handling.
+
+#### Breaking (B)
+
+- **[B1]** `EditorMode` expanded: `"stream" | "edit"` → `"stream" | "edit" | "diff"`.
+  - Before: `switch (mode) { case "stream": ...; case "edit": ...; }` was exhaustive.
+  - After: must add a `"diff"` branch (or fall through to a default) to keep TS exhaustiveness checks passing.
+  - Scan: `grep -rn "EditorMode\|mode ===.*\"edit\"\|mode ===.*\"stream\"" --include="*.ts" --include="*.tsx"`
+  - Diff mode renders the new `<SuggestionDecorations>` overlay; if your app does not surface AI-suggestion review, the existing `"stream"` / `"edit"` branches keep working as before — only the type union widened.
+
+#### Added (A)
+
+- **[A50]** `<SuggestionDecorations>` — overlay component that renders per-block accept / reject / refine controls during diff mode. Wired automatically when `mode="diff"`; no manual mounting required for the default flow.
+- **[A51]** `editor-provider` props for diff mode — `onSuggestionAccept`, `onSuggestionReject`, `onSuggestionRefine` callbacks (all optional; default behavior writes through to the underlying store).
+- **[A52]** New i18n keys for diff/suggestion UI in `en` / `ko` locales (9 keys covering accept, reject, refine, batch actions). Custom locale providers must extend their dictionaries — the editor falls back to English when a key is missing.
+- **[A53]** Public exports in `index.ts` for the suggestion-decorations primitives (component + helpers) so consumers can compose their own review surface.
+- **[A54]** Extensive CSS additions for diff layering, suggestion highlights, and accept/reject affordances — `@reopt-ai/opt-editor/styles.css` is required (not new, but the diff UI is invisible without it).
+
 ---
 
 ## Scan Pattern Guidelines

@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "organization": "reopt",
-  "updatedAt": "2026-04-21",
+  "updatedAt": "2026-05-03",
   "abstract": "Install, upgrade, or migrate to @reopt-ai/opt-datagrid in a consumer project.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"

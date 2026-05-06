@@ -20,8 +20,53 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 - `pnpm validate` now enforces `requires:` graph integrity (references
   exist, no cycles) and `target` / `targetMinVersion` consistency with
   `COMPATIBILITY.md`.
+- `COMPATIBILITY.md`: new "Tracked but no installer skill yet" subsection
+  covering `@reopt-ai/opt-palette` and `@reopt-ai/opt-devtool` (both
+  0.1.0, unpublished — `opt-devtool` is the rename of `opt-inspect`).
+  Drift checklist gained a matching bullet.
 
 ### Changed
+
+**Skill / package sync — 2026-05-03**
+
+- `opt-editor-install` bumped to minimum `@reopt-ai/opt-editor@1.0.0`
+  (first stable). Added 1.0.0 entry to
+  `references/breaking-changes.md` covering the `EditorMode` widening
+  (`"stream" | "edit"` → `"stream" | "edit" | "diff"`) and the new
+  `<SuggestionDecorations>` review surface / i18n keys / CSS additions.
+- `opt-datagrid-install` bumped to minimum `@reopt-ai/opt-datagrid@1.3.0`.
+  Upgrade is purely additive — `references/breaking-changes.md` lists
+  `columnSortState` (ARIA), `labels` (i18n), `useColumnSort.columnSortState`
+  bridge, `aria-readonly` on read-only cells, and the new exported types.
+- `brandapp-sdk-install` "Last verified" rolled forward to
+  `@reopt-ai/brandapp-sdk@1.6.1`. Notes call out the v1.6.1 mutation hooks
+  (`useUpsertRecord`, `useBulkCreateRecords`, `useBulkUpdateRecords`,
+  `useBulkDeleteRecords`, `useDeleteRecordsWhere`) and the per-call
+  `signal`/`timeout` on `sdk.files.upload()`. The fixed-at-build-time
+  `SDK_VERSION` constant is mentioned where consumers comment on
+  telemetry.
+- `brandapp-sdk-review` "Last verified" rolled forward to
+  `@reopt-ai/brandapp-sdk@1.6.1` (no rule changes yet).
+- `reopt-cli` SKILL.md absorbed the new top-level commands shipped in CLI
+  `0.1.0`: `mcp`, `logout --all`, `status --ping`, `config get/set/unset/list`,
+  `completion <shell>`, `schema [resource]`. Global flags table replaced
+  with the full program-level set (`--format`, `--fields`, `--limit`,
+  `--offset`, `--page-all`, `--page-limit`, `--page-delay`, `--timeout`,
+  `--max-retries`, `-q/--quiet`, `-v/--verbose`, `--no-interactive`).
+  Silent session refresh (Better Auth window) documented.
+- `reopt-brandapp` SKILL.md absorbed `init`, `dev` (experimental),
+  `seed`, and `env list/create/use/destroy` (experimental). Command table
+  gained a "Status" column to mark the experimental commands explicitly.
+- `reopt-eav` SKILL.md absorbed `eav plan` and `eav migrate
+  create/run/status/validate` (experimental). Migration mode notes the
+  advisory lock taken by `migrate run` and the CI checksum role of
+  `migrate validate`.
+- `COMPATIBILITY.md` snapshot date moved to 2026-05-03.
+- `skills/<changed-skill>/metadata.json` `updatedAt` rolled to
+  `2026-05-03` for the five skills touched in this round.
+
+**Earlier — initial versioning + consistency pass**
+
 - `skills/opt-editor-install/SKILL.md` frontmatter aligned with the other
   nine skills (removed split `version` / `triggers` fields; triggers and
   current target version inlined into the `description`).

@@ -10,9 +10,9 @@ description: |
   "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update",
   "opt-datagrid migrate", "datagrid migrate", "grid migration",
   "replace glide-data-grid", "replace ag-grid".
-  Current version: opt-datagrid 1.1.0.
+  Current version: opt-datagrid 1.3.0.
 target: "@reopt-ai/opt-datagrid"
-targetMinVersion: "1.1.0"
+targetMinVersion: "1.3.0"
 ---
 
 # opt-datagrid-install Skill
@@ -35,7 +35,7 @@ project.
 /opt-datagrid-install verify                 # Verify existing installation
 /opt-datagrid-install --upgrade              # Explicit upgrade
 /opt-datagrid-install --check                # Analyze only (no code changes)
-/opt-datagrid-install --target=1.1.0         # Upgrade to a specific version
+/opt-datagrid-install --target=1.3.0         # Upgrade to a specific version
 /opt-datagrid-install migrate                # Convert an existing grid to opt-datagrid
 /opt-datagrid-install migrate <file>         # Convert a specific file
 /opt-datagrid-install migrate --dry-run      # Print the migration plan only

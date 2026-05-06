@@ -250,7 +250,7 @@ Run the 18 checks from `references/doctor-checks.md` in order and print a table:
 === opt-editor Doctor (18 checks) ===
 
  #  Check                       Status
- 1  opt-editor package installed  PASS (0.8.0)
+ 1  opt-editor package installed  PASS (1.0.0)
  2  React version                 PASS (19.x)
 ...
 

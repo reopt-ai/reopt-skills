@@ -7,9 +7,9 @@ description: |
   Triggers on: "opt-editor install", "opt-editor init", "opt-editor setup",
   "editor install", "editor init",
   "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
-  Current version: opt-editor 0.8.0.
+  Current version: opt-editor 1.0.0.
 target: "@reopt-ai/opt-editor"
-targetMinVersion: "0.8.0"
+targetMinVersion: "1.0.0"
 ---
 
 # opt-editor-install Skill
@@ -29,7 +29,7 @@ Install or upgrade `@reopt-ai/opt-editor` in a consumer project.
 ```
 /opt-editor-install                 # Auto-branch (missing → init, installed → upgrade)
 /opt-editor-install --with-ai       # Include AI streaming integration during init
-/opt-editor-install 0.8.0           # Upgrade to a specific version
+/opt-editor-install 1.0.0           # Upgrade to a specific version
 /opt-editor-install --dry-run       # Analyze only (no changes applied)
 ```
 
