@@ -10,14 +10,14 @@ The **Target** column lists a single primary package (matches each skill's
 cross-checks). Companion packages that ship together are noted in the
 rightmost column.
 
-## Current state — 2026-05-03
+## Current state — 2026-05-07
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-03 | 1.6.1 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks (`useUpsertRecord`, `useBulkCreateRecords`, …) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-03 | 1.6.1 | v1.6-specific rules (old `REQUEST_ERROR` branches, missing `toleranceMs`) still pending |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-07 | 1.8.0 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks; v1.7 `linkedTo` 1:1 user-metadata; v1.8 `cms` is read-only + marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-07 | 1.8.0 | Adds Step 2-I (CMS / external-site patterns 1.8+): removed CMS write surface, manual metadata / sitemap / RSS, manual image URL transforms, cross-subdomain session, 1:1 user metadata. Old `REQUEST_ERROR` branch detection still pending. |
 
 ### Design / UI packages
 

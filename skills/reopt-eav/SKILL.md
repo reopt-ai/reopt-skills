@@ -132,6 +132,13 @@ multi-region rollouts. `migrate validate` is the right step in CI: it
 fails when an applied migration's checksum drifts from the file on disk
 (someone edited a migration after it ran).
 
+The runner is also exposed programmatically via
+`@reopt-ai/brandapp-sdk/eav/migrate` (`defineMigration` + a `runner`).
+The CLI calls the same module, so a hand-written Node script and
+`reopt brandapp eav migrate run` produce identical results. Use the
+SDK form when migrations need to live alongside application code (for
+example, in a `npm run db:migrate` pre-deploy hook).
+
 ## Destructive Change Guardrail
 
 `--delete-orphans` permanently removes server-side attributes and their values.

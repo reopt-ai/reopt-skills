@@ -49,9 +49,10 @@ boilerplate.
 
 | Feature | Description | Required dependencies |
 |---------|-------------|-----------------------|
-| **Unified SDK** (recommended) | `createReoptSDK()` → `.eav` / `.ai` / `.files` / `.cms` bundled | None (`@ai-sdk/provider` if using the AI SDK Provider) |
+| **Unified SDK** (recommended) | `createReoptSDK()` → `.eav` / `.ai` / `.files` / `.cms` bundled. **`.cms` is read-only as of 1.8.0** (`getBySlug`, `tags.list`, etc.) — content authoring happens in Reopt Studio. | None (`@ai-sdk/provider` if using the AI SDK Provider) |
 | **Auth** (Adapter + OAuth) | Reopt as remote DB + OAuth login | `better-auth` |
 | **EAV only** | Minimal install for EAV only | None |
+| **External marketing site** (1.8+) | Headless blog / sitemap / RSS /약관 / cross-subdomain session via `cms` + `cms` helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`) + `auth` helpers (`getSessionFromCookies`, `verifySession`) + `files` helpers (`optimizeUrl`, `REOPT_IMAGE_REMOTE_PATTERNS`). | None — all helpers are pure / framework-agnostic |
 | **Full Stack** | Unified SDK + Auth + Webhooks | `better-auth` |
 
 ---
@@ -341,6 +342,16 @@ Sync the schema to the server with the CLI:
 npx @reopt-ai/cli brandapp eav sync   # Based on lib/eav.schema.ts
 ```
 
+#### `linkedTo` — 1:1 metadata entities (1.7+)
+
+Pass `linkedTo: 'brandappAuthUser'` on a `defineEntity` call when the
+entity should be a 1:1 metadata host on a `BrandappAuthUser` (for
+example, per-user preferences). Default is `'brandapp'` (free-form
+table). The dev server enforces 1:1 via `409` (duplicate host) and
+`422` (missing host); production behaves the same way. `record.id`
+deterministically equals `authUserId` for these entities, so `entity()`
+lookups can use `authUserId` directly without a prior list.
+
 ### (Optional) Dev Server — offline development
 
 Develop without the remote Reopt server by running an in-memory API. On
@@ -387,6 +398,102 @@ export async function register() {
 
 `pnpm dev:local` runs offline. `pnpm dev` hits the remote Reopt server as usual.
 
+### (Optional) External marketing site — 1.8+ helpers
+
+When the consumer is a separate Next.js site (blog, marketing page,
+docs) that reads from a Reopt brandapp, pull these helpers in. They are
+pure functions — no React or Next runtime dependency — and ship without
+adding a peer dep on `@reopt-ai/opt-editor`.
+
+#### Blog routing — `getBySlug` + `toMetadata`
+
+```typescript
+// app/blog/[slug]/page.tsx
+import type { Metadata } from "next";
+import { sdk } from "@/lib/sdk";
+import { toMetadata } from "@reopt-ai/brandapp-sdk/cms";
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> },
+): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await sdk.cms.posts.getBySlug(slug);
+  return toMetadata(post); // pulls Post.seo + falls back to title/excerpt
+}
+
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = await sdk.cms.posts.getBySlug(slug);
+  // post.document.contentRich is now typed as EditorSpec — pass straight to opt-editor StaticRenderer.
+  return /* ... */;
+}
+```
+
+#### Sitemap + RSS
+
+```typescript
+// app/sitemap.ts
+import type { MetadataRoute } from "next";
+import { sdk } from "@/lib/sdk";
+import { toSitemapItems } from "@reopt-ai/brandapp-sdk/cms";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { posts } = await sdk.cms.posts.list({ limit: 1000 });
+  return toSitemapItems(posts, { baseUrl: "https://example.com" });
+}
+
+// app/rss.xml/route.ts
+import { sdk } from "@/lib/sdk";
+import { toRssFeed } from "@reopt-ai/brandapp-sdk/cms";
+
+export async function GET() {
+  const { posts } = await sdk.cms.posts.list({ limit: 50 });
+  const xml = toRssFeed(posts, {
+    title: "Example Blog",
+    link: "https://example.com",
+    description: "Latest posts",
+  });
+  return new Response(xml, { headers: { "Content-Type": "application/rss+xml" } });
+}
+```
+
+#### Next.js `<Image>` + Reopt files
+
+```typescript
+// next.config.ts
+import type { NextConfig } from "next";
+import { REOPT_IMAGE_REMOTE_PATTERNS } from "@reopt-ai/brandapp-sdk/files";
+
+export default {
+  images: {
+    remotePatterns: [...REOPT_IMAGE_REMOTE_PATTERNS],
+  },
+} satisfies NextConfig;
+```
+
+For inline transforms, use `optimizeUrl(url, { width, quality })` — or
+`createImageLoader()` to drop into `<Image loader={...}>`.
+
+#### Cross-subdomain session (`*.reopt.ai`)
+
+```typescript
+// app/page.tsx
+import { headers } from "next/headers";
+import { verifySession } from "@reopt-ai/brandapp-sdk/auth";
+
+const session = await verifySession(await headers(), {
+  brandappId: process.env.REOPT_BRANDAPP_ID!,
+});
+if (session) {
+  /* session.user is the reopt user — no OAuth flow on the marketing site */
+}
+```
+
+`getSessionFromCookies(cookieHeader, opts)` is the lower-level form for
+non-Next runtimes. Both delegate verification to `apps/id` Better Auth
+`/api/auth/get-session`, so they do not require a Better Auth instance
+on the consumer site.
+
 ### (Optional) Receive webhooks — handle Reopt events
 
 To handle Auth/EAV events in real time, build a webhook endpoint. v1.6+
@@ -411,6 +518,10 @@ const handler = createWebhookHandler({
     "subscription.changed": async (payload) => {
       //
     },
+    // Available event types: record.*, entity.*, subscription.changed,
+    // customer.created (six total). Note: `post.published / post.updated /
+    // post.deleted` were removed in 1.8.0 — production never dispatched
+    // them.
   },
   onError: (err, payload) => {
     console.error("[webhook]", err, payload.id);
@@ -531,6 +642,8 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 - Prefer the `isReoptSDKError()` type guard for error handling (bundle-safe versus `instanceof` — works even when multiple SDK copies coexist).
 - v1.6+ splits 4xx into `BadRequestError` / `ForbiddenError` / `NotFoundError` / `ConflictError`, enabling per-status UX.
 - v1.6.1 adds React mutation hooks `useUpsertRecord`, `useBulkCreateRecords`, `useBulkUpdateRecords`, `useBulkDeleteRecords`, `useDeleteRecordsWhere` (mutation surface now matches `sdk.eav.records.*`); `sdk.files.upload()` accepts `{ signal, timeout }` per call.
+- v1.7 adds `linkedTo: 'brandappAuthUser'` on `defineEntity` for 1:1 user-metadata entities; dev server enforces 409 / 422.
+- v1.8 makes `cms` read-only and ships marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`). `PostDetail.document.contentRich` is now typed as `EditorSpec`. `usePostBySlug` and `useCmsTags` are the new TanStack Query hooks.
 - Reference project: `apps/brandapp-playground/` (ships E2E tests + the `/health` SDK dashboard).
 
 ---
