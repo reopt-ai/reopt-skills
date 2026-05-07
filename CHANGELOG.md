@@ -12,6 +12,32 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 ## [Unreleased]
 
 ### Added
+
+**Skill / package sync — 2026-05-07** (`@reopt-ai/brandapp-sdk` 1.8.0)
+
+- `brandapp-sdk-install` SKILL gained a v1.8 "External marketing site"
+  feature row, full Next.js recipe block (blog routing with
+  `cms.posts.getBySlug` + `toMetadata`, `app/sitemap.ts` via
+  `toSitemapItems`, RSS via `toRssFeed`, `<Image>` integration with
+  `optimizeUrl` / `REOPT_IMAGE_REMOTE_PATTERNS`, cross-subdomain
+  session via `verifySession`), and a `linkedTo: 'brandappAuthUser'`
+  note next to the EAV schema definition. The Unified-SDK feature row
+  flags `.cms` as read-only as of 1.8.0; webhook handlers warn that
+  `post.published / post.updated / post.deleted` were dropped.
+- `brandapp-sdk-review` SKILL gained Step 2-I "External-site / CMS
+  patterns (1.8+)" with five new patterns: removed CMS write surface
+  (CMS-1, the breaking change), hand-rolled blog metadata (CMS-2),
+  hand-rolled sitemap / RSS (CMS-3), manual image URL transforms
+  (Files-1), re-implementing cross-subdomain session verification
+  (Auth-7), and `defineEntity` without `linkedTo` for 1:1 user
+  metadata (Schema-4). Step 1 version-check rewritten with
+  per-version recommendations (`< 1.3` / `1.3–1.5` / `1.6–1.7` / `1.8`).
+  Report summary template gains a "CMS / external-site (1.8+)" row.
+- `reopt-eav` SKILL notes that `@reopt-ai/brandapp-sdk/eav/migrate`
+  (`defineMigration` + runner) exposes the same migration runner the
+  CLI calls — so a custom `npm run db:migrate` Node script and
+  `reopt brandapp eav migrate run` produce identical results.
+
 - `CHANGELOG.md` (this file) and a formal versioning policy in `AGENTS.md`.
 - `skills/_shared/breaking-changes-template.md` describing the required
   shape for every installer skill's `references/breaking-changes.md`.
@@ -26,6 +52,15 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   Drift checklist gained a matching bullet.
 
 ### Changed
+
+**Skill / package sync — 2026-05-07**
+
+- `COMPATIBILITY.md` snapshot dated 2026-05-07; both BrandApp SDK rows
+  rolled to "Last verified 1.8.0" with notes covering 1.7 (`linkedTo`)
+  and 1.8 (`cms` read-only + marketing-site helpers).
+- `skills/brandapp-sdk-install/metadata.json`,
+  `skills/brandapp-sdk-review/metadata.json`,
+  `skills/reopt-eav/metadata.json` `updatedAt` rolled to `2026-05-07`.
 
 **Skill / package sync — 2026-05-03**
 

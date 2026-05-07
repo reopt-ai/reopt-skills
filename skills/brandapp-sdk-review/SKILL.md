@@ -35,10 +35,20 @@ Locate the relevant files:
 grep '"@reopt-ai/brandapp-sdk"' package.json
 ```
 
-If below v1.3.0, recommend an upgrade first:
+Recommendations:
+
+- **< 1.3.0** — `createLazySDK`, type-safe entity client, and SDK-level
+  sync are missing. Upgrade is the first review step.
+- **1.3.x – 1.5.x** — works, but every Pattern below assumes 1.6+ APIs
+  (4xx error classes, `FetchOptions.signal/timeout`, webhook
+  `toleranceMs`). Recommend 1.6+ before applying fixes.
+- **1.6.x – 1.7.x** — fine. Run the Step 2-I CMS write check (Pattern
+  CMS-1) before bumping to 1.8.
+- **1.8.0+** — current. Run the full review.
+
 ```
-⚠️ SDK v{current} → upgrade to v1.3.0 or later
-npm install @reopt-ai/brandapp-sdk@^1.3.0
+⚠️ SDK v{current} → upgrade to v1.8.0
+npm install @reopt-ai/brandapp-sdk@^1.8.0
 ```
 
 ---
@@ -640,6 +650,173 @@ const sdk = createLazySDK(() => ({
 
 ---
 
+## Step 2-I: External-site / CMS patterns (1.8+)
+
+Run these checks for projects that ship a separate marketing site,
+blog, or `/terms` page reading from a Reopt brandapp. Most apply only
+to consumers on 1.8.0 or later — 1.7.x consumers should also run
+**CMS Pattern 1** before upgrading.
+
+### CMS Pattern 1: Calling the removed CMS write surface
+
+**Search**: `cms.posts.create`, `cms.posts.update`, `cms.posts.delete`,
+`cms.postGroups.create|update|delete`, `useCreatePost`, `useUpdatePost`,
+`useDeletePost`, type imports of `CreatePostInput` / `UpdatePostInput` /
+`CreatePostGroupInput` / `UpdatePostGroupInput`.
+
+**Problem**: All of these were **removed in 1.8.0**. Backend never
+exposed them in production (1.7.x dev-server only) and there are no
+external npm consumers, so the SDK dropped them. Calls fail at the
+type layer (1.8+) or at runtime against production (any version).
+
+**Improvement**:
+```typescript
+// ❌ Before — write through SDK
+const post = await sdk.cms.posts.create({ groupId, title, body });
+
+// ✅ After — author content in Reopt Studio.
+// If write must stay in code, pin to 1.7.x temporarily and migrate to
+// Studio. Do NOT re-implement against the brandapp HTTP API.
+```
+
+The post.* webhook event types (`post.published`, `post.updated`,
+`post.deleted`) were dropped in the same release — production never
+dispatched them. Remove any matching handlers; available events are
+`record.*`, `entity.*`, `subscription.changed`, `customer.created`.
+
+### CMS Pattern 2: Hand-rolled blog metadata
+
+**Search**: `generateMetadata` in `app/blog/**` that reads `post.title`
+/ `post.excerpt` and assembles `Metadata` manually.
+
+**Problem**: SDK ships `toMetadata(post)` which pulls the new `Post.seo`
+fields (`metaTitle`, `metaDescription`, `metaKeywords`) and falls back
+to `title`/`excerpt`. Hand-rolled versions miss SEO overrides set in
+Studio.
+
+**Improvement**:
+```typescript
+// ❌ Before
+return {
+  title: post.title,
+  description: post.excerpt,
+  openGraph: { title: post.title, description: post.excerpt },
+}
+
+// ✅ After
+import { toMetadata } from "@reopt-ai/brandapp-sdk/cms"
+return toMetadata(post)
+```
+
+### CMS Pattern 3: Hand-rolled sitemap / RSS
+
+**Search**: `app/sitemap.ts` or RSS routes that map over `posts.list()`
+into `MetadataRoute.Sitemap` or RSS XML by hand.
+
+**Improvement**:
+```typescript
+// ✅ Sitemap
+import { toSitemapItems } from "@reopt-ai/brandapp-sdk/cms"
+return toSitemapItems(posts, { baseUrl: "https://example.com" })
+
+// ✅ RSS
+import { toRssFeed } from "@reopt-ai/brandapp-sdk/cms"
+return new Response(
+  toRssFeed(posts, { title, link, description }),
+  { headers: { "Content-Type": "application/rss+xml" } },
+)
+```
+
+Both helpers are pure functions with no Next/React imports — safe in
+Edge runtimes.
+
+### Files Pattern 1: Manual image URL transforms
+
+**Search**: String concatenation building URLs like
+`${url}?w=800&q=85`, or `<Image src={...}>` wrappers that hand-build
+optimization params.
+
+**Problem**: SDK ships `optimizeUrl(url, opts)` and
+`createImageLoader()`. Importing `REOPT_IMAGE_REMOTE_PATTERNS` into
+`next.config.ts` `images.remotePatterns` removes the host allow-list
+maintenance burden when new Vercel Blob hosts are introduced.
+
+**Improvement**:
+```typescript
+// ❌ Before
+const src = `${post.coverUrl}?w=800&q=85`;
+
+// ✅ After — inline transform
+import { optimizeUrl } from "@reopt-ai/brandapp-sdk/files";
+const src = optimizeUrl(post.coverUrl, { width: 800, quality: 85 });
+
+// ✅ After — Next/Image loader
+import { createImageLoader } from "@reopt-ai/brandapp-sdk/files";
+<Image loader={createImageLoader()} src={post.coverUrl} width={800} height={450} />
+```
+
+`next.config.ts`:
+```typescript
+import { REOPT_IMAGE_REMOTE_PATTERNS } from "@reopt-ai/brandapp-sdk/files";
+export default { images: { remotePatterns: [...REOPT_IMAGE_REMOTE_PATTERNS] } };
+```
+
+### Auth Pattern 7: Re-implementing cross-subdomain session verification
+
+**Search**: Marketing/blog sites under `*.reopt.ai` that run their own
+Better Auth instance, or that fetch `/api/auth/get-session` with
+hand-rolled cookie forwarding.
+
+**Problem**: 1.8 ships `verifySession(headers, opts)` and
+`getSessionFromCookies(cookieHeader, opts)` that delegate verification
+to `apps/id` Better Auth `/api/auth/get-session`. The consumer site
+does not need its own auth instance, OAuth flow, or cookie parser.
+
+**Improvement**:
+```typescript
+// ❌ Before — full Better Auth on the marketing site
+const auth = betterAuth({ ...full config including database... });
+const session = await auth.api.getSession({ headers });
+
+// ✅ After — delegate to apps/id
+import { verifySession } from "@reopt-ai/brandapp-sdk/auth";
+const session = await verifySession(headers, {
+  brandappId: process.env.REOPT_BRANDAPP_ID!,
+});
+```
+
+`getSessionFromCookies(cookieHeader, opts)` is the lower-level form for
+non-Next runtimes (Hono, Cloudflare Workers, etc.). Both work in Edge
+and Node.
+
+### Schema Pattern 4: `defineEntity` without `linkedTo` for 1:1 user metadata
+
+**Search**: `defineEntity({ name: "user_*" ... })` plus client-side
+filters on `authUserId` to load a single per-user record (preferences,
+profile metadata).
+
+**Problem**: 1.7+ supports `linkedTo: 'brandappAuthUser'` for true 1:1
+metadata entities. Server enforces 1:1 (`409` / `422`); `record.id`
+equals `authUserId`, so lookups skip the list-then-find detour.
+
+**Improvement**:
+```typescript
+// ❌ Before — free-form table + client filter
+defineEntity({ name: "user_preferences", attributes: { theme: ... } });
+const list = await eav.records.list(prefs.entityId, { filters: [...] });
+const mine = list.records.find(r => r.authUserId === userId);
+
+// ✅ After — 1:1 metadata host
+defineEntity({
+  name: "user_preferences",
+  linkedTo: "brandappAuthUser",
+  attributes: { theme: ... },
+});
+const mine = await sdk.eav.entity("user_preferences").records.get(userId);
+```
+
+---
+
 ## Step 3: Emit the report
 
 Report detections in the following shape:
@@ -649,7 +826,7 @@ Report detections in the following shape:
 
 ### Version
 - Current: v{version}
-- Recommended: v1.3.0+
+- Recommended: v1.8.0
 
 ### Detected patterns ({N})
 
@@ -677,6 +854,7 @@ Report detections in the following shape:
 | Perf: duplicate client creation | {n} | instance/cache reuse |
 | React: manual data fetching | {n} | automatic caching/refetch via SDK hooks |
 | Webhook/Debug: custom implementations | {n} | replace with built-ins |
+| CMS / external-site (1.8+) | {n} | removed write surface, marketing-site helpers, cross-subdomain session, 1:1 user metadata |
 ```
 
 ---
