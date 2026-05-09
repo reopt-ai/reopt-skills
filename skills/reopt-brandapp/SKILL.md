@@ -84,17 +84,34 @@ reopt brandapp term list --json
 
 Supported term types: `termsOfService`, `privacyPolicy`, `marketingConsent`, `custom`.
 
-### Scaffold a new project (`init`)
+### Scaffold the dev environment (`init`)
 
 ```bash
-reopt brandapp init           # writes env.development, reopt.seed.ts, instrumentation.ts, lib/dev-server.ts
+reopt brandapp init           # dev-mode bootstrap (see file list below)
 reopt brandapp init --force   # overwrite existing files
 ```
 
-`init` is the on-ramp for adopting the SDK. The `brandapp-sdk-install`
-skill covers the same files in more detail; reach for `init` when the
-user wants the canonical layout in one shot, then hand off to
-`brandapp-sdk-install` for app-code wiring.
+`init` is a **dev-environment** scaffold — it sets up the offline
+in-memory server, not the SDK app code. Files it touches:
+
+| File | When | Purpose |
+| --- | --- | --- |
+| `.env.development` | always | `REOPT_DEV_MODE=true` + Better Auth placeholders |
+| `reopt.seed.ts` | always | seed-data template for the dev server |
+| `lib/dev-server.ts` | Next.js only | `startDevServer()` wrapping `@reopt-ai/brandapp-sdk/dev` |
+| `instrumentation.ts` | Next.js only | invokes `startDevServer()` on boot when `REOPT_DEV_MODE=true` |
+| `package.json` `scripts.dev:local` | Next.js only | `REOPT_DEV_MODE=true next dev` |
+| `.gitignore` | always | appends `.reopt/` so persisted dev data stays local |
+
+Detection is keyed on the `next` dependency in `package.json`. Non-Next
+projects get `.env.development` + `reopt.seed.ts` + `.gitignore` only;
+wire `startDevServer()` into your own bootstrap manually.
+
+`init` does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`,
+`lib/auth.ts`, `lib/auth-client.ts`, the auth route handler, or webhook
+files — those belong to the `brandapp-sdk-install` skill. The two
+skills are complementary: run `init` for the dev-server bootstrap, then
+hand off to `brandapp-sdk-install` for the SDK app code.
 
 ### Run the dev server (`dev`, experimental)
 

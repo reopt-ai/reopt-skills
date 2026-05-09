@@ -20,9 +20,10 @@ Skill for generating the files and configuration required to adopt
 
 ---
 
-## Step 0: CLI automation (recommended fast path)
+## Step 0: Optional dev-environment bootstrap (`reopt brandapp init`)
 
-For greenfield projects, let the CLI perform every step below in one shot:
+`reopt brandapp init` is a **dev-mode** scaffold, not a full SDK install.
+Run it when you also want the offline in-memory dev server.
 
 ```bash
 npx @reopt-ai/cli brandapp init
@@ -30,13 +31,30 @@ npx @reopt-ai/cli brandapp init
 pnpm dlx @reopt-ai/cli brandapp init
 ```
 
-Files it creates: `.npmrc`, `.env.local`, `lib/{sdk,auth,auth-client,eav.schema}.ts`,
-`app/api/auth/[...all]/route.ts`, `instrumentation.ts`, and (optional) a webhook route.
+Files it touches:
 
-When you take the CLI path, the rest of this skill is only useful for
-**reviewing and customizing the result**. Follow Step 1 onwards only when
-you need a manual install (for example, incrementally adopting the SDK in
-an existing project).
+- `.env.development` (always) — dev-mode env (`REOPT_DEV_MODE=true`,
+  Better Auth placeholders).
+- `reopt.seed.ts` (always) — seed-data template, applied automatically
+  on dev-server start.
+- `lib/dev-server.ts` (Next.js projects only) — `startDevServer()` hook
+  that spins up `@reopt-ai/brandapp-sdk/dev`.
+- `instrumentation.ts` (Next.js projects only) — calls `startDevServer()`
+  on server boot when `REOPT_DEV_MODE=true`.
+- `package.json` (Next.js projects only) — adds the `dev:local` script
+  (`REOPT_DEV_MODE=true next dev`).
+- `.gitignore` — appends `.reopt/` so the persisted dev data stays
+  local.
+
+Non-Next projects skip `instrumentation.ts`, `lib/dev-server.ts`, and
+the `dev:local` script — wire `startDevServer()` from
+`@reopt-ai/brandapp-sdk/dev` into your own bootstrap if you need dev
+mode. The CLI is non-destructive without `--force`.
+
+`init` does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`,
+`lib/auth.ts`, `lib/auth-client.ts`, the auth route handler, or any
+webhook route. The remaining steps in this skill remain required for
+the SDK install regardless of whether you ran `init` first.
 
 ---
 
