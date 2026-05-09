@@ -13,6 +13,38 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Added
 
+**Docs — 2026-05-09**
+
+- `README_KO.md` — Korean translation of the top-level README (skill
+  catalog, "choosing a skill" decision table, typical adoption order).
+  Cross-link added at the top of `README.md`.
+- `README.md` expanded: every skill row now describes the concrete
+  surface it covers (commands, files, audit categories) instead of a
+  one-line teaser; new "Choosing a skill" decision table and "Typical
+  adoption order" section clarify when to reach for `reopt-*` (CLI)
+  vs. `brandapp-sdk-*` (consumer-app code) and how `reopt brandapp
+  init` relates to `brandapp-sdk-install`.
+
+### Changed
+
+**Docs — 2026-05-09**
+
+- `reopt-brandapp` SKILL: `init` section rewritten with the real file
+  list (`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`,
+  `instrumentation.ts`, `package.json` `dev:local` script, `.gitignore`
+  `.reopt/`) and the Next.js-vs-non-Next conditional behavior. Now
+  states explicitly that `init` does **not** create the SDK app files
+  (`.npmrc`, `lib/sdk.ts`, `lib/auth*.ts`, auth route handler) — those
+  belong to `brandapp-sdk-install`.
+- `brandapp-sdk-install` SKILL: Step 0 corrected. Previously implied
+  `reopt brandapp init` could replace the rest of the install ("CLI
+  automation (recommended fast path)") with an inflated file list that
+  did not match the CLI's actual behavior. Step 0 is now framed as an
+  **optional dev-environment bootstrap** with the accurate file list,
+  and explicitly lists the SDK files `init` does not create.
+
+### Added
+
 **Skill / package sync — 2026-05-07** (`@reopt-ai/brandapp-sdk` 1.8.0)
 
 - `brandapp-sdk-install` SKILL gained a v1.8 "External marketing site"
