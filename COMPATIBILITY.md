@@ -10,14 +10,14 @@ The **Target** column lists a single primary package (matches each skill's
 cross-checks). Companion packages that ship together are noted in the
 rightmost column.
 
-## Current state — 2026-05-07
+## Current state — 2026-05-10
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-07 | 1.8.0 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks; v1.7 `linkedTo` 1:1 user-metadata; v1.8 `cms` is read-only + marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-07 | 1.8.0 | Adds Step 2-I (CMS / external-site patterns 1.8+): removed CMS write surface, manual metadata / sitemap / RSS, manual image URL transforms, cross-subdomain session, 1:1 user metadata. Old `REQUEST_ERROR` branch detection still pending. |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-10 | 1.9.0 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks; v1.7 `linkedTo` 1:1 user-metadata; v1.8 `cms` is read-only + marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`); v1.9 EAV-specific error narrowing (`AuthUserRecordExistsError`, `AuthUserNotFoundError`, `LimitExceededError`, `DuplicateAuthUserError`) + granular EAV codes (`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`, etc.) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-10 | 1.9.0 | Adds Step 2-I (CMS / external-site patterns 1.8+): removed CMS write surface, manual metadata / sitemap / RSS, manual image URL transforms, cross-subdomain session, 1:1 user metadata. Step 2-C Error Pattern 3/4 covers the 1.9 narrowed catches and the legacy `REQUEST_ERROR` string check. |
 
 ### Design / UI packages
 

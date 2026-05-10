@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "organization": "reopt",
-  "updatedAt": "2026-05-07",
+  "updatedAt": "2026-05-10",
   "abstract": "Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"

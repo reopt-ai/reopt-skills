@@ -44,11 +44,16 @@ Recommendations:
   `toleranceMs`). Recommend 1.6+ before applying fixes.
 - **1.6.x – 1.7.x** — fine. Run the Step 2-I CMS write check (Pattern
   CMS-1) before bumping to 1.8.
-- **1.8.0+** — current. Run the full review.
+- **1.8.x** — works, but Step 2-C Error Pattern 3 (missing 1.9
+  narrowed catches) and Error Pattern 4 (legacy
+  `e.code === 'REQUEST_ERROR'` string check) only become relevant
+  after a 1.9 bump. Recommend bumping when convenient — 1.9 is a
+  non-breaking minor.
+- **1.9.0+** — current. Run the full review.
 
 ```
-⚠️ SDK v{current} → upgrade to v1.8.0
-npm install @reopt-ai/brandapp-sdk@^1.8.0
+⚠️ SDK v{current} → upgrade to v1.9.0
+npm install @reopt-ai/brandapp-sdk@^1.9.0
 ```
 
 ---
@@ -401,6 +406,69 @@ try {
 **Problem**: Network errors or server outages cause unhandled rejections.
 
 **Improvement**: At minimum, catch in the calling function; for server actions, forward the error to the user.
+
+### Error Pattern 3: EAV mutation on `linkedTo='brandappAuthUser'` without 1.9 narrowed catches
+
+**Search**: `eav.records.create` / `records.upsert` / `records.bulkCreate` calls inside try/catch where the catch only branches `instanceof ConflictError` (or has no class branch at all). Especially relevant when the surrounding entity uses `linkedTo: 'brandappAuthUser'` (Schema Pattern 4).
+
+**Problem**: 1.8.x had to disambiguate "1:1 record already exists" / "auth user not registered" / "plan limit hit" by status + code, so most consumers swallowed them all into a single `ConflictError` branch. v1.9 ships dedicated narrowing classes — a generic catch silently misses the recoverable cases.
+
+**Improvement**:
+```typescript
+// ❌ Before — generic ConflictError swallows AuthUserRecordExists / DuplicateAuthUser / etc.
+try {
+  await sdk.eav.records.create(entityId, { authUserId, values })
+} catch (err) {
+  if (err instanceof ConflictError) {
+    return null // user gets a useless "conflict" toast
+  }
+  throw err
+}
+
+// ✅ After — narrowed branches for the cases worth recovering
+import {
+  AuthUserRecordExistsError,
+  AuthUserNotFoundError,
+  LimitExceededError,
+} from "@reopt-ai/brandapp-sdk/eav"
+
+try {
+  await sdk.eav.records.create(entityId, { authUserId, values })
+} catch (err) {
+  if (err instanceof AuthUserRecordExistsError) {
+    return sdk.eav.records.upsert(entityId, { authUserId, filters, values }) // auto-upsert
+  }
+  if (err instanceof AuthUserNotFoundError) {
+    await provisionAuthUser(authUserId)
+    return sdk.eav.records.create(entityId, { authUserId, values })
+  }
+  if (err instanceof LimitExceededError) {
+    showUpgradePrompt(err.code) // LIMIT_EXCEEDED_ENTITIES | _ATTRIBUTES | _RECORDS
+    throw err
+  }
+  throw err
+}
+```
+
+`DuplicateAuthUserError` (409, `DUPLICATE_AUTH_USER`) only fires on `bulkCreate` against a 1:1 entity — it's a caller-side bug; surface a clear error rather than recovering silently. Existing `instanceof ConflictError` branches keep working because the new classes extend it.
+
+### Error Pattern 4: Legacy `e.code === 'REQUEST_ERROR'` string check
+
+**Search**: literal `'REQUEST_ERROR'` strings in catch blocks (`err.code === 'REQUEST_ERROR'`, `code: 'REQUEST_ERROR'`).
+
+**Problem**: pre-1.9 backends collapsed many EAV 422/409 responses into `code: 'REQUEST_ERROR'`, so consumers wrote string-equality checks against it. From 1.9 the backend dispatches granular codes (`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`, `ENTITY_NOT_FOUND`, `RECORDS_NOT_FOUND`, `DUPLICATE_RECORD_ID`, `AUTH_USER_ID_REQUIRED`, …). The legacy `'REQUEST_ERROR'` check still matches generic 400s, but every new condition silently drops into the fallback branch — recoverable cases get treated as fatal.
+
+**Improvement**: replace the string check with class branches (Error Pattern 3) or with the granular codes:
+
+```typescript
+// ❌ Before — single bucket
+if (err.code === 'REQUEST_ERROR') { /* fall through to generic toast */ }
+
+// ✅ After — granular per-code
+if (err.code === 'LIMIT_EXCEEDED_RECORDS') showUpgradePrompt('records')
+else if (err.code === 'AUTH_USER_NOT_FOUND') retryAfterProvisioning()
+else if (err.code === 'AUTH_USER_ID_REQUIRED') reportMissingAuthUserId()
+```
 
 ---
 
@@ -815,6 +883,11 @@ defineEntity({
 const mine = await sdk.eav.entity("user_preferences").records.get(userId);
 ```
 
+When you adopt `linkedTo: 'brandappAuthUser'`, also wire the
+`AuthUserRecordExistsError` / `AuthUserNotFoundError` /
+`LimitExceededError` branches in the catch block — see Error
+Pattern 3.
+
 ---
 
 ## Step 3: Emit the report
@@ -826,7 +899,7 @@ Report detections in the following shape:
 
 ### Version
 - Current: v{version}
-- Recommended: v1.8.0
+- Recommended: v1.9.0
 
 ### Detected patterns ({N})
 
@@ -848,7 +921,7 @@ Report detections in the following shape:
 | EAV: unnecessary full loads | {n} | fewer API calls |
 | EAV: manual upsert / duplicate utils | {n} | code removal + race conditions gone |
 | Auth: error handling / route protection | {n} | crash avoidance + UX improvements |
-| Error: SDK error types unused | {n} | per-status responses |
+| Error: SDK error types unused / 1.9 narrowing missed | {n} | per-status responses + ergonomic 1:1-entity / plan-limit recovery |
 | Config: security / env | {n} | secret leak prevention |
 | Schema: types unused | {n} | type safety + less boilerplate |
 | Perf: duplicate client creation | {n} | instance/cache reuse |
