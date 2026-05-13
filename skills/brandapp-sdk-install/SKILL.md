@@ -612,6 +612,59 @@ export function handleApiError(error: unknown): NextResponse {
 }
 ```
 
+#### EAV-specific narrowing (1.9+)
+
+v1.9 ships dedicated classes for the EAV race / limit cases that
+1.8.x had to disambiguate by status + code. Existing
+`instanceof ConflictError` / `BadRequestError` branches keep working
+because the new classes extend those parents, so this is a pure
+opt-in narrowing — adopt it where mutations on
+`linkedTo: 'brandappAuthUser'` entities need ergonomic recovery.
+
+```typescript
+import {
+  AuthUserRecordExistsError,
+  AuthUserNotFoundError,
+  LimitExceededError,
+  DuplicateAuthUserError,
+} from "@reopt-ai/brandapp-sdk/eav";
+
+try {
+  await sdk.eav.records.create(entityId, { authUserId, values });
+} catch (err) {
+  // 1:1 brandappAuthUser entity already has a record — fall back to upsert
+  if (err instanceof AuthUserRecordExistsError) {
+    return sdk.eav.records.upsert(entityId, {
+      authUserId,
+      filters: [{ attributeId: keyAttrId, operator: "eq", value: keyValue }],
+      values,
+    });
+  }
+  // BrandappAuthUser not registered yet — provision then retry
+  if (err instanceof AuthUserNotFoundError) {
+    await provisionAuthUser(authUserId);
+    return sdk.eav.records.create(entityId, { authUserId, values });
+  }
+  // Plan limit hit — surface an upgrade prompt; e.code carries the resource
+  if (err instanceof LimitExceededError) {
+    showUpgradePrompt(err.code); // LIMIT_EXCEEDED_ENTITIES | _ATTRIBUTES | _RECORDS
+    throw err;
+  }
+  throw err;
+}
+```
+
+`DuplicateAuthUserError` (409, `DUPLICATE_AUTH_USER`) only fires on
+`bulkCreate` against a 1:1 entity when the input contains the same
+`authUserId` twice — almost always a caller-side bug, so re-throw
+with a clearer message rather than recovering silently.
+
+Pre-1.9 backends collapsed many of these cases into
+`code: 'REQUEST_ERROR'`. From 1.9 the codes are granular
+(`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`,
+…). If you previously branched on the literal `'REQUEST_ERROR'`
+string, replace it with class checks or the new code constants.
+
 ---
 
 ## Step 5: Verify
@@ -662,6 +715,7 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 - v1.6.1 adds React mutation hooks `useUpsertRecord`, `useBulkCreateRecords`, `useBulkUpdateRecords`, `useBulkDeleteRecords`, `useDeleteRecordsWhere` (mutation surface now matches `sdk.eav.records.*`); `sdk.files.upload()` accepts `{ signal, timeout }` per call.
 - v1.7 adds `linkedTo: 'brandappAuthUser'` on `defineEntity` for 1:1 user-metadata entities; dev server enforces 409 / 422.
 - v1.8 makes `cms` read-only and ships marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`). `PostDetail.document.contentRich` is now typed as `EditorSpec`. `usePostBySlug` and `useCmsTags` are the new TanStack Query hooks.
+- v1.9 adds EAV-specific narrowing classes (`AuthUserRecordExistsError`, `DuplicateAuthUserError`, `AuthUserNotFoundError`, `LimitExceededError`) and granular EAV error codes (`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`, `ENTITY_NOT_FOUND`, `ATTRIBUTE_NOT_FOUND`, `RECORD_NOT_FOUND`, `RECORDS_NOT_FOUND`, `DUPLICATE_RECORD_ID`, `AUTH_USER_ID_REQUIRED`); non-breaking minor — the new classes extend `ConflictError` / `ReoptSDKError`. Backend EAV JSONB merge is now atomic (no more lost updates on concurrent same-record writes).
 - Reference project: `apps/brandapp-playground/` (ships E2E tests + the `/health` SDK dashboard).
 
 ---

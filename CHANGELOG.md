@@ -13,6 +13,48 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Added
 
+**Skill / package sync — 2026-05-10** (`@reopt-ai/brandapp-sdk` 1.9.0)
+
+- `brandapp-sdk-install` SKILL: Step 4 "API error handling" gained an
+  "EAV-specific narrowing (1.9+)" sub-block. Mirrors the
+  `docs/errors.md` reference pattern with three branches —
+  `AuthUserRecordExistsError` → auto-upsert,
+  `AuthUserNotFoundError` → provision-then-retry,
+  `LimitExceededError` → upgrade prompt — plus a note on
+  `DuplicateAuthUserError` and the legacy `REQUEST_ERROR` string
+  check. Notes section gained a v1.9 line listing the four new
+  classes, the granular EAV codes (`LIMIT_EXCEEDED_*`,
+  `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`,
+  `ENTITY_NOT_FOUND`, `ATTRIBUTE_NOT_FOUND`, `RECORD_NOT_FOUND`,
+  `RECORDS_NOT_FOUND`, `DUPLICATE_RECORD_ID`,
+  `AUTH_USER_ID_REQUIRED`), and the atomic JSONB merge fix.
+- `brandapp-sdk-review` SKILL: Step 1 version-check rewritten with a
+  1.8.x row (recommend bumping for the new patterns) and a 1.9.0+
+  row; upgrade banner now points at 1.9.0. Step 2-C gained
+  **Error Pattern 3** (EAV mutation on
+  `linkedTo='brandappAuthUser'` missing 1.9 narrowed catches) and
+  **Error Pattern 4** (legacy `e.code === 'REQUEST_ERROR'` string
+  check). Schema Pattern 4 cross-references Error Pattern 3. Step 3
+  report Summary row "Error: SDK error types unused" widened to "/
+  1.9 narrowing missed".
+
+### Changed
+
+**Skill / package sync — 2026-05-10**
+
+- `COMPATIBILITY.md` snapshot rolled to 2026-05-10; both BrandApp SDK
+  rows now read "Last verified 1.9.0". Notes column for
+  `brandapp-sdk-install` lists the four new error classes + granular
+  codes; the `brandapp-sdk-review` row replaces the
+  "Old `REQUEST_ERROR` branch detection still pending" sentence with
+  the actual Error Pattern 3/4 reference now that the patterns
+  exist.
+- `skills/brandapp-sdk-install/metadata.json`,
+  `skills/brandapp-sdk-review/metadata.json` `updatedAt` rolled to
+  `2026-05-10`.
+
+### Added
+
 **Docs — 2026-05-09**
 
 - `README_KO.md` — Korean translation of the top-level README (skill
