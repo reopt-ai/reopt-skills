@@ -13,10 +13,10 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Changed
 
-**Skill / package sync — 2026-05-14** (`@reopt-ai/brandapp-sdk` 1.12.0)
+**Skill / package sync — 2026-05-14** (`@reopt-ai/brandapp-sdk` 2.0.0)
 
 - `brandapp-sdk-install` SKILL: Step 3 environment-variable section
-  rewritten around the 3-tier naming convention — `BRANDAPP_*`
+  rewritten around the 2.0 3-tier naming convention — `BRANDAPP_*`
   consumer credentials (clean break from `REOPT_CLIENT_*` /
   `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET`), `REOPT_*` reserved
   for platform host overrides, `BRANDAPP_SDK_*` for SDK behavior
@@ -29,23 +29,28 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   (`lib/auth.ts`, `lib/sdk.ts`, dev-server `instrumentation.ts`,
   `verifySession`, webhook handler, zod env schema, Output-format
   Next-steps) now use the new env names. Notes section adds v1.10 /
-  v1.11 / v1.12 lines plus the namespace-rename direction.
+  v1.11 / v1.12 lines plus a dedicated v2.0.0 breaking-change line
+  enumerating the rename pairs.
 - `brandapp-sdk-review` SKILL: Step 1 version-check rewritten with
-  1.9.x / 1.10–1.11.x / 1.12.0+ rows; upgrade banner targets 1.12.0.
-  Step 2-D Config Pattern 1 widened to flag stale `www.reopt.ai`
-  hosts after the 1.10 split; Config Pattern 3 catches lingering
+  1.9.x / 1.10–1.11.x / 1.12.x / 2.0.0+ rows; upgrade banner targets
+  2.0.0 and includes the full `.env` rename cheat sheet. Step 2-D
+  Config Pattern 1 widened to flag stale `www.reopt.ai` hosts after
+  the 1.10 split; Config Pattern 3 flags any remaining
   `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` /
-  `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` references as upcoming
-  break risks; new **Config Pattern 4** flags service-token + Basic
+  `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` / `NEXT_PUBLIC_REOPT_*` /
+  `NEXT_PUBLIC_EAV_HASH` reference as broken on 2.0 (not just a
+  warning); new **Config Pattern 4** flags service-token + Basic
   Auth混用 on 1.12+. New **Schema Pattern 5** detects projects that
   ship `eav.schema.ts` to production without `verifyEavSchema` /
   `NEXT_PUBLIC_BRANDAPP_EAV_HASH`. Webhook + Auth code samples
   switched to `BRANDAPP_WEBHOOK_SECRET` / `BRANDAPP_ID`. Step 3
   report-summary rows widened ("Config: ... host / token", "Schema:
-  ... drift unchecked").
+  ... drift unchecked") and the Recommended version line points at
+  v2.0.0.
 - `COMPATIBILITY.md` snapshot rolled to 2026-05-14; both BrandApp SDK
-  rows now read min `1.12.0`, last verified `1.12.0`, with notes
-  enumerating v1.10–v1.12 and the env-namespace direction.
+  rows now read min `2.0.0`, last verified `2.0.0`, with notes
+  enumerating v1.10–v1.12 plus the v2.0.0 env-namespace breaking
+  change.
 
 ### Added
 

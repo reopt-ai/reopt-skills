@@ -2,7 +2,7 @@
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "1.12.0"
+targetMinVersion: "2.0.0"
 ---
 
 # Brandapp SDK Install
@@ -823,7 +823,7 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 - v1.10 splits the platform host: production main API moved from `www.reopt.ai` to `brand.reopt.ai`, with Better Auth on `id.reopt.ai`. SDK derives the auth host automatically from `REOPT_BASE_URL`; override with `REOPT_ID_BASE_URL` only on non-standard topologies.
 - v1.11 adds `computeEavSchemaHash` / `verifyEavSchema` for build-time → runtime schema drift detection (`NEXT_PUBLIC_BRANDAPP_EAV_HASH`). Strongly recommended once the schema stabilizes.
 - v1.12 accepts an optional `token` on `ReoptSDKConfig` — short-lived service tokens (HS256 JWT minted via `POST /token/mint`) flip the default auth header to `Authorization: Bearer`. `clientId`/`clientSecret` remain required for `validateConfig`. Use it for server-to-server automation; keep Basic Auth for consumer-facing apps and don't mix the two on one client.
-- Environment variable namespace (1.13 direction, already authoritative): `BRANDAPP_*` = consumer creds, `REOPT_*` = platform hosts, `BRANDAPP_SDK_*` = SDK behavior. `NEXT_PUBLIC_BRANDAPP_*` for the browser-safe subset. No deprecation aliases — `.env` must be migrated wholesale.
+- **v2.0.0 (breaking)** — environment variable namespace consolidated into 3 tiers: `BRANDAPP_*` = consumer creds (renamed from `REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET`), `REOPT_*` = platform hosts (`REOPT_BASE_URL`, `REOPT_ID_BASE_URL` only), `BRANDAPP_SDK_*` = SDK behavior (renamed from `REOPT_SDK_*`; `DEBUG=*brandapp*` fallback replaces `DEBUG=*reopt*`). `NEXT_PUBLIC_BRANDAPP_*` for the browser-safe subset (includes `NEXT_PUBLIC_BRANDAPP_EAV_HASH`, renamed from `NEXT_PUBLIC_EAV_HASH`). **No deprecation aliases** — `.env` must be migrated wholesale before upgrading to 2.0.
 - Reference project: `apps/brandapp-playground/` (ships E2E tests + the `/health` SDK dashboard).
 
 ---
