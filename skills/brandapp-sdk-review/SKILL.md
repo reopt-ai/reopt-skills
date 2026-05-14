@@ -2,7 +2,7 @@
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "1.12.0"
+targetMinVersion: "2.0.0"
 ---
 
 # Brandapp SDK Review
@@ -56,15 +56,24 @@ Recommendations:
   unchecked) only became actionable from 1.11. Step 2-D Config
   Pattern 4 (service token + Basic Auth混用) only becomes relevant
   on 1.12+.
-- **1.12.0+** — current. Run the full review. The environment-variable
-  rename (`REOPT_*` consumer creds → `BRANDAPP_*`, `REOPT_SDK_*` →
-  `BRANDAPP_SDK_*`) lands in the next minor; flag any remaining
-  `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` references as
-  upcoming-break risks.
+- **1.12.x** — last pre-rename minor. The environment-variable
+  rename ships in 2.0.0 as a **breaking change with no deprecation
+  aliases**; treat `.env` migration as a hard prerequisite for the
+  upgrade.
+- **2.0.0+** — current. Run the full review. Any remaining
+  `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` /
+  `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` / `NEXT_PUBLIC_REOPT_*` /
+  `NEXT_PUBLIC_EAV_HASH` reference is broken on 2.0 — flag, don't just
+  warn.
 
 ```
-⚠️ SDK v{current} → upgrade to v1.12.0
-npm install @reopt-ai/brandapp-sdk@^1.12.0
+⚠️ SDK v{current} → upgrade to v2.0.0
+npm install @reopt-ai/brandapp-sdk@^2.0.0
+# Before upgrading, rename .env vars: REOPT_CLIENT_ID → BRANDAPP_CLIENT_ID,
+# REOPT_CLIENT_SECRET → BRANDAPP_CLIENT_SECRET, REOPT_BRANDAPP_ID → BRANDAPP_ID,
+# REOPT_WEBHOOK_SECRET → BRANDAPP_WEBHOOK_SECRET, REOPT_SDK_* → BRANDAPP_SDK_*,
+# NEXT_PUBLIC_REOPT_* → NEXT_PUBLIC_BRANDAPP_*, NEXT_PUBLIC_EAV_HASH → NEXT_PUBLIC_BRANDAPP_EAV_HASH.
+# REOPT_BASE_URL / REOPT_ID_BASE_URL stay as platform-host knobs.
 ```
 
 ---
@@ -518,16 +527,17 @@ import 'server-only'
 
 ### Config Pattern 3: `!` non-null assertions without env validation
 
-**Search**: Patterns like `process.env.BRANDAPP_CLIENT_ID!` or the legacy `process.env.REOPT_CLIENT_ID!`.
+**Search**: Patterns like `process.env.BRANDAPP_CLIENT_ID!`. **Also flag any remaining `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` / `NEXT_PUBLIC_REOPT_*` / `NEXT_PUBLIC_EAV_HASH` reference — those names are **broken on SDK 2.0** (the rename shipped without deprecation aliases).**
 
-**Problem**: Missing env surfaces only at runtime as `undefined` — hard to trace. Additionally, the consumer-credentials namespace moved from `REOPT_*` to `BRANDAPP_*` (clean break, no aliases). Any remaining `REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` reference is an upcoming-break risk.
+**Problem**: Missing env surfaces only at runtime as `undefined` — hard to trace. On top of that, the consumer-credentials namespace moved from `REOPT_*` to `BRANDAPP_*` in 2.0 as a clean break; lingering old names won't be read by `validateConfig` and the SDK throws `ConfigError`.
 
 **Improvement**:
 ```typescript
-// ✅ Migrate to the new namespace AND validate at startup:
+// ✅ Migrate to the 2.0 namespace AND validate at startup:
 //   BRANDAPP_CLIENT_ID / BRANDAPP_CLIENT_SECRET / BRANDAPP_ID
 //   BRANDAPP_WEBHOOK_SECRET
 //   BRANDAPP_SDK_DEBUG / BRANDAPP_SDK_LOG_FORMAT
+//   NEXT_PUBLIC_BRANDAPP_* for browser-safe variants
 //   REOPT_BASE_URL / REOPT_ID_BASE_URL stay as platform-host knobs.
 function requireEnv(name: string): string {
   const v = process.env[name]
@@ -991,7 +1001,7 @@ Report detections in the following shape:
 
 ### Version
 - Current: v{version}
-- Recommended: v1.12.0
+- Recommended: v2.0.0
 
 ### Detected patterns ({N})
 
