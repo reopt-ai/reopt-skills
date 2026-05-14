@@ -2,7 +2,7 @@
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "1.6.0"
+targetMinVersion: "1.12.0"
 ---
 
 # Brandapp SDK Install
@@ -115,17 +115,42 @@ Optional peer deps:
 
 ## Step 3: Set up environment variables
 
+The SDK uses a **3-tier naming convention** so the role of each variable
+is obvious from the prefix:
+
+| Prefix | Owner | Purpose |
+|--------|-------|---------|
+| `BRANDAPP_*` | Consumer (you) | Credentials and identifiers issued in Studio |
+| `REOPT_*` | Reopt platform | Host overrides (rarely needed) |
+| `BRANDAPP_SDK_*` | Consumer | SDK behavior toggles (debug, log format) |
+| `NEXT_PUBLIC_BRANDAPP_*` | Browser-safe | Subset of `BRANDAPP_*` that may ship to the client bundle |
+
+> **Cross-tier rule:** `BRANDAPP_*` belongs in your repo's secret store
+> (the consumer owns it). `REOPT_*` only appears when you intentionally
+> override a platform default. `BRANDAPP_SDK_*` is opt-in instrumentation
+> and never required for correctness.
+
 Append to `.env.local` (dev-only, git-ignored):
 
 ```env
-# ── Reopt Brandapp credentials (required) ─────────────────────────────
-REOPT_CLIENT_ID=your-client-id
-REOPT_CLIENT_SECRET=your-client-secret
-REOPT_BRANDAPP_ID=your-brandapp-id
+# ── Brandapp credentials (required, consumer-owned) ───────────────────
+BRANDAPP_CLIENT_ID=your-client-id
+BRANDAPP_CLIENT_SECRET=your-client-secret
+BRANDAPP_ID=your-brandapp-id
 
-# ── Optional: custom Reopt URL ────────────────────────────────────────
-# When unset, the SDK picks a production/dev endpoint based on NODE_ENV.
-# REOPT_BASE_URL=https://your-reopt-host.example
+# ── Reopt platform hosts (optional — defaults handle prod/dev) ────────
+# When unset, the SDK picks production / development hosts based on
+# NODE_ENV. Only set REOPT_BASE_URL if you self-host or point at staging.
+# Production default:  https://brand.reopt.ai      (main API host)
+# Production auth:     https://id.reopt.ai         (Better Auth, OIDC)
+# Development default: https://reopt.de:3443       (main API host)
+# REOPT_BASE_URL=https://brand.reopt.ai
+#
+# REOPT_ID_BASE_URL is derived from REOPT_BASE_URL by rewriting the
+# leading subdomain (brand.* → id.*). Set it explicitly only on a
+# non-standard host (e.g. an on-prem deployment where web and auth share
+# one domain).
+# REOPT_ID_BASE_URL=https://id.reopt.ai
 
 # ── Better Auth (when using Auth) ─────────────────────────────────────
 # Generate with: openssl rand -base64 32
@@ -135,19 +160,22 @@ BETTER_AUTH_SECRET=replace-me-32-bytes-base64
 BETTER_AUTH_URL=http://localhost:3000
 
 # ── Webhook (when receiving webhooks) ─────────────────────────────────
-# HMAC secret issued in Studio → BrandApp settings
-REOPT_WEBHOOK_SECRET=replace-me
+# HMAC secret issued in Studio → BrandApp settings. Not auto-read by the
+# SDK — pass it explicitly to createWebhookHandler({ secret }).
+BRANDAPP_WEBHOOK_SECRET=replace-me
 
 # ── Dev Mode (optional) ───────────────────────────────────────────────
 # If true, instrumentation.ts boots an in-memory dev server automatically.
 # REOPT_DEV_MODE=true
 
-# ── Debug (optional, troubleshooting only) ────────────────────────────
-# REOPT_SDK_DEBUG=1             # Log SDK requests/retries
-# REOPT_SDK_LOG_FORMAT=json     # Structured JSON logs for AI agents
+# ── SDK behavior (optional, troubleshooting only) ─────────────────────
+# BRANDAPP_SDK_DEBUG=1            # Log SDK requests/retries (info)
+# BRANDAPP_SDK_DEBUG=trace        # Verbose trace including bodies
+# BRANDAPP_SDK_LOG_FORMAT=json    # Structured JSON logs for AI agents
+# DEBUG=*brandapp*                # Fallback trigger (treated as info)
 ```
 
-> **`REOPT_BRANDAPP_ID` is not `brandId`.** Use the brandappId (app
+> **`BRANDAPP_ID` is not `brandId`.** Use the brandappId (app
 > identifier), not the brandId (brand identifier) issued in Studio. The
 > SDK adapter URL takes the `/api/v1/brandapp/{brandappId}/...` form. You
 > can look it up via the MCP tool `reopt_brandapp_list`.
@@ -162,24 +190,51 @@ REOPT_WEBHOOK_SECRET=replace-me
 > that disables TLS verification for build/production code too, opening
 > the door to MITM attacks. **Never use it in production.**
 
+### Host split — `brand.*` vs `id.*` (1.10+)
+
+The SDK targets two hosts:
+
+- **Main API host** (`REOPT_BASE_URL`, default `https://brand.reopt.ai`)
+  — EAV, AI, Files, CMS, Terms, external-auth, webhooks.
+- **Auth host** (`REOPT_ID_BASE_URL`, default `https://id.reopt.ai`) —
+  Better Auth `/api/auth/*`, OIDC discovery, `userinfo`.
+
+Resolution priority (highest first): `config.idBaseUrl` →
+`REOPT_ID_BASE_URL` → derive from `config.baseUrl` → derive from
+`REOPT_BASE_URL` → `NODE_ENV` fallback. Pre-1.10 the production main
+host was `www.reopt.ai`; consumers that hardcoded that value must
+re-point at `brand.reopt.ai`.
+
+### Service token (1.12+, optional)
+
+For server-to-server automation (cron jobs, batch workers) you can
+mint a short-lived HS256 JWT via `POST /token/mint` and pass it as
+`ReoptSDKConfig.token`. The SDK then uses `Authorization: Bearer
+<token>` instead of Basic Auth. `clientId` / `clientSecret` are still
+required for `validateConfig`, and `FetchOptions.bearerToken` per-call
+overrides still work for end-user OAuth flows (`/external-auth`). For
+typical consumer-facing apps stay on Basic Auth — don't mix the two
+authentication modes in one client.
+
 ### env validation (strongly recommended)
 
-`process.env.REOPT_CLIENT_ID!` non-null assertions only reveal `undefined`
-at runtime. Validate at application startup with zod / t3-env so
-misconfiguration fails fast:
+`process.env.BRANDAPP_CLIENT_ID!` non-null assertions only reveal
+`undefined` at runtime. Validate at application startup with zod /
+t3-env so misconfiguration fails fast:
 
 ```typescript
 // lib/env.ts
 import { z } from "zod";
 
 const schema = z.object({
-  REOPT_CLIENT_ID: z.string().min(1),
-  REOPT_CLIENT_SECRET: z.string().min(1),
-  REOPT_BRANDAPP_ID: z.string().uuid(),
+  BRANDAPP_CLIENT_ID: z.string().min(1),
+  BRANDAPP_CLIENT_SECRET: z.string().min(1),
+  BRANDAPP_ID: z.string().uuid(),
   REOPT_BASE_URL: z.string().url().optional(),
+  REOPT_ID_BASE_URL: z.string().url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32).optional(),
   BETTER_AUTH_URL: z.string().url().optional(),
-  REOPT_WEBHOOK_SECRET: z.string().min(1).optional(),
+  BRANDAPP_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 export const env = schema.parse(process.env);
@@ -203,10 +258,11 @@ import { nextCookies } from "better-auth/next-js";
 import { createReoptBetterAuth } from "@reopt-ai/brandapp-sdk/better-auth";
 
 const reopt = createReoptBetterAuth({
-  clientId: process.env.REOPT_CLIENT_ID!,
-  clientSecret: process.env.REOPT_CLIENT_SECRET!,
-  brandappId: process.env.REOPT_BRANDAPP_ID!,
+  clientId: process.env.BRANDAPP_CLIENT_ID!,
+  clientSecret: process.env.BRANDAPP_CLIENT_SECRET!,
+  brandappId: process.env.BRANDAPP_ID!,
   baseUrl: process.env.REOPT_BASE_URL,
+  // idBaseUrl: process.env.REOPT_ID_BASE_URL, // only when overriding the auth host
 });
 
 export const auth = betterAuth({
@@ -280,9 +336,9 @@ import schema from "./eav.schema"; // Optional — enables a type-safe entity cl
 // In v1.6.1+ the SDK reports its real package version in `X-SDK-Version` (the
 // constant is now injected at build time), so request telemetry is reliable.
 export const sdk = createLazySDK(() => ({
-  clientId: process.env.REOPT_CLIENT_ID!,
-  clientSecret: process.env.REOPT_CLIENT_SECRET!,
-  brandappId: process.env.REOPT_BRANDAPP_ID!,
+  clientId: process.env.BRANDAPP_CLIENT_ID!,
+  clientSecret: process.env.BRANDAPP_CLIENT_SECRET!,
+  brandappId: process.env.BRANDAPP_ID!,
   baseUrl: process.env.REOPT_BASE_URL,
   schema, // Omit if you have no schema
 }));
@@ -303,9 +359,9 @@ import "server-only";
 import { createLazySDK } from "@reopt-ai/brandapp-sdk";
 
 export const sdk = createLazySDK(() => ({
-  clientId: process.env.REOPT_CLIENT_ID!,
-  clientSecret: process.env.REOPT_CLIENT_SECRET!,
-  brandappId: process.env.REOPT_BRANDAPP_ID!,
+  clientId: process.env.BRANDAPP_CLIENT_ID!,
+  clientSecret: process.env.BRANDAPP_CLIENT_SECRET!,
+  brandappId: process.env.BRANDAPP_ID!,
   baseUrl: process.env.REOPT_BASE_URL,
 }));
 
@@ -360,6 +416,53 @@ Sync the schema to the server with the CLI:
 npx @reopt-ai/cli brandapp eav sync   # Based on lib/eav.schema.ts
 ```
 
+#### Schema drift detection (1.11+, recommended)
+
+Pin the schema hash into the client bundle at build time so a deploy
+that ships stale `eav.schema.ts` is detected at runtime — before users
+hit the first failed mutation.
+
+```typescript
+// scripts/build-eav-hash.ts — runs in your build pipeline
+import { writeFileSync } from "node:fs";
+import { computeEavSchemaHash } from "@reopt-ai/brandapp-sdk/eav";
+import schema from "../lib/eav.schema";
+
+const hash = computeEavSchemaHash(schema);
+writeFileSync(".env.production.local",
+  `NEXT_PUBLIC_BRANDAPP_EAV_HASH=${hash}\n`,
+  { flag: "a" });
+```
+
+```json
+// package.json
+{
+  "scripts": {
+    "build": "tsx scripts/build-eav-hash.ts && next build"
+  }
+}
+```
+
+```typescript
+// app/api/health/route.ts (or any startup probe)
+import { verifyEavSchema } from "@reopt-ai/brandapp-sdk/eav";
+import { sdk } from "@/lib/sdk";
+
+export async function GET() {
+  const result = await verifyEavSchema({
+    client: sdk.eav,
+    localHash: process.env.NEXT_PUBLIC_BRANDAPP_EAV_HASH!,
+  });
+  // result.match === false → server schema differs from the deployed bundle;
+  // page oncall or fail the readiness check.
+  return Response.json(result);
+}
+```
+
+`computeEavSchemaHash` and `client.schemaHash()` use the same
+canonical-JSON / SHA-256 algorithm on both sides, so a clean deploy
+should produce `match: true`.
+
 #### `linkedTo` — 1:1 metadata entities (1.7+)
 
 Pass `linkedTo: 'brandappAuthUser'` on a `defineEntity` call when the
@@ -395,9 +498,9 @@ export async function register() {
 
   // Point the SDK client at the dev server
   process.env.REOPT_BASE_URL = dev.url;
-  process.env.REOPT_CLIENT_ID = "dev";
-  process.env.REOPT_CLIENT_SECRET = "dev";
-  process.env.REOPT_BRANDAPP_ID = "dev-app";
+  process.env.BRANDAPP_CLIENT_ID = "dev";
+  process.env.BRANDAPP_CLIENT_SECRET = "dev";
+  process.env.BRANDAPP_ID = "dev-app";
 
   console.log(`[reopt-dev] ${dev.url}`);
 }
@@ -500,7 +603,7 @@ import { headers } from "next/headers";
 import { verifySession } from "@reopt-ai/brandapp-sdk/auth";
 
 const session = await verifySession(await headers(), {
-  brandappId: process.env.REOPT_BRANDAPP_ID!,
+  brandappId: process.env.BRANDAPP_ID!,
 });
 if (session) {
   /* session.user is the reopt user — no OAuth flow on the marketing site */
@@ -524,7 +627,7 @@ enables 5-minute replay protection by default, so the sender must include
 import { createWebhookHandler } from "@reopt-ai/brandapp-sdk/webhooks";
 
 const handler = createWebhookHandler({
-  secret: process.env.REOPT_WEBHOOK_SECRET!,
+  secret: process.env.BRANDAPP_WEBHOOK_SECRET!,
   // toleranceMs default: 5 * 60_000. Opt out with 0 (not recommended).
   handlers: {
     "record.created": async (payload) => {
@@ -551,7 +654,7 @@ export async function POST(req: Request) {
 }
 ```
 
-Add `REOPT_WEBHOOK_SECRET` to `.env` (issue it from Studio → BrandApp settings).
+Add `BRANDAPP_WEBHOOK_SECRET` to `.env` (issue it from Studio → BrandApp settings).
 
 ### API error handling (recommended)
 
@@ -708,7 +811,8 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 ## Notes
 
 - `isProduction` is auto-detected from `NODE_ENV` — no explicit setting needed.
-- When `REOPT_BASE_URL` is undefined, the production/development URL is chosen automatically.
+- When `REOPT_BASE_URL` is undefined, the production/development URL is chosen automatically (prod: `https://brand.reopt.ai`, dev: `https://reopt.de:3443`).
+- `REOPT_ID_BASE_URL` is derived from `REOPT_BASE_URL` by rewriting `brand.* → id.*` — only set it explicitly when the auth host can't be derived (custom on-prem domain, single-host deployment).
 - `better-auth` is an optional peer dep — not required for EAV-only usage.
 - Prefer the `isReoptSDKError()` type guard for error handling (bundle-safe versus `instanceof` — works even when multiple SDK copies coexist).
 - v1.6+ splits 4xx into `BadRequestError` / `ForbiddenError` / `NotFoundError` / `ConflictError`, enabling per-status UX.
@@ -716,6 +820,10 @@ deploy. Twelve probes are defined in `lib/health-checks.ts`.
 - v1.7 adds `linkedTo: 'brandappAuthUser'` on `defineEntity` for 1:1 user-metadata entities; dev server enforces 409 / 422.
 - v1.8 makes `cms` read-only and ships marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`). `PostDetail.document.contentRich` is now typed as `EditorSpec`. `usePostBySlug` and `useCmsTags` are the new TanStack Query hooks.
 - v1.9 adds EAV-specific narrowing classes (`AuthUserRecordExistsError`, `DuplicateAuthUserError`, `AuthUserNotFoundError`, `LimitExceededError`) and granular EAV error codes (`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`, `ENTITY_NOT_FOUND`, `ATTRIBUTE_NOT_FOUND`, `RECORD_NOT_FOUND`, `RECORDS_NOT_FOUND`, `DUPLICATE_RECORD_ID`, `AUTH_USER_ID_REQUIRED`); non-breaking minor — the new classes extend `ConflictError` / `ReoptSDKError`. Backend EAV JSONB merge is now atomic (no more lost updates on concurrent same-record writes).
+- v1.10 splits the platform host: production main API moved from `www.reopt.ai` to `brand.reopt.ai`, with Better Auth on `id.reopt.ai`. SDK derives the auth host automatically from `REOPT_BASE_URL`; override with `REOPT_ID_BASE_URL` only on non-standard topologies.
+- v1.11 adds `computeEavSchemaHash` / `verifyEavSchema` for build-time → runtime schema drift detection (`NEXT_PUBLIC_BRANDAPP_EAV_HASH`). Strongly recommended once the schema stabilizes.
+- v1.12 accepts an optional `token` on `ReoptSDKConfig` — short-lived service tokens (HS256 JWT minted via `POST /token/mint`) flip the default auth header to `Authorization: Bearer`. `clientId`/`clientSecret` remain required for `validateConfig`. Use it for server-to-server automation; keep Basic Auth for consumer-facing apps and don't mix the two on one client.
+- Environment variable namespace (1.13 direction, already authoritative): `BRANDAPP_*` = consumer creds, `REOPT_*` = platform hosts, `BRANDAPP_SDK_*` = SDK behavior. `NEXT_PUBLIC_BRANDAPP_*` for the browser-safe subset. No deprecation aliases — `.env` must be migrated wholesale.
 - Reference project: `apps/brandapp-playground/` (ships E2E tests + the `/health` SDK dashboard).
 
 ---
@@ -743,7 +851,7 @@ you actually created.** Skip entries for optional steps you didn't run
 - app/api/webhooks/reopt/route.ts — webhook receiver   (optional)
 
 ### Next steps
-1. Fill REOPT_CLIENT_ID / REOPT_CLIENT_SECRET / REOPT_BRANDAPP_ID in .env.local
+1. Fill BRANDAPP_CLIENT_ID / BRANDAPP_CLIENT_SECRET / BRANDAPP_ID in .env.local
    - Generate BETTER_AUTH_SECRET with `openssl rand -base64 32`
    - Inject GITHUB_TOKEN (read:packages PAT) via a shell env var
 2. Run `pnpm install` (after registry auth is configured)
