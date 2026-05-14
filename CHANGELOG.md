@@ -11,6 +11,42 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Changed
+
+**Skill / package sync — 2026-05-14** (`@reopt-ai/brandapp-sdk` 1.12.0)
+
+- `brandapp-sdk-install` SKILL: Step 3 environment-variable section
+  rewritten around the 3-tier naming convention — `BRANDAPP_*`
+  consumer credentials (clean break from `REOPT_CLIENT_*` /
+  `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET`), `REOPT_*` reserved
+  for platform host overrides, `BRANDAPP_SDK_*` for SDK behavior
+  toggles. Added the host-split explainer (`brand.reopt.ai` /
+  `id.reopt.ai`, new optional `REOPT_ID_BASE_URL`), a service-token
+  (1.12+) sub-section noting the single-auth-path rule, and an
+  EAV-schema drift-detection recipe (1.11+) wiring
+  `computeEavSchemaHash` at build time and `verifyEavSchema` at
+  runtime via `NEXT_PUBLIC_BRANDAPP_EAV_HASH`. Code samples
+  (`lib/auth.ts`, `lib/sdk.ts`, dev-server `instrumentation.ts`,
+  `verifySession`, webhook handler, zod env schema, Output-format
+  Next-steps) now use the new env names. Notes section adds v1.10 /
+  v1.11 / v1.12 lines plus the namespace-rename direction.
+- `brandapp-sdk-review` SKILL: Step 1 version-check rewritten with
+  1.9.x / 1.10–1.11.x / 1.12.0+ rows; upgrade banner targets 1.12.0.
+  Step 2-D Config Pattern 1 widened to flag stale `www.reopt.ai`
+  hosts after the 1.10 split; Config Pattern 3 catches lingering
+  `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` /
+  `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` references as upcoming
+  break risks; new **Config Pattern 4** flags service-token + Basic
+  Auth混用 on 1.12+. New **Schema Pattern 5** detects projects that
+  ship `eav.schema.ts` to production without `verifyEavSchema` /
+  `NEXT_PUBLIC_BRANDAPP_EAV_HASH`. Webhook + Auth code samples
+  switched to `BRANDAPP_WEBHOOK_SECRET` / `BRANDAPP_ID`. Step 3
+  report-summary rows widened ("Config: ... host / token", "Schema:
+  ... drift unchecked").
+- `COMPATIBILITY.md` snapshot rolled to 2026-05-14; both BrandApp SDK
+  rows now read min `1.12.0`, last verified `1.12.0`, with notes
+  enumerating v1.10–v1.12 and the env-namespace direction.
+
 ### Added
 
 **Skill / package sync — 2026-05-10** (`@reopt-ai/brandapp-sdk` 1.9.0)

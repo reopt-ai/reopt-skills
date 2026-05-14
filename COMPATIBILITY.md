@@ -10,14 +10,14 @@ The **Target** column lists a single primary package (matches each skill's
 cross-checks). Companion packages that ship together are noted in the
 rightmost column.
 
-## Current state — 2026-05-10
+## Current state — 2026-05-14
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified | Verified on | Notes |
 |-------|--------|-------------|---------------|-------------|-------|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.6.0** | 2026-05-10 | 1.9.0 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks; v1.7 `linkedTo` 1:1 user-metadata; v1.8 `cms` is read-only + marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`); v1.9 EAV-specific error narrowing (`AuthUserRecordExistsError`, `AuthUserNotFoundError`, `LimitExceededError`, `DuplicateAuthUserError`) + granular EAV codes (`LIMIT_EXCEEDED_*`, `AUTH_USER_NOT_FOUND`, `AUTH_USER_RECORD_EXISTS`, etc.) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.5.0** | 2026-05-10 | 1.9.0 | Adds Step 2-I (CMS / external-site patterns 1.8+): removed CMS write surface, manual metadata / sitemap / RSS, manual image URL transforms, cross-subdomain session, 1:1 user metadata. Step 2-C Error Pattern 3/4 covers the 1.9 narrowed catches and the legacy `REQUEST_ERROR` string check. |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **1.12.0** | 2026-05-14 | 1.12.0 | `createLazySDK`, 4xx error classes, webhook `toleranceMs`, dev-server instrumentation, v1.6.1 mutation hooks; v1.7 `linkedTo` 1:1 user-metadata; v1.8 `cms` is read-only + marketing-site helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `optimizeUrl`, `verifySession`); v1.9 EAV-specific error narrowing + granular EAV codes; v1.10 production host moved to `brand.reopt.ai` with Better Auth on `id.reopt.ai` (`REOPT_ID_BASE_URL` auto-derived); v1.11 `computeEavSchemaHash` / `verifyEavSchema` + `NEXT_PUBLIC_BRANDAPP_EAV_HASH`; v1.12 optional service-token (`Bearer`) via `ReoptSDKConfig.token`. Env namespace consolidated under `BRANDAPP_*` (creds) / `REOPT_*` (hosts) / `BRANDAPP_SDK_*` (behavior) — clean break, no aliases. |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **1.12.0** | 2026-05-14 | 1.12.0 | Adds Step 2-I (CMS / external-site patterns 1.8+) and Step 2-E Schema Pattern 5 (EAV schema drift unchecked, 1.11+). Step 2-D Config Pattern 1 widened to flag pre-1.10 `www.reopt.ai` hosts; Config Pattern 3 catches lingering `process.env.REOPT_CLIENT_*` etc. as upcoming-break risks; Config Pattern 4 added for service-token + Basic Auth混用 (1.12+). Step 2-C Error Pattern 3/4 covers the 1.9 narrowed catches and the legacy `REQUEST_ERROR` string check. |
 
 ### Design / UI packages
 

@@ -2,7 +2,7 @@
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "1.5.0"
+targetMinVersion: "1.12.0"
 ---
 
 # Brandapp SDK Review
@@ -49,11 +49,22 @@ Recommendations:
   `e.code === 'REQUEST_ERROR'` string check) only become relevant
   after a 1.9 bump. Recommend bumping when convenient — 1.9 is a
   non-breaking minor.
-- **1.9.0+** — current. Run the full review.
+- **1.9.x** — works, but the production host moved to `brand.reopt.ai`
+  in 1.10. If `baseUrl` is hardcoded to `www.reopt.ai` (or the pre-1.10
+  default is implicit), all `/api/v1/brandapp/*` calls 404 in prod.
+- **1.10.x – 1.11.x** — fine, but Schema Pattern 5 (EAV schema drift
+  unchecked) only became actionable from 1.11. Step 2-D Config
+  Pattern 4 (service token + Basic Auth混用) only becomes relevant
+  on 1.12+.
+- **1.12.0+** — current. Run the full review. The environment-variable
+  rename (`REOPT_*` consumer creds → `BRANDAPP_*`, `REOPT_SDK_*` →
+  `BRANDAPP_SDK_*`) lands in the next minor; flag any remaining
+  `process.env.REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` references as
+  upcoming-break risks.
 
 ```
-⚠️ SDK v{current} → upgrade to v1.9.0
-npm install @reopt-ai/brandapp-sdk@^1.9.0
+⚠️ SDK v{current} → upgrade to v1.12.0
+npm install @reopt-ai/brandapp-sdk@^1.12.0
 ```
 
 ---
@@ -474,19 +485,23 @@ else if (err.code === 'AUTH_USER_ID_REQUIRED') reportMissingAuthUserId()
 
 ## Step 2-D: Configuration and security patterns
 
-### Config Pattern 1: Hardcoded URL
+### Config Pattern 1: Hardcoded URL (and stale `www.reopt.ai`)
 
-**Search**: Reopt host string literals (`reopt.ai`, internal dev hosts, etc.) in source
+**Search**: Reopt host string literals (`reopt.ai`, internal dev hosts, etc.) in source. **Pay special attention to `https://www.reopt.ai`** — that was the pre-1.10 production default and now points at the external marketing site; `/api/v1/brandapp/*` calls against it 404.
 
-**Problem**: Blocks per-environment URL switching and bypasses the SDK's `isProduction` detection.
+**Problem**: Blocks per-environment URL switching, bypasses the SDK's `isProduction` detection, and risks landing on the wrong host after the 1.10 split (`brand.reopt.ai` for the API, `id.reopt.ai` for Better Auth).
 
 **Improvement**:
 ```typescript
 // ❌ Before
-const baseUrl = "https://your-reopt-host.example"
+const baseUrl = "https://www.reopt.ai"            // wrong host since 1.10
+const baseUrl = "https://your-reopt-host.example"  // hardcoded
 
-// ✅ After — let the SDK decide from NODE_ENV, or override via env
-// Remove the baseUrl parameter or use process.env.REOPT_BASE_URL
+// ✅ After — let the SDK decide from NODE_ENV (prod → brand.reopt.ai;
+// dev → reopt.de:3443), or override via env. Auth host is derived
+// automatically (brand.* → id.*); override only when needed.
+// process.env.REOPT_BASE_URL
+// process.env.REOPT_ID_BASE_URL   // only for non-standard topologies
 ```
 
 ### Config Pattern 2: Missing `server-only`
@@ -503,20 +518,54 @@ import 'server-only'
 
 ### Config Pattern 3: `!` non-null assertions without env validation
 
-**Search**: Patterns like `process.env.REOPT_CLIENT_ID!`
+**Search**: Patterns like `process.env.BRANDAPP_CLIENT_ID!` or the legacy `process.env.REOPT_CLIENT_ID!`.
 
-**Problem**: Missing env surfaces only at runtime as `undefined` — hard to trace.
+**Problem**: Missing env surfaces only at runtime as `undefined` — hard to trace. Additionally, the consumer-credentials namespace moved from `REOPT_*` to `BRANDAPP_*` (clean break, no aliases). Any remaining `REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` reference is an upcoming-break risk.
 
 **Improvement**:
 ```typescript
-// ✅ createLazySDK calls validateConfig() internally, so misconfig surfaces
-// at SDK-creation time. For even earlier detection, validate at app start:
+// ✅ Migrate to the new namespace AND validate at startup:
+//   BRANDAPP_CLIENT_ID / BRANDAPP_CLIENT_SECRET / BRANDAPP_ID
+//   BRANDAPP_WEBHOOK_SECRET
+//   BRANDAPP_SDK_DEBUG / BRANDAPP_SDK_LOG_FORMAT
+//   REOPT_BASE_URL / REOPT_ID_BASE_URL stay as platform-host knobs.
 function requireEnv(name: string): string {
   const v = process.env[name]
   if (!v) throw new Error(`Missing env: ${name}`)
   return v
 }
+// createLazySDK calls validateConfig() internally, so misconfig surfaces
+// at SDK-creation time too — but startup validation traces back to the .env.
 ```
+
+### Config Pattern 4: Service token mixed with Basic Auth (1.12+)
+
+**Search**: `createReoptSDK` / `createLazySDK` invocations passing both `token` and `clientSecret` to the same client, plus per-call `bearerToken` overrides racing with a config-level `token`.
+
+**Problem**: 1.12 added `ReoptSDKConfig.token` for server-to-server automation (HS256 JWT minted via `POST /token/mint` → `Authorization: Bearer`). `clientId` / `clientSecret` are still required for `validateConfig`, so the SDK accepts both, but only the token actually goes on the wire — confusion grows when one developer rotates the secret and the other rotates the token. Per-call `FetchOptions.bearerToken` further muddies which credential is in flight for `/external-auth` style flows.
+
+**Improvement**:
+```typescript
+// ❌ Before — ambiguous: which credential authenticates the request?
+const sdk = createLazySDK(() => ({
+  clientId: process.env.BRANDAPP_CLIENT_ID!,
+  clientSecret: process.env.BRANDAPP_CLIENT_SECRET!,
+  brandappId: process.env.BRANDAPP_ID!,
+  token: await mintServiceToken(),
+}));
+
+// ✅ After — pick one auth path per client:
+// 1) Consumer-facing app → Basic Auth (clientId + clientSecret only)
+// 2) Server-side automation → dedicated client with token (no per-call override)
+const automation = createLazySDK(() => ({
+  clientId: process.env.BRANDAPP_CLIENT_ID!,
+  clientSecret: process.env.BRANDAPP_CLIENT_SECRET!, // still required by validateConfig
+  brandappId: process.env.BRANDAPP_ID!,
+  token: () => getCachedServiceToken(), // refresh logic owned in one place
+}));
+```
+
+End-user OAuth flows (`/external-auth`) that legitimately need a per-call `bearerToken` should run on a separate Basic-Auth client to keep the credential surface obvious.
 
 ---
 
@@ -684,7 +733,7 @@ export async function POST(req: Request) {
 import { createWebhookHandler } from "@reopt-ai/brandapp-sdk/webhooks"
 
 export const POST = createWebhookHandler({
-  secret: process.env.REOPT_WEBHOOK_SECRET!,
+  secret: process.env.BRANDAPP_WEBHOOK_SECRET!,
   handlers: {
     "record.created": async (payload) => { ... },
     "record.updated": async (payload) => { ... },
@@ -849,7 +898,7 @@ const session = await auth.api.getSession({ headers });
 // ✅ After — delegate to apps/id
 import { verifySession } from "@reopt-ai/brandapp-sdk/auth";
 const session = await verifySession(headers, {
-  brandappId: process.env.REOPT_BRANDAPP_ID!,
+  brandappId: process.env.BRANDAPP_ID!,
 });
 ```
 
@@ -888,6 +937,49 @@ When you adopt `linkedTo: 'brandappAuthUser'`, also wire the
 `LimitExceededError` branches in the catch block — see Error
 Pattern 3.
 
+### Schema Pattern 5: EAV schema drift unchecked (1.11+)
+
+**Search**: Projects that ship `lib/eav.schema.ts` to production but
+have **no** reference to `verifyEavSchema`, `computeEavSchemaHash`, or
+`NEXT_PUBLIC_BRANDAPP_EAV_HASH`. Typical tell-tale: a `/api/health`
+route that only pings the SDK without comparing schema hashes.
+
+**Problem**: When a deploy rolls back to an older bundle, or when a
+schema sync runs against the server but the consumer bundle is stale,
+mutations fail with confusing `ATTRIBUTE_NOT_FOUND` /
+`ENTITY_NOT_FOUND` errors instead of a clear drift alert. 1.11 added
+`computeEavSchemaHash` (canonical-JSON SHA-256, identical algorithm
+on the server) for build-time embedding, and `verifyEavSchema({ client,
+localHash })` to compare against `GET
+/v1/brandapp/{id}/eav/schema-hash` at runtime.
+
+**Improvement**:
+```typescript
+// 1) Build step — embed the hash into NEXT_PUBLIC_*
+//    scripts/build-eav-hash.ts
+import { computeEavSchemaHash } from "@reopt-ai/brandapp-sdk/eav";
+import schema from "../lib/eav.schema";
+process.stdout.write(
+  `NEXT_PUBLIC_BRANDAPP_EAV_HASH=${computeEavSchemaHash(schema)}\n`
+);
+
+// package.json
+// "build": "tsx scripts/build-eav-hash.ts >> .env.production.local && next build"
+
+// 2) Runtime probe — fail readiness when the bundle drifts
+//    app/api/health/route.ts
+import { verifyEavSchema } from "@reopt-ai/brandapp-sdk/eav";
+const r = await verifyEavSchema({
+  client: sdk.eav,
+  localHash: process.env.NEXT_PUBLIC_BRANDAPP_EAV_HASH!,
+});
+return Response.json(r, { status: r.match ? 200 : 503 });
+```
+
+Page on `r.match === false` from prod — that signal precedes a wave of
+`ATTRIBUTE_NOT_FOUND` errors and lets oncall roll the deploy
+deterministically.
+
 ---
 
 ## Step 3: Emit the report
@@ -899,7 +991,7 @@ Report detections in the following shape:
 
 ### Version
 - Current: v{version}
-- Recommended: v1.9.0
+- Recommended: v1.12.0
 
 ### Detected patterns ({N})
 
@@ -922,8 +1014,8 @@ Report detections in the following shape:
 | EAV: manual upsert / duplicate utils | {n} | code removal + race conditions gone |
 | Auth: error handling / route protection | {n} | crash avoidance + UX improvements |
 | Error: SDK error types unused / 1.9 narrowing missed | {n} | per-status responses + ergonomic 1:1-entity / plan-limit recovery |
-| Config: security / env | {n} | secret leak prevention |
-| Schema: types unused | {n} | type safety + less boilerplate |
+| Config: security / env / host / token | {n} | secret leak prevention, correct host (`brand.*` / `id.*`), single auth path |
+| Schema: types unused / drift unchecked | {n} | type safety + deterministic drift detection (`NEXT_PUBLIC_BRANDAPP_EAV_HASH`) |
 | Perf: duplicate client creation | {n} | instance/cache reuse |
 | React: manual data fetching | {n} | automatic caching/refetch via SDK hooks |
 | Webhook/Debug: custom implementations | {n} | replace with built-ins |
