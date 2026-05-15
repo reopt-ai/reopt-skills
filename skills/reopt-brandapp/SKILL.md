@@ -7,166 +7,77 @@ requires:
 
 # reopt Brandapp
 
-Operational guidance for `reopt brandapp` workflows outside EAV schema management.
+> This is NOT the reopt CLI you know. Run `reopt brandapp --help` / `reopt brandapp <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/dist/docs/brandapp.md` for narrative guides.
 
-## When to Apply
-
-Use this skill when:
+## When to apply
 
 - listing accessible brandapps
-- linking or unlinking a project directory
+- linking / unlinking a project directory
 - repairing stale links with `doctor`
-- inspecting published terms for a linked brandapp
-- scaffolding BrandApp dev files into a fresh project (`init`)
+- inspecting published terms
+- scaffolding BrandApp dev files (`init`)
 - running the offline in-memory dev server (`dev`, `seed`)
 - managing sandbox cloud environments (`env list/create/use/destroy`)
 
-Load `reopt-cli` first.
+Load `reopt-cli` first. Its agent-rules block (`<!-- BEGIN:reopt/cli-agent-rules -->`) covers this skill too — if `reopt-cli` already pinned it, skip Step 1.
 
-## Command Coverage
+## Step 1 — Pin agent rules (only if `reopt-cli` hasn't already)
 
-| Command | Description | Requires Login | Requires Link | Status |
-| --- | --- | --- | --- | --- |
-| `brandapp list` | List accessible brandapps | yes | no | stable |
-| `brandapp link` | Link current directory to a brandapp | yes | no | stable |
-| `brandapp unlink` | Remove the current directory link | no | yes | stable |
-| `brandapp doctor` | Repair stale links and missing credentials | yes | yes | stable |
-| `brandapp term list` | List brandapp terms | yes | yes | stable |
-| `brandapp init` | Scaffold BrandApp dev files in the current project | no | no | stable |
-| `brandapp dev` | Start the in-memory dev server (offline EAV/Auth/AI/Files) | no | no | experimental |
-| `brandapp seed` | Apply seed data to a running dev server | no | no | stable |
-| `brandapp env list` | List sandbox environments | yes | yes | experimental |
-| `brandapp env create` | Provision a new sandbox environment | yes | yes | experimental |
-| `brandapp env use <envId>` | Write the environment's credentials into `.env.local` | yes | yes | experimental |
-| `brandapp env destroy <envId>` | Destroy a sandbox environment | yes | yes | experimental |
+Same source/fallback/marker as `reopt-cli`. If the marker block is already present in AGENTS.md/CLAUDE.md, do nothing here.
 
-## Common Flows
+## Step 2 — Command map (refer to `--help` for flags)
 
-### List brandapps
+| Command | Purpose | Needs login | Needs link | Status |
+|---|---|---|---|---|
+| `brandapp list` | List accessible brandapps | ✓ | – | stable |
+| `brandapp link` | Link current dir to a brandapp | ✓ | – | stable |
+| `brandapp unlink` | Remove the current dir link | – | ✓ | stable |
+| `brandapp doctor` | Repair stale links / missing creds | ✓ | ✓ | stable |
+| `brandapp term list` | List brandapp terms | ✓ | ✓ | stable |
+| `brandapp init` | Scaffold dev-mode files (see below) | – | – | stable |
+| `brandapp dev` | Offline EAV/Auth/AI/Files server | – | – | experimental |
+| `brandapp seed` | Apply seed data to dev server | – | – | stable |
+| `brandapp env list/create/use/destroy` | Sandbox cloud envs | ✓ | ✓ | experimental |
 
-```bash
-reopt brandapp list
-reopt brandapp list --json
-```
+Term types: `termsOfService`, `privacyPolicy`, `marketingConsent`, `custom`.
 
-### Link a directory
+## Step 3 — `init` file map (consumer project, not module docs)
 
-```bash
-reopt brandapp link
-```
-
-Expected modes:
-
-- fresh link: creates `.reopt.json` and credentials
-- team onboarding: fills in missing credentials only
-- re-link: switches an already linked directory
-
-### Unlink
-
-```bash
-reopt brandapp unlink
-```
-
-### Doctor
-
-```bash
-reopt brandapp doctor
-```
-
-Doctor should remove stale server entries and repair missing local OAuth credentials.
-
-### List terms
-
-```bash
-reopt brandapp term list
-reopt brandapp term list --json
-```
-
-Supported term types: `termsOfService`, `privacyPolicy`, `marketingConsent`, `custom`.
-
-### Scaffold the dev environment (`init`)
-
-```bash
-reopt brandapp init           # dev-mode bootstrap (see file list below)
-reopt brandapp init --force   # overwrite existing files
-```
-
-`init` is a **dev-environment** scaffold — it sets up the offline
-in-memory server, not the SDK app code. Files it touches:
+`reopt brandapp init` is a **dev-environment** scaffold — not the SDK app code. It only adds:
 
 | File | When | Purpose |
-| --- | --- | --- |
+|---|---|---|
 | `.env.development` | always | `REOPT_DEV_MODE=true` + Better Auth placeholders |
-| `reopt.seed.ts` | always | seed-data template for the dev server |
+| `reopt.seed.ts` | always | seed-data template |
 | `lib/dev-server.ts` | Next.js only | `startDevServer()` wrapping `@reopt-ai/brandapp-sdk/dev` |
-| `instrumentation.ts` | Next.js only | invokes `startDevServer()` on boot when `REOPT_DEV_MODE=true` |
-| `package.json` `scripts.dev:local` | Next.js only | `REOPT_DEV_MODE=true next dev` |
-| `.gitignore` | always | appends `.reopt/` so persisted dev data stays local |
+| `instrumentation.ts` | Next.js only | invokes `startDevServer()` when `REOPT_DEV_MODE=true` |
+| `package.json scripts.dev:local` | Next.js only | `REOPT_DEV_MODE=true next dev` |
+| `.gitignore` | always | appends `.reopt/` |
 
-Detection is keyed on the `next` dependency in `package.json`. Non-Next
-projects get `.env.development` + `reopt.seed.ts` + `.gitignore` only;
-wire `startDevServer()` into your own bootstrap manually.
+Detection: presence of `next` in `package.json`. Non-Next projects get only `.env.development` + `reopt.seed.ts` + `.gitignore` and must wire `startDevServer()` manually.
 
-`init` does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`,
-`lib/auth.ts`, `lib/auth-client.ts`, the auth route handler, or webhook
-files — those belong to the `brandapp-sdk-install` skill. The two
-skills are complementary: run `init` for the dev-server bootstrap, then
-hand off to `brandapp-sdk-install` for the SDK app code.
+`init` does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`, `lib/auth.ts`, auth route handler, or webhook files — those belong to `brandapp-sdk-install`. The two skills are complementary; run `init` first, then `brandapp-sdk-install` for the SDK app code.
 
-### Run the dev server (`dev`, experimental)
+## Step 4 — Route to docs
 
-```bash
-reopt brandapp dev                                # default: ./eav.schema.ts on :4300
-reopt brandapp dev --port 4400 --watch            # custom port + schema watcher
-reopt brandapp dev --persist                      # write to .reopt/dev-data.json between restarts
-reopt brandapp dev --seed ./reopt.seed.ts         # auto-apply seed on boot
-reopt brandapp dev --proxy-ai                     # forward AI calls to a remote model
-```
+| Task signal | Read |
+|---|---|
+| Flag-level reference for every subcommand | `reopt brandapp <cmd> --help` |
+| Dev-server protocol, persistence, AI proxy | `dist/docs/dev-server.md` |
+| Sandbox env lifecycle, TTL, AI limits | `dist/docs/sandbox-env.md` |
+| Term schema | `dist/docs/terms.md` |
 
-Flags: `-s, --schema <path>` (default `./eav.schema.ts`), `-p, --port <port>` (default `4300`), `--persist`, `--seed <path>`, `-w, --watch`, `--proxy-ai`.
-The dev server provides offline EAV / Auth / AI / Files; consumer apps
-point at it via `REOPT_BASE_URL=http://localhost:4300` (matches the
-`instrumentation.ts` pattern used by `brandapp-sdk-install`).
+## Operating notes
 
-### Seed a running dev server
-
-```bash
-reopt brandapp seed                                       # default seed file + localhost
-reopt brandapp seed -f ./fixtures/demo.seed.ts --reset    # reset existing data first
-reopt brandapp seed -t http://localhost:4400              # non-default dev server
-```
-
-`--reset` wipes existing rows before applying — use it on disposable
-environments only.
-
-### Manage sandbox environments (`env`, experimental)
-
-Sandboxes are short-lived cloud environments scoped to the linked
-brandapp. The flow is `create` → `use` → work → `destroy`.
-
-```bash
-reopt brandapp env list
-reopt brandapp env list --json
-
-reopt brandapp env create -n pr-42                          # default type=development
-reopt brandapp env create -n staging -t staging --ttl 7d --ai-limit 100
-
-reopt brandapp env use env_01abc                            # writes credentials into .env.local
-reopt brandapp env destroy env_01abc                        # confirms before destroying
-reopt brandapp env destroy env_01abc --force                # skip confirmation
-```
-
-`env use` overwrites `.env.local` keys for `REOPT_CLIENT_ID`,
-`REOPT_CLIENT_SECRET`, and `REOPT_BRANDAPP_ID`. Run it from the project
-that should target the sandbox; it does not unset previously written keys
-beyond the three reopt entries.
-
-## Operating Notes
-
-- In a monorepo, `.reopt.json` is resolved by walking upward from the current directory.
+- In a monorepo, `.reopt.json` is resolved by walking upward from the current dir.
 - Run `reopt brandapp doctor` before CI jobs that depend on linked brandapps.
 - `brandapp link` has no `--dry-run`; use `brandapp list --json` first if you need a preview.
-- OAuth credentials are scoped per brandapp and project directory.
-- `dev`, `env *`, and `eav migrate *` are flagged `[experimental]` in the CLI's own help — surface that label when you recommend them so users know the API may shift.
+- `brandapp env use` overwrites `.env.local` keys for `BRANDAPP_CLIENT_ID` / `BRANDAPP_CLIENT_SECRET` / `BRANDAPP_ID` (v2.0 namespace). Run it from the project that should target the sandbox.
+- `dev`, `env *`, and `eav migrate *` are flagged experimental — surface that label when recommending so users know the API may shift.
 - `init` is non-destructive without `--force`; warn before passing `--force` over an existing scaffold.
 
+## Safety
+
+- Inherit all rules from `reopt-cli` (no hardcoded credentials, no `~/.reopt/` commits, no credential printing).
+- `brandapp env destroy` is irreversible — confirm `--force` is intentional.
+- `brandapp seed --reset` wipes existing rows; only run on disposable environments.

@@ -1,8 +1,8 @@
 {
-  "version": "0.1.0",
+  "version": "2.0.0",
   "organization": "reopt",
-  "updatedAt": "2026-05-03",
-  "abstract": "Install @reopt-ai/opt-editor in a consumer project or upgrade it to the latest version.",
+  "updatedAt": "2026-05-15",
+  "abstract": "Install or upgrade @reopt-ai/opt-editor. Pins the agent-rules marker block and routes catalog/editor/AI wiring to module dist/docs/.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"
   ]
