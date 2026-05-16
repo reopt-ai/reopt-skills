@@ -11,7 +11,13 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+## [2.0.0] — 2026-05-15
+
 ### Changed
+
+**v2 slim-skill rewrite — 2026-05-15**
+
+Every skill rewritten around the Next.js 16.2+ pattern: each `@reopt-ai/*` package owns its own `dist/docs/`, and the skill pins a marker-bracketed agent-rules block into the consumer's `AGENTS.md`/`CLAUDE.md` (`<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->`). SKILL.md stops duplicating API surface; it only keeps consumer-side setup the module can't carry (`.npmrc`, env-namespace rules, peer deps, requires chains, destructive guardrails). Average SKILL.md size 90→863 lines collapsed to ~80; references/ ≈ 5,000 lines retired, `skills/_shared/` removed. Each skill now ships a transition-period `agent-rules.md` fallback alongside SKILL.md. Validator enforces a 150-line SKILL.md cap (warn at 100) and a required `BEGIN:reopt/<pkg>-agent-rules` marker reference for every `*-install` / `*-review` skill. AGENTS.md, README.md, README_KO.md, COMPATIBILITY.md, CONTRIBUTING.md updated to match. New `MIGRATION-v2.md` documents the upgrade path and maps each retired `references/*.md` to its new module-docs location. **Breaking** at the repo level — silent contract change for any consumer that relied on inline API surface in SKILL.md or on the retired `_shared/` templates.
 
 **Skill / package sync — 2026-05-14** (`@reopt-ai/brandapp-sdk` 2.0.0)
 
@@ -259,14 +265,4 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   classes (2026-04-17; SDK v1.6.0 split `REQUEST_ERROR` into dedicated
   classes).
 
-## [0.1.0] — TBD (planned May 2026)
-
-Initial public release.
-
-- 10 installable skills: `reopt-cli`, `reopt-brandapp`, `reopt-eav`,
-  `brandapp-sdk-install`, `brandapp-sdk-review`, `opt-ui-install`,
-  `opt-editor-install`, `opt-chat-install`, `opt-datagrid-install`,
-  `opt-harness-install`.
-- Shared scaffolding under `skills/_shared/upgrade-pipeline.md`.
-- Root tooling: `pnpm validate`, `pnpm sync:cli`.
-- Distribution via the `skills` CLI — `npx skills add reopt-ai/reopt-skills`.
+v2.0.0 supersedes the previously planned `[0.1.0]` first-public-release — the slim rewrite went out as the first public tag instead.

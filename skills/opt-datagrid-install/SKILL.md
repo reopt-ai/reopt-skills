@@ -1,89 +1,88 @@
 ---
 name: opt-datagrid-install
 description: |
-  Install, upgrade, or migrate to @reopt-ai/opt-datagrid in a consumer project.
-  Not installed → initial setup (.npmrc, package, TypeScript paths, example).
-  Installed → detect version → analyze impact → edit code → verify.
-  Migrate mode → convert glide-data-grid, ag-grid, react-data-grid, or MUI DataGrid usage.
-  Triggers on: "opt-datagrid install", "opt-datagrid init", "opt-datagrid setup",
-  "datagrid install", "datagrid setup", "grid setup",
-  "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update",
-  "opt-datagrid migrate", "datagrid migrate", "grid migration",
-  "replace glide-data-grid", "replace ag-grid".
-  Current version: opt-datagrid 1.3.0.
+  Install, upgrade, or migrate to @reopt-ai/opt-datagrid in a consumer project. Auto-branches by current install state. Migrate mode converts glide-data-grid / ag-grid / react-data-grid / MUI DataGrid. Triggers on "opt-datagrid install", "opt-datagrid init", "opt-datagrid setup", "datagrid install", "datagrid setup", "grid setup", "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update", "opt-datagrid migrate", "datagrid migrate", "grid migration", "replace glide-data-grid", "replace ag-grid".
 target: "@reopt-ai/opt-datagrid"
 targetMinVersion: "1.3.0"
 ---
 
-# opt-datagrid-install Skill
+# opt-datagrid Install
 
-Install, upgrade, or migrate to `@reopt-ai/opt-datagrid` in a consumer
-project.
+> This is NOT the opt-datagrid you know. Read `node_modules/@reopt-ai/opt-datagrid/dist/docs/` before writing code.
 
-> **CRITICAL — execution workflow:**
->
-> This file (SKILL.md) covers invocation shape and safety rules.
-> The actual step-by-step procedure lives in **`command/opt-datagrid-install.md`**.
->
-> **Read `command/opt-datagrid-install.md` before starting any work.**
+## When to apply
+
+Consumer project depends on `@reopt-ai/opt-datagrid`, or is migrating away from another grid library. Triggers: "install", "init", "setup", "upgrade", "update", "migrate", "replace glide-data-grid", "replace ag-grid".
 
 ## Invocation
 
 ```
-/opt-datagrid-install                        # Auto-branch (missing → init, installed → upgrade)
-/opt-datagrid-install install                # Explicit install only
-/opt-datagrid-install verify                 # Verify existing installation
-/opt-datagrid-install --upgrade              # Explicit upgrade
-/opt-datagrid-install --check                # Analyze only (no code changes)
-/opt-datagrid-install --target=1.3.0         # Upgrade to a specific version
-/opt-datagrid-install migrate                # Convert an existing grid to opt-datagrid
-/opt-datagrid-install migrate <file>         # Convert a specific file
-/opt-datagrid-install migrate --dry-run      # Print the migration plan only
-/opt-datagrid-install example <pattern>      # Emit an example for a specific pattern
+/opt-datagrid-install                  # Auto-branch (missing → init, installed → upgrade)
+/opt-datagrid-install install          # Explicit install only
+/opt-datagrid-install verify           # Verify existing installation
+/opt-datagrid-install --upgrade        # Explicit upgrade
+/opt-datagrid-install --check          # Analyze only
+/opt-datagrid-install --target=1.3.0   # Pin a specific version
+/opt-datagrid-install migrate          # Convert existing grid usage
+/opt-datagrid-install migrate <file>   # Convert a single file
+/opt-datagrid-install migrate --dry-run
+/opt-datagrid-install example <pattern>
 ```
 
-## Auto-Branch Pipeline
+## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-| Step | Description                      | Init | Upgrade | Migrate |
-| ---- | -------------------------------- | ---- | ------- | ------- |
-| 1    | Detect current state             | O    | O       | O       |
-| 2    | .npmrc & registry auth           | O    | -       | O       |
-| 3    | Package install / update         | O    | O       | O       |
-| 4    | TypeScript paths                 | O    | -       | O       |
-| 5    | Breaking-change edits            | -    | O       | -       |
-| 6    | Deprecated cleanup (optional)    | -    | O       | -       |
-| 7    | Grid migration                   | -    | -       | O       |
-| 8    | Generate example                 | O    | -       | -       |
-| 9    | Verify & summarize               | O    | O       | O       |
+Source: `node_modules/@reopt-ai/opt-datagrid/dist/agent-rules.md`. Fallback: `agent-rules.md` shipped with this skill. Wrap content between:
 
-## Prerequisites
+```
+<!-- BEGIN:reopt/opt-datagrid-agent-rules -->
+…content from source…
+<!-- END:reopt/opt-datagrid-agent-rules -->
+```
 
-- Node.js 18+, React 19+
-- GitHub token with `read:packages` scope
-- bun or npm
+**Idempotent:** replace only between markers.
 
-## Safety Rules
+## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Never update the package without user approval** — always run the impact scan first.
-2. **Process files one at a time** (migrate) — convert one file, wait for approval, then continue.
-3. Apply breaking changes in logical groups — never bulk-apply.
-4. **Do not finish until type check and tests pass.**
-5. **Never commit** — do not commit or push without an explicit request.
+1. **Registry auth** — `.npmrc` for GitHub Packages (PAT with `read:packages`, injected via shell / CI secret, never hardcoded).
+2. **Prereqs** — Node 18+, React 19+, bun or npm.
+3. **TypeScript paths** — wire `@reopt-ai/opt-datagrid` into `tsconfig.json` paths if the project uses path aliases.
+4. **opt-ui theme** — opt-datagrid consumes opt-ui CSS variable tokens. If opt-ui is not installed yet, run `/opt-ui-install` first.
 
-## References
+## Step 3 — Route to module docs
 
-Load only what matches the task:
+| Task signal | Read |
+|---|---|
+| API reference (components, props, hooks) | `dist/docs/02-api/` |
+| Column patterns | `dist/docs/02-api/columns.md` |
+| Migration (glide / ag-grid / react-data-grid / MUI) | `dist/docs/04-migration/` |
+| Theme integration | `dist/docs/theme.md` |
+| Breaking changes per version | `dist/docs/CHANGELOG.md` |
+| Install / upgrade procedure | `dist/docs/install.md` |
 
-- `references/column-patterns.md` — column definition pattern reference
-- `references/theme-integration.md` — opt-ui theme token integration
-- `references/transform-glide-datagrid.md` — glide-data-grid migration rules
-- `references/breaking-changes.md` — per-version breaking-change registry
+## Pipeline (auto-branch)
 
-In-package docs (prefer these after install):
+| # | Step | Init | Upgrade | Migrate |
+|---|---|---|---|---|
+| 1 | Detect current state | ✓ | ✓ | ✓ |
+| 2 | `.npmrc` + registry auth | ✓ | – | ✓ |
+| 3 | Install / update package | ✓ | ✓ | ✓ |
+| 4 | TypeScript paths | ✓ | – | ✓ |
+| 5 | Breaking-change edits | – | ✓ | – |
+| 6 | Deprecated cleanup (opt-in) | – | ✓ | – |
+| 7 | Grid migration | – | – | ✓ |
+| 8 | Generate example | ✓ | – | – |
+| 9 | Verify + summary | ✓ | ✓ | ✓ |
 
-- `node_modules/@reopt-ai/opt-datagrid/dist/docs/02-api/` — API reference
-- `node_modules/@reopt-ai/opt-datagrid/dist/docs/04-migration/` — migration guide
+## Safety
 
-## Related Skills
+- Never upgrade without an impact scan (run `--check` first).
+- **Migrate processes files one at a time** — convert one, wait for approval, then continue.
+- Apply breaking-change edits in logical groups, never bulk.
+- Do not finish until `tsc --noEmit` passes.
+- **Never commit** — do not commit or push without an explicit request.
 
-- `node_modules/@reopt-ai/opt-datagrid/dist/docs/` — component API, recipes, migration guides
+## Verify
+
+1. `npx tsc --noEmit` passes.
+2. Grid renders with opt-ui theme applied (no raw colors leaking).
+3. (Migrate) the converted file renders the same rows + columns as the source; spot-check sorting / selection / editing.
