@@ -1,8 +1,8 @@
 {
-  "version": "0.1.0",
+  "version": "2.0.0",
   "organization": "reopt",
-  "updatedAt": "2026-04-21",
-  "abstract": "Baseline operational guidance for the reopt CLI, including authentication, credential handling, global flags, schema discovery, and exit-code expectations.",
+  "updatedAt": "2026-05-15",
+  "abstract": "Baseline reopt CLI guidance — auth, global flags, secret handling. Pins the shared reopt/cli-agent-rules marker block consumed by reopt-brandapp and reopt-eav.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"
   ]

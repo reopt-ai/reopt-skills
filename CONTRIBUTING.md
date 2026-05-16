@@ -24,10 +24,20 @@ explanations.
 - Skill names are lowercase kebab-case and **must** match the folder
   name under `skills/`.
 - `SKILL.md` frontmatter requires at least `name` and `description`.
-- Keep `SKILL.md` focused on: trigger conditions, workflow, safety rules,
-  and sharp operational guidance. Move long examples to `references/`.
-- Directories prefixed with `_` (for example `skills/_shared/`) are
-  shared scaffolding — not installable skills. The validator skips them.
+  Installer / review skills also declare `target` + `targetMinVersion`,
+  cross-checked against `COMPATIBILITY.md`.
+- **SKILL.md length budget**: `> 150` lines fails validation, `> 100`
+  lines warns. Move API surface, code samples, and per-version detail
+  into the target package's `dist/docs/` instead.
+- **Marker convention**: every `*-install` / `*-review` skill must embed
+  a literal `<!-- BEGIN:reopt/<pkg>-agent-rules -->` marker reference in
+  SKILL.md. The validator enforces this.
+- Ship a fallback `skills/<name>/agent-rules.md` until the target module
+  publishes its own `dist/agent-rules.md`. Drop the fallback once the
+  module ships it.
+- Did you push module-side `dist/docs/` and `dist/agent-rules.md` first?
+  v2 skills route to those — the skill PR should land after the module
+  PR (or together, in a coordinated bump).
 - Do not commit zip artifacts. Distribution is via the `skills` CLI,
   which consumes the directory structure directly from git.
 
@@ -51,6 +61,11 @@ Validation checks:
   `description`.
 - `name` matches the directory name.
 - `metadata.json` (if present) parses as JSON.
+- `requires:` entries point at real skills and do not form a cycle.
+- `target` / `targetMinVersion` agree with `COMPATIBILITY.md`.
+- SKILL.md is ≤ 150 lines (warns above 100).
+- `*-install` / `*-review` skills embed a `BEGIN:reopt/<pkg>-agent-rules`
+  marker reference.
 
 ## Proposing a change
 
@@ -66,7 +81,7 @@ Validation checks:
 - [ ] `pnpm validate` passes.
 - [ ] No Korean or other non-English prose slipped into skill content.
 - [ ] No internal hostnames or credentials introduced.
-- [ ] New skills include `SKILL.md`, `README.md`, and `metadata.json`.
+- [ ] New skills include `SKILL.md`, `agent-rules.md`, `README.md`, and `metadata.json`.
 - [ ] PR description explains motivation and testing approach.
 
 ## Reporting issues

@@ -172,6 +172,28 @@ for (const skillName of skillDirs) {
       failures.push(`${skillName}: invalid metadata.json (${error.message})`);
     }
   }
+
+  // SKILL.md line-count budget (v2 slim convention).
+  // Body should route to module `dist/docs/`, not duplicate API surface.
+  const lineCount = content.split("\n").length;
+  if (lineCount > 150) {
+    failures.push(
+      `${skillName}: SKILL.md is ${lineCount} lines (max 150 — move API surface into module dist/docs/)`,
+    );
+  } else if (lineCount > 100) {
+    warnings.push(
+      `${skillName}: SKILL.md is ${lineCount} lines (warn at 100, fail at 150)`,
+    );
+  }
+
+  // install / review skills must reference the agent-rules marker convention.
+  if (/-install$|-review$/.test(skillName)) {
+    if (!/BEGIN:reopt\/[\w-]+-agent-rules/.test(content)) {
+      failures.push(
+        `${skillName}: install/review skill must embed a "<!-- BEGIN:reopt/<pkg>-agent-rules -->" marker reference (v2 slim convention)`,
+      );
+    }
+  }
 }
 
 // ---------- requires cycle detection ----------
