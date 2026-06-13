@@ -11,6 +11,70 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Changed
+
+**Skill / package re-sync — 2026-06-13** (source-checked against the live `reopt` monorepo + `reopt-design` repo)
+
+- **docs routing corrected to match what each package actually ships.** The v2
+  skills routed to `dist/docs/<file>` paths that mostly did not exist in the
+  installed packages. Reconciled per package:
+  - `brandapp-sdk-install` / `brandapp-sdk-review`: route to top-level `docs/`
+    (the package ships docs there, not `dist/docs/`). The combined surface is
+    `api-reference.md`, with `environment.md` / `errors.md` / `cms.md` /
+    `files.md` / `dev-server.md` / `migration.md` / `testing.md` as topic
+    files. The old `quickstart` / `auth` / `eav` / `webhooks` /
+    `service-token` / `react-hooks` / `troubleshooting` targets never existed.
+  - `opt-ui` / `opt-datagrid` / `opt-editor`: route to the real
+    numeric-prefixed `dist/docs/` tree (`01-…`, `02-api/` or `02-components/`,
+    `03-recipes/`, `0N-migration/`, `0N-troubleshooting.md`) + `index.md` hub.
+    Removed nonexistent `components/` / `theme/` / `doctor.md` / `install.md` /
+    `CHANGELOG.md` / `catalog/` targets.
+  - `opt-chat`: ships no docs dir — route to `README.md` + `CHANGELOG.md`.
+  - `reopt-cli` / `reopt-brandapp` / `reopt-eav`: the CLI ships no `dist/docs/`
+    — route to `--help` (live) + `README.md` sections; EAV authoring points at
+    `@reopt-ai/brandapp-sdk/docs/api-reference.md`.
+- **CLI commands unified on `@reopt-ai/opt-cli`.** `opt-ui-install` /
+  `opt-editor-install` referenced nonexistent `@reopt-ai/opt-ui-cli` /
+  `@reopt-ai/opt-editor-cli`; corrected to `npx @reopt-ai/opt-cli doctor` and
+  `npx @reopt-ai/opt-cli surface add <slug>`.
+- **`opt-harness-install` renamed to `opt-shell-install`.**
+  `@reopt-ai/opt-harness` was never published; the harness layer ships as
+  `@reopt-ai/opt-shell` (workspace recipes, density/contentWidth/navigation/
+  motion policy, data-engine adapters, state boundaries; agent guide in
+  `shell-llms.txt`). Marker `reopt/opt-harness-agent-rules` →
+  `reopt/opt-shell-agent-rules`; `Harness*` components → `*Workspace` /
+  `Shell*`. `COMPATIBILITY.md` records the retirement.
+- **`brandapp-sdk` install/review `agent-rules.md` unified.** The two skills
+  share one marker block but had drifted; both now ship the byte-identical
+  (more complete) block. `scripts/validate-skills.mjs` now **enforces**
+  agent-rules parity for any skills sharing a `reopt/<pkg>-agent-rules` marker.
+- **Compatibility matrix rolled to actual versions** (source-checked, not
+  runtime-smoked): `cli` 0.3.1, `brandapp-sdk` 2.1.0, `opt-ui` 1.4.0,
+  `opt-datagrid` 1.4.1, `opt-editor` 1.0.2, `opt-chat` 0.3.0 (now published —
+  was flagged `unpublished`), `opt-devtool` 0.1.1, `opt-cli` 1.1.0 — the
+  `reopt-design` 1.4.0 release family, confirmed via `npm view`.
+  `targetMinVersion` in each SKILL.md mirrored.
+  `opt-ui-surface` added to tracked packages; `opt-harness` row removed.
+- `README.md` / `README_KO.md` / `AGENTS.md` updated: docs layout varies per
+  package (`dist/docs/` vs top-level `docs/` vs `README.md` / `shell-llms.txt`)
+  and no package ships `dist/agent-rules.md` yet, so fallbacks remain
+  authoritative.
+
+### Fixed
+
+- `brandapp-sdk-review/metadata.json` was stuck at `version 0.1.0` /
+  `updatedAt 2026-05-10`; corrected to `2.0.0` / `2026-05-15` to match the
+  release it actually shipped in.
+
+### Note
+
+- This round is **source-checked** (package file layout / `files` / `exports` /
+  shipped docs), not re-run through install → `tsc --noEmit` → smoke. Per the
+  AGENTS.md release checklist, `metadata.json` `version`/`updatedAt` for the
+  skills touched this round are rolled at release-cut time — except the
+  `brandapp-sdk-review` fix above and the newly authored `opt-shell-install`
+  files, which are set now.
+
 ## [2.0.0] — 2026-05-15
 
 ### Changed

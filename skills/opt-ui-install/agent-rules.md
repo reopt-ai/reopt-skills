@@ -4,14 +4,13 @@
 
 ## Doc map
 
-| Task | Read |
+| Task | Read (under `dist/docs/`, start at `index.md`) |
 |---|---|
-| Component API, props, recipes | `dist/docs/components/` |
-| Surface templates, page recipes | `dist/docs/surface/` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
-| FormStore migration | `dist/docs/migrations/formstore.md` |
-| Theme, styling, design tokens | `dist/docs/theme/` |
-| Doctor check definitions (1–26) | `dist/docs/doctor.md` |
+| Doc index | `dist/docs/index.md` |
+| Component API & props (core / visuals / shells / surfaces) | `dist/docs/02-components/` |
+| Recipes (forms, dashboards, layouts) | `dist/docs/03-recipes/` |
+| Theme, styling, design tokens | `dist/docs/04-theming.md` |
+| Breaking changes, FormStore migration | `dist/docs/05-migration/` |
 
 ## Hard rules
 
@@ -20,5 +19,5 @@
 - Tailwind CSS v4 only (`@import "@reopt-ai/opt-ui/styles"`); v3 stylesheets are not supported.
 - Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
 - React 19+ required. React 18 will surface peer-dep warnings and may break Surface CLI.
-- Run `npx @reopt-ai/opt-ui-cli doctor` to gate any upgrade — 26 checks must pass.
+- Run `npx @reopt-ai/opt-cli doctor` to gate any upgrade (unified design CLI; there is no `opt-ui-cli`).
 - Apply breaking-change edits in logical groups (per category), never bulk.

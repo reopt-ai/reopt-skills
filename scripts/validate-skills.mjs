@@ -230,6 +230,32 @@ for (const name of skillDirs) {
   if (color.get(name) === WHITE) visit(name, []);
 }
 
+// ---------- agent-rules.md parity for skills sharing a marker pkg ----------
+// install + review skills for the same package share one marker block
+// (BEGIN:reopt/<pkg>-agent-rules). Their fallback agent-rules.md must be
+// byte-identical, or whichever skill runs first silently wins and the
+// other's improvements never reach the consumer's AGENTS.md.
+const agentRulesByPkg = new Map();
+for (const skillName of skillDirs) {
+  const arFile = path.join(skillsDir, skillName, "agent-rules.md");
+  const skFile = path.join(skillsDir, skillName, "SKILL.md");
+  if (!existsSync(arFile) || !existsSync(skFile)) continue;
+  const marker = readFileSync(skFile, "utf8").match(/BEGIN:reopt\/([\w-]+)-agent-rules/);
+  if (!marker) continue;
+  const pkg = marker[1];
+  if (!agentRulesByPkg.has(pkg)) agentRulesByPkg.set(pkg, []);
+  agentRulesByPkg.get(pkg).push({ skill: skillName, content: readFileSync(arFile, "utf8") });
+}
+for (const [pkg, entries] of agentRulesByPkg) {
+  for (const entry of entries.slice(1)) {
+    if (entry.content !== entries[0].content) {
+      failures.push(
+        `agent-rules.md drift: '${entries[0].skill}' and '${entry.skill}' share marker reopt/${pkg}-agent-rules but ship different agent-rules.md (must be byte-identical — one block, one source)`,
+      );
+    }
+  }
+}
+
 if (warnings.length > 0) {
   console.warn("Warnings:");
   for (const w of warnings) console.warn(`- ${w}`);

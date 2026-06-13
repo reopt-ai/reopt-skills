@@ -7,7 +7,7 @@ requires:
 
 # reopt Brandapp
 
-> This is NOT the reopt CLI you know. Run `reopt brandapp --help` / `reopt brandapp <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/dist/docs/brandapp.md` for narrative guides.
+> This is NOT the reopt CLI you know. Run `reopt brandapp --help` / `reopt brandapp <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/README.md` § Commands for narrative guides (the CLI ships no `dist/docs/`).
 
 ## When to apply
 
@@ -63,9 +63,9 @@ Detection: presence of `next` in `package.json`. Non-Next projects get only `.en
 | Task signal | Read |
 |---|---|
 | Flag-level reference for every subcommand | `reopt brandapp <cmd> --help` |
-| Dev-server protocol, persistence, AI proxy | `dist/docs/dev-server.md` |
-| Sandbox env lifecycle, TTL, AI limits | `dist/docs/sandbox-env.md` |
-| Term schema | `dist/docs/terms.md` |
+| Dev-server protocol, persistence, AI proxy | `@reopt-ai/brandapp-sdk/docs/dev-server.md` |
+| Sandbox env lifecycle, TTL, AI limits | `reopt brandapp env --help` |
+| Term schema | `reopt brandapp term --help` |
 
 ## Operating notes
 

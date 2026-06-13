@@ -3,12 +3,12 @@ name: opt-chat-install
 description: |
   Install or upgrade @reopt-ai/opt-chat in a consumer project. Auto-branches by current install state. Triggers on "opt-chat install", "opt-chat init", "opt-chat setup", "chat install", "install chat", "set up AI chat", "opt-chat upgrade", "opt-chat update", "chat update".
 target: "@reopt-ai/opt-chat"
-targetMinVersion: "0.1.0"
+targetMinVersion: "0.3.0"
 ---
 
 # opt-chat Install
 
-> This is NOT the opt-chat you know. Read `node_modules/@reopt-ai/opt-chat/dist/docs/` before writing code.
+> This is NOT the opt-chat you know. opt-chat ships **no** `dist/docs/` — read `node_modules/@reopt-ai/opt-chat/README.md` before writing code.
 
 ## When to apply
 
@@ -35,7 +35,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: `node_modules/@reopt-ai/opt-chat/dist/agent-rules.md`. Fallback: `agent-rules.md` shipped with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 0.3.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-chat-agent-rules -->
@@ -62,14 +62,14 @@ Source: `node_modules/@reopt-ai/opt-chat/dist/agent-rules.md`. Fallback: `agent-
 
 ## Step 3 — Route to module docs
 
+opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/README.md` sections (and `CHANGELOG.md`).
+
 | Task signal | Read |
 |---|---|
-| Conversation / Message / PromptInput composition | `dist/docs/components/` |
-| `useChatSession`, hooks | `dist/docs/hooks.md` |
-| Message part renderers (25 types) | `dist/docs/parts.md` |
-| Attachments, voice input, model picker | `dist/docs/input.md` |
-| Streaming, syntax highlight | `dist/docs/streaming.md` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
+| Quick start + composition (Conversation / Message / PromptInput) | `README.md` §§ Quick start, Component catalog |
+| Hooks (`useChatSession`), 25 part renderers, input (Attachments / SpeechInput / ModelSelector), streaming | `README.md` § Component catalog |
+| opt-ui token / design-system integration | `README.md` § Design system integration |
+| Version migration / breaking changes | `README.md` § Migration, `CHANGELOG.md` |
 
 ## Pipeline (auto-branch)
 

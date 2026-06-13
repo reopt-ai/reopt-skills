@@ -1,9 +1,9 @@
 ---
 name: opt-ui-install
 description: |
-  Install or upgrade @reopt-ai/opt-ui in a consumer project, or add a Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui surface", "opt-ui-cli add", "add Surface".
+  Install or upgrade @reopt-ai/opt-ui in a consumer project, or add a Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui surface", "opt-cli surface add", "add Surface".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.2.1"
+targetMinVersion: "1.4.0"
 ---
 
 # opt-ui Install
@@ -27,7 +27,7 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: `node_modules/@reopt-ai/opt-ui/dist/agent-rules.md`. Fallback: `agent-rules.md` shipped with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.4.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -51,21 +51,25 @@ Source: `node_modules/@reopt-ai/opt-ui/dist/agent-rules.md`. Fallback: `agent-ru
 3. **App-shell wiring** — properties of the consumer app:
    - Tailwind CSS v4 `@import "@reopt-ai/opt-ui/styles"` at the root stylesheet.
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
-   - Surface CLI: `npx @reopt-ai/opt-ui-cli add <template>` for page templates.
+   - Surface CLI: `npx @reopt-ai/opt-cli surface add <slug>` for page templates (Surfaces live in the internal `opt-ui-surface` package — not installed directly).
 
-4. **Doctor** — `npx @reopt-ai/opt-ui-cli doctor` runs the 26-check environment audit.
+4. **Doctor** — `npx @reopt-ai/opt-cli doctor` runs the environment audit (unified design CLI; there is no `opt-ui-cli`).
 
 ## Step 3 — Route to module docs
 
+Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
+
 | Task signal | Read |
 |---|---|
-| Component API, props, recipes | `dist/docs/components/` |
-| Surface templates | `dist/docs/surface/` |
-| Breaking changes by version | `dist/docs/CHANGELOG.md` |
-| FormStore migration | `dist/docs/migrations/formstore.md` |
-| Theme, styling, design tokens | `dist/docs/theme/` |
-| Doctor check definitions (1–26) | `dist/docs/doctor.md` |
-| Install / upgrade procedure | `dist/docs/install.md` |
+| Start here — doc index | `dist/docs/index.md` |
+| Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
+| Component API & props (core / visuals / shells / surfaces) | `dist/docs/02-components/` |
+| Surface components | `dist/docs/02-components/04-surfaces.md` |
+| Recipes (forms, dashboards, layouts) | `dist/docs/03-recipes/` |
+| Theme, styling, design tokens | `dist/docs/04-theming.md` |
+| Breaking changes by version | `dist/docs/05-migration/01-breaking-changes.md` |
+| FormStore migration | `dist/docs/05-migration/02-formstore.md` |
+| Troubleshooting | `dist/docs/06-troubleshooting.md` |
 
 ## Pipeline (auto-branch)
 
@@ -82,7 +86,7 @@ Source: `node_modules/@reopt-ai/opt-ui/dist/agent-rules.md`. Fallback: `agent-ru
 | 9 | Doctor (26 checks) | ✓ | ✓ | ✓ |
 | 10 | Summary + rollback path | ✓ | ✓ | ✓ |
 
-Detailed step procedures live in module docs (`dist/docs/install.md` / `dist/docs/surface.md`). Read before acting.
+Detailed step procedures live in module docs — start at `dist/docs/index.md`, then `dist/docs/01-getting-started.md`. Read before acting.
 
 ## Safety
 
@@ -94,6 +98,6 @@ Detailed step procedures live in module docs (`dist/docs/install.md` / `dist/doc
 
 ## Verify
 
-1. `npx @reopt-ai/opt-ui-cli doctor` → 26/26 pass (or explained skips).
+1. `npx @reopt-ai/opt-cli doctor` passes (or explained skips).
 2. `npx tsc --noEmit` passes.
 3. App renders without OptThemeProvider warnings.

@@ -4,14 +4,13 @@
 
 ## Doc map
 
-| Task | Read |
+| Task | Read (under `dist/docs/`, start at `index.md`) |
 |---|---|
-| API reference (components, props, hooks) | `dist/docs/02-api/` |
-| Column definition patterns | `dist/docs/02-api/columns.md` |
-| Migration (glide-data-grid / ag-grid / react-data-grid / MUI DataGrid) | `dist/docs/04-migration/` |
-| Theme integration (opt-ui tokens) | `dist/docs/theme.md` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
-| Install / upgrade procedure | `dist/docs/install.md` |
+| API reference (props, columns, editors, hooks, types) | `dist/docs/02-api/` |
+| Column definition patterns | `dist/docs/02-api/02-columns.md` |
+| Recipes | `dist/docs/03-recipes/` |
+| Migration (from glide-data-grid, etc.) | `dist/docs/04-migration/` |
+| Getting started / troubleshooting | `dist/docs/01-getting-started.md`, `dist/docs/05-troubleshooting.md` |
 
 ## Hard rules
 

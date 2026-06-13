@@ -2,12 +2,12 @@
 name: reopt-cli
 description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
 target: "@reopt-ai/cli"
-targetMinVersion: "0.1.0"
+targetMinVersion: "0.3.1"
 ---
 
 # reopt CLI
 
-> This is NOT the reopt CLI you know. Run `reopt --help` / `reopt <cmd> --help` for the live command tree, and read `node_modules/@reopt-ai/cli/dist/docs/` for narrative guides.
+> This is NOT the reopt CLI you know. Run `reopt --help` / `reopt <cmd> --help` for the live command tree, and read `node_modules/@reopt-ai/cli/README.md` for narrative guides (the CLI ships no `dist/docs/`).
 
 ## When to apply
 
@@ -17,7 +17,7 @@ targetMinVersion: "0.1.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: `node_modules/@reopt-ai/cli/dist/agent-rules.md`. Fallback: `agent-rules.md` shipped with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.3.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -38,16 +38,17 @@ Run `reopt status` (or `reopt status --ping`) before any mutating operation. If 
 
 ## Step 3 — Route to module docs / `--help`
 
-For commands and flags, prefer `--help` (live source of truth) and `dist/docs/`:
+Prefer `--help` (live source of truth); the CLI ships **no** `dist/docs/`, so narrative detail lives in `node_modules/@reopt-ai/cli/README.md`:
 
 | Task signal | Read |
 |---|---|
-| Auth commands and session model | `dist/docs/auth.md` |
-| Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `dist/docs/brandapp.md` + see `reopt-brandapp` skill |
-| EAV ops (`status`, `sync`, `pull`, `plan`, `migrate`) | `dist/docs/eav.md` + see `reopt-eav` skill |
-| MCP server, schema, completion, config | `dist/docs/tooling.md` |
-| Global flags (`--format`, `--fields`, `--page-all`, `--timeout`, `--no-interactive`, …) | `dist/docs/global-flags.md` |
-| Exit codes | `dist/docs/exit-codes.md` |
+| Any command / flag | `reopt <cmd> --help` (live) |
+| Auth commands and session model | `README.md` § Authentication |
+| Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `reopt brandapp --help` + see `reopt-brandapp` skill |
+| EAV ops (`status`, `sync`, `pull`, `plan`, `migrate`) | `reopt brandapp eav --help` + see `reopt-eav` skill |
+| Schema-as-Code, MCP, completion, config | `README.md` §§ Schema-as-Code, Shell completion, Preferences |
+| Global flags, output formats, pagination | `README.md` § Output and global flags |
+| Exit codes | `README.md` § Exit codes |
 
 Quick global-flag reminders (subset; full list in `--help`):
 

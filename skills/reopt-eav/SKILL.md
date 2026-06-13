@@ -8,7 +8,7 @@ requires:
 
 # reopt EAV
 
-> This is NOT the reopt CLI you know. Run `reopt brandapp eav --help` / `reopt brandapp eav <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/dist/docs/eav.md` for narrative guides. EAV schema authoring lives in `@reopt-ai/brandapp-sdk/dist/docs/eav.md`.
+> This is NOT the reopt CLI you know. Run `reopt brandapp eav --help` / `reopt brandapp eav <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/README.md` for narrative guides (the CLI ships no `dist/docs/`). EAV schema authoring lives in `@reopt-ai/brandapp-sdk/docs/api-reference.md`.
 
 ## When to apply
 
@@ -75,10 +75,9 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 
 | Task signal | Read |
 |---|---|
-| Schema authoring (`defineEntity`, `defineSchema`, `linkedTo`, drift hash) | `@reopt-ai/brandapp-sdk/dist/docs/eav.md` |
-| Migration runner internals, lock behavior | `@reopt-ai/cli/dist/docs/eav-migrate.md` |
-| `eav plan` output format | `@reopt-ai/cli/dist/docs/eav-plan.md` |
-| Risk classification rubric | `@reopt-ai/cli/dist/docs/eav-risk.md` |
+| Schema authoring (`defineEntity`, `defineSchema`, `linkedTo`, drift hash) | `@reopt-ai/brandapp-sdk/docs/api-reference.md` |
+| Migration runner internals, lock behavior | `reopt brandapp eav migrate --help` |
+| `eav plan` output format / risk classification | `reopt brandapp eav plan --help` |
 
 ## Lock file
 

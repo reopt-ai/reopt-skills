@@ -1,17 +1,17 @@
 # This is NOT the reopt CLI you know
 
-`@reopt-ai/cli` adds subcommands and shifts flag semantics frequently. Run `reopt --help` (or `reopt <subcommand> --help`) to see the live command tree before scripting anything. Read `node_modules/@reopt-ai/cli/dist/docs/` for narrative guides.
+`@reopt-ai/cli` adds subcommands and shifts flag semantics frequently. Run `reopt --help` (or `reopt <subcommand> --help`) to see the live command tree before scripting anything. The CLI ships no `dist/docs/` — read `node_modules/@reopt-ai/cli/README.md` for narrative guides.
 
 ## Doc map
 
-| Task | Read |
+| Task | Read (`--help` is live source of truth; CLI ships no docs dir) |
 |---|---|
-| Auth (`login`, `status`, `logout`) | `dist/docs/auth.md` |
-| Brandapp ops (`link`, `unlink`, `doctor`, `term`, `init`, `dev`, `seed`, `env`) | `dist/docs/brandapp.md` |
-| EAV (`status`, `sync`, `pull`, `plan`, `migrate`) | `dist/docs/eav.md` |
-| MCP server, `schema`, `completion`, `config` | `dist/docs/tooling.md` |
-| Global flags, output formats, pagination | `dist/docs/global-flags.md` |
-| Exit codes | `dist/docs/exit-codes.md` |
+| Any command / flag | `reopt <cmd> --help` |
+| Auth, status, session model | `README.md` § Authentication |
+| Brandapp / EAV ops | `reopt brandapp --help`, `reopt brandapp eav --help` |
+| Schema-as-Code, MCP, completion, config | `README.md` §§ Schema-as-Code, Shell completion, Preferences |
+| Global flags, output formats, pagination | `README.md` § Output and global flags |
+| Exit codes | `README.md` § Exit codes |
 
 ## Hard rules
 

@@ -2,12 +2,12 @@
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "2.0.0"
+targetMinVersion: "2.1.0"
 ---
 
 # Brandapp SDK Install
 
-> This is NOT the SDK you know. Read `node_modules/@reopt-ai/brandapp-sdk/dist/docs/` before writing code. Heed deprecation notices — 2.0 renamed every env var without aliases.
+> This is NOT the SDK you know. Read `node_modules/@reopt-ai/brandapp-sdk/docs/` before writing code (the package ships docs at top-level `docs/`, not `dist/docs/`). Heed deprecation notices — 2.0 renamed every env var without aliases.
 
 ## When to apply
 
@@ -15,7 +15,7 @@ A consumer project adopting `@reopt-ai/brandapp-sdk` for the first time. Trigger
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source of truth for the rules block: `node_modules/@reopt-ai/brandapp-sdk/dist/agent-rules.md`. Fallback when the module hasn't published it yet (pre-2.0 publish or transition period): `agent-rules.md` shipped with this skill.
+Source of truth for the rules block: the module's own agent-rules file, once it ships one. `@reopt-ai/brandapp-sdk` does **not** ship one as of 2.1.0, so use the fallback `agent-rules.md` bundled with this skill.
 
 Append to the consumer's `AGENTS.md` (fall back to `CLAUDE.md` if `AGENTS.md` is absent — never both). Wrap the content between:
 
@@ -29,7 +29,7 @@ Append to the consumer's `AGENTS.md` (fall back to `CLAUDE.md` if `AGENTS.md` is
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-These are properties of the consumer project, not the module. They will not appear in `dist/docs/`.
+These are properties of the consumer project, not the module. They will not appear in the module's `docs/`.
 
 1. **Registry auth** — project-root `.npmrc`:
 
@@ -59,16 +59,18 @@ These are properties of the consumer project, not the module. They will not appe
 
 For everything else (code generation, API surface, version-specific behavior, error handling), route to module docs. Do **not** duplicate API surface here — read the file. Module docs are pinned to the installed version; this skill is not.
 
+Paths are relative to `node_modules/@reopt-ai/brandapp-sdk/docs/`. `api-reference.md` is the combined surface (SDK init, Auth, EAV, webhooks, service token, React hooks); the rest are topic files.
+
 | Task signal | Read |
 |---|---|
-| `createReoptSDK` / `createLazySDK`, `lib/sdk.ts` | `dist/docs/quickstart.md` |
-| Better Auth wiring, `lib/auth.ts`, OAuth flow | `dist/docs/auth.md` |
-| `defineEntity` / `defineSchema`, EAV schema, `linkedTo`, drift hash | `dist/docs/eav.md` |
-| `createWebhookHandler`, `toleranceMs`, event types | `dist/docs/webhooks.md` |
-| Marketing site (`toMetadata`, `toSitemapItems`, `verifySession`, `optimizeUrl`) | `dist/docs/cms-external.md` |
-| Error classes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`) | `dist/docs/errors.md` |
-| Service token (1.12+), `Authorization: Bearer` | `dist/docs/service-token.md` |
-| Dev server (`createDevServer`, `instrumentation.ts`) | `dist/docs/dev-server.md` |
+| SDK init (`createReoptSDK` / `createLazySDK`, `lib/sdk.ts`), Better Auth + OAuth (`lib/auth.ts`), EAV (`defineEntity` / `defineSchema`, `linkedTo`, drift hash), webhooks (`createWebhookHandler`, `toleranceMs`), service token (`Authorization: Bearer`, 1.12+), React hooks | `docs/api-reference.md` |
+| Env vars + 3-tier namespace, host split (`brand.reopt.ai` / `id.reopt.ai`) | `docs/environment.md` |
+| Error classes / codes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `isReoptSDKError`) | `docs/errors.md` |
+| Marketing site / CMS (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`; `cms` is read-only from 1.8+) | `docs/cms.md` |
+| File upload / management | `docs/files.md` |
+| Dev server (`createDevServer`, `instrumentation.ts`, offline development) | `docs/dev-server.md` |
+| Version migration / breaking changes | `docs/migration.md` |
+| Testing the integration | `docs/testing.md` |
 
 ## Safety
 
