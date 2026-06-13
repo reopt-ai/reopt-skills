@@ -1,9 +1,0 @@
-{
-  "version": "2.0.0",
-  "organization": "reopt",
-  "updatedAt": "2026-05-15",
-  "abstract": "Install or upgrade @reopt-ai/opt-harness. Pins the agent-rules marker block and routes AppShell/recipes/adapters to module dist/docs/.",
-  "references": [
-    "https://github.com/reopt-ai/reopt-skills"
-  ]
-}

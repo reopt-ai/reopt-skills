@@ -13,10 +13,10 @@ This repository packages reusable skills for AI coding agents working on `reopt`
 
 A reopt skill has **two jobs**:
 
-1. **Pin an agent-rules marker block** into the consumer project's `AGENTS.md` (fallback `CLAUDE.md`) — `<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->`. Markers are idempotent: a re-install replaces the block content, leaving everything outside untouched. The block source of truth is the module's `dist/agent-rules.md`; the skill ships a fallback copy for the transition period.
-2. **Trigger matching + docs routing** — detect the user's intent and route to the right file under `node_modules/@reopt-ai/<pkg>/dist/docs/`. SKILL.md does not duplicate API surface; module docs are pinned to the installed version, the skill is not.
+1. **Pin an agent-rules marker block** into the consumer project's `AGENTS.md` (fallback `CLAUDE.md`) — `<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->`. Markers are idempotent: a re-install replaces the block content, leaving everything outside untouched. The block source of truth is the module's own agent-rules file once it ships one — **no `@reopt-ai/*` package ships one yet**, so the skill's bundled fallback `agent-rules.md` is currently authoritative. Skills that share a marker (install + review of the same package) must ship byte-identical fallbacks; `pnpm validate` enforces this.
+2. **Trigger matching + docs routing** — detect the user's intent and route to the right doc file in the installed package. **Doc layout varies per package** — `dist/docs/` (opt-ui / opt-datagrid / opt-editor, numeric-prefixed tree + `index.md`), top-level `docs/` (brandapp-sdk, flat files), or `README.md` / `shell-llms.txt` (cli, opt-chat, opt-shell, which ship no docs dir). Confirm the real path + filename before routing — skills point at literal paths. SKILL.md does not duplicate API surface; module docs are pinned to the installed version, the skill is not.
 
-What stays in SKILL.md: consumer-project setup that cannot live inside the module (`.npmrc`, registry auth, env-namespace rules, peer deps, requires chains, destructive guardrails, security rules). Everything else goes to `dist/docs/`.
+What stays in SKILL.md: consumer-project setup that cannot live inside the module (`.npmrc`, registry auth, env-namespace rules, peer deps, requires chains, destructive guardrails, security rules). Everything else routes to the package's docs (wherever it ships them).
 
 ## Directory Layout
 
@@ -32,7 +32,7 @@ scripts/
   validate-skills.mjs
 ```
 
-Subdirectories like `command/` and `references/` were retired in v2. If you find yourself wanting to add one, the content belongs in the module's `dist/docs/` instead.
+Subdirectories like `command/` and `references/` were retired in v2. If you find yourself wanting to add one, the content belongs in the module's docs (`dist/docs/` or top-level `docs/`, per package) instead.
 
 ## Skill Authoring Rules
 

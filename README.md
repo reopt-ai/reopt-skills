@@ -29,7 +29,7 @@ Skill pages on the directory: [`skills.sh/reopt-ai/reopt-skills`](https://skills
 Each skill has two jobs:
 
 1. **Pin an agent-rules marker block** into the consumer project's `AGENTS.md` (or `CLAUDE.md`). The block is bracketed with `<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->` markers, so a re-install or version bump replaces only the block content and leaves everything else untouched. The Next.js community uses the same pattern.
-2. **Route the agent to module docs.** Each `@reopt-ai/*` package ships its own `dist/docs/`. SKILL.md does not duplicate API surface — it tells the agent which doc to read for which task and pins package-level invariants the docs can't enforce (`.npmrc`, env-namespace rules, peer deps, destructive guardrails).
+2. **Route the agent to module docs.** Each `@reopt-ai/*` package ships its own docs — `dist/docs/` (opt-ui / opt-datagrid / opt-editor), top-level `docs/` (brandapp-sdk), or `README.md` / `shell-llms.txt` (cli, opt-chat, opt-shell). SKILL.md does not duplicate API surface — it tells the agent which doc to read for which task and pins package-level invariants the docs can't enforce (`.npmrc`, env-namespace rules, peer deps, destructive guardrails).
 
 Until a target package publishes its own `dist/agent-rules.md`, each skill ships a fallback `agent-rules.md` alongside SKILL.md.
 
@@ -52,7 +52,7 @@ For consumer projects that use `@reopt-ai/brandapp-sdk`. Runs **inside the consu
 | Skill | What it covers |
 | --- | --- |
 | [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | Pins `reopt/brandapp-sdk-agent-rules`, sets up `.npmrc` (GitHub Packages auth) + env 3-tier namespace (`BRANDAPP_*` / `REOPT_*` / `BRANDAPP_SDK_*`) + peer deps, routes the agent to module docs for `lib/sdk.ts`, `lib/auth.ts`, EAV schema, webhooks, marketing-site helpers, errors. |
-| [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | Audit existing SDK usage. Lists 36 anti-patterns grouped by category (init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS) with grep keys; routes the agent to `dist/docs/` for canonical fixes. |
+| [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | Audit existing SDK usage. Lists anti-patterns across 10 categories (init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS) with grep keys; routes the agent to the module's `docs/` for canonical fixes. |
 
 ### Package install / upgrade
 
@@ -60,11 +60,11 @@ For consumer projects that use the `@reopt-ai/opt-*` component packages.
 
 | Skill | What it covers |
 | --- | --- |
-| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + 26-check doctor + Surface CLI workflow. |
-| [`opt-editor-install`](./skills/opt-editor-install/) | Block catalog + Editor component + 18-check doctor + optional AI streaming (`--with-ai`). |
+| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + `opt-cli doctor` audit + Surface CLI (`opt-cli surface add`). |
+| [`opt-editor-install`](./skills/opt-editor-install/) | Editor component + recipes + `opt-cli doctor` audit + optional AI streaming (`--with-ai`). |
 | [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK endpoint + Conversation scaffold; Vercel AI SDK compatible. |
 | [`opt-datagrid-install`](./skills/opt-datagrid-install/) | Install / upgrade / migrate from glide-data-grid, ag-grid, react-data-grid, MUI DataGrid. |
-| [`opt-harness-install`](./skills/opt-harness-install/) | HarnessAppShell + responsive Nav + first Workspace page from one of 5 recipes. Depends on opt-ui, opt-palette; integrates opt-datagrid / opt-editor. |
+| [`opt-shell-install`](./skills/opt-shell-install/) | Product-frame layer (formerly opt-harness): workspace recipes (Dashboard / List / Detail / Editor / Landing), density/contentWidth/navigation/motion policy, data-engine adapters, state boundaries. Peers: opt-palette, opt-datagrid, opt-editor. |
 
 ## Choosing a skill
 
@@ -80,7 +80,7 @@ Two axes decide which skill applies:
 | Diff / sync / pull / migrate the EAV schema | `reopt-eav` |
 | Add `@reopt-ai/brandapp-sdk` to a Next.js app for the first time | `brandapp-sdk-install` |
 | Audit an existing app's SDK usage for anti-patterns | `brandapp-sdk-review` |
-| Adopt or upgrade an `opt-*` component package | the matching `opt-*-install` skill |
+| Adopt or upgrade an `opt-*` component package (incl. the `opt-shell` product frame) | the matching `opt-*-install` skill |
 
 ## Typical adoption order
 
@@ -103,7 +103,7 @@ Each skill lives in its own directory under `skills/<skill-name>/`:
 - `README.md` — contributor-facing summary (optional).
 - `metadata.json` — lightweight catalog metadata (optional).
 
-Subdirectories (`command/`, `references/`, `scripts/`) were retired in v2. Long-form content lives in the target package's `dist/docs/`.
+Subdirectories (`command/`, `references/`, `scripts/`) were retired in v2. Long-form content lives in the target package's docs (`dist/docs/`, top-level `docs/`, or `README.md` / `shell-llms.txt`, depending on the package).
 
 ## Development
 

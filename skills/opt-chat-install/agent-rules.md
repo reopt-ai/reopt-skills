@@ -1,18 +1,14 @@
 # This is NOT the opt-chat you know
 
-`@reopt-ai/opt-chat` ships frequent breaking changes that may differ from your training data. Read `node_modules/@reopt-ai/opt-chat/dist/docs/` before writing or reviewing any chat code.
+`@reopt-ai/opt-chat` ships frequent breaking changes that may differ from your training data. It ships **no** `dist/docs/` — read `node_modules/@reopt-ai/opt-chat/README.md` before writing or reviewing any chat code.
 
 ## Doc map
 
-| Task | Read |
+| Task | Read (opt-chat ships no docs dir — use `README.md`) |
 |---|---|
-| Conversation / Message / PromptInput composition | `dist/docs/components/` |
-| `useChatSession` (Vercel AI SDK wrapper) | `dist/docs/hooks.md` |
-| 25 message part renderers (reasoning, tool, artifact, code, agent, …) | `dist/docs/parts.md` |
-| Attachments, SpeechInput, ModelSelector | `dist/docs/input.md` |
-| Streaming (streamdown + shiki) | `dist/docs/streaming.md` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
-| Install / upgrade procedure | `dist/docs/install.md` |
+| Composition, hooks (`useChatSession`), 25 part renderers, input, streaming | `README.md` § Component catalog |
+| opt-ui token / design-system integration | `README.md` § Design system integration |
+| Version migration / breaking changes | `README.md` § Migration, `CHANGELOG.md` |
 
 ## Hard rules
 

@@ -3,7 +3,7 @@ name: opt-datagrid-install
 description: |
   Install, upgrade, or migrate to @reopt-ai/opt-datagrid in a consumer project. Auto-branches by current install state. Migrate mode converts glide-data-grid / ag-grid / react-data-grid / MUI DataGrid. Triggers on "opt-datagrid install", "opt-datagrid init", "opt-datagrid setup", "datagrid install", "datagrid setup", "grid setup", "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update", "opt-datagrid migrate", "datagrid migrate", "grid migration", "replace glide-data-grid", "replace ag-grid".
 target: "@reopt-ai/opt-datagrid"
-targetMinVersion: "1.3.0"
+targetMinVersion: "1.4.1"
 ---
 
 # opt-datagrid Install
@@ -31,7 +31,7 @@ Consumer project depends on `@reopt-ai/opt-datagrid`, or is migrating away from 
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: `node_modules/@reopt-ai/opt-datagrid/dist/agent-rules.md`. Fallback: `agent-rules.md` shipped with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-datagrid` does not, as of 1.4.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-datagrid-agent-rules -->
@@ -52,12 +52,14 @@ Source: `node_modules/@reopt-ai/opt-datagrid/dist/agent-rules.md`. Fallback: `ag
 
 | Task signal | Read |
 |---|---|
-| API reference (components, props, hooks) | `dist/docs/02-api/` |
-| Column patterns | `dist/docs/02-api/columns.md` |
-| Migration (glide / ag-grid / react-data-grid / MUI) | `dist/docs/04-migration/` |
-| Theme integration | `dist/docs/theme.md` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
-| Install / upgrade procedure | `dist/docs/install.md` |
+| Start here — doc index | `dist/docs/index.md` |
+| Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
+| API reference (props, columns, editors, hooks, types) | `dist/docs/02-api/` |
+| Column patterns | `dist/docs/02-api/02-columns.md` |
+| Recipes (basic / editable / remote-data) | `dist/docs/03-recipes/` |
+| Migration (from glide-data-grid, etc.) | `dist/docs/04-migration/` |
+| Troubleshooting | `dist/docs/05-troubleshooting.md` |
+| Theme integration (opt-ui tokens) | opt-ui `dist/docs/04-theming.md` |
 
 ## Pipeline (auto-branch)
 

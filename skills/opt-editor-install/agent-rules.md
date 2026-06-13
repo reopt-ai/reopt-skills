@@ -4,14 +4,12 @@
 
 ## Doc map
 
-| Task | Read |
+| Task | Read (under `dist/docs/`, start at `index.md`) |
 |---|---|
-| Editor component, StaticRenderer, EditorSpec | `dist/docs/editor/` |
-| Catalog (block-definition pattern) | `dist/docs/catalog/` |
-| AI streaming integration (`--with-ai`, AI SDK wiring) | `dist/docs/ai.md` |
-| Breaking changes per version | `dist/docs/CHANGELOG.md` |
-| Doctor check definitions (1–18) | `dist/docs/doctor.md` |
-| Install / upgrade procedure | `dist/docs/install.md` |
+| API (components, hooks, store, serialization, types) | `dist/docs/02-api/` |
+| AI streaming integration | `dist/docs/02-api/04-ai-stream.md`, `dist/docs/03-recipes/03-ai-streaming.md` |
+| Recipes (custom blocks, markdown, diff-review, …) | `dist/docs/03-recipes/` |
+| Getting started / troubleshooting | `dist/docs/01-getting-started.md`, `dist/docs/05-troubleshooting.md` |
 
 ## Hard rules
 
