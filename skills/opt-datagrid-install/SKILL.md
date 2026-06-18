@@ -3,7 +3,7 @@ name: opt-datagrid-install
 description: |
   Install, upgrade, or migrate to @reopt-ai/opt-datagrid in a consumer project. Auto-branches by current install state. Migrate mode converts glide-data-grid / ag-grid / react-data-grid / MUI DataGrid. Triggers on "opt-datagrid install", "opt-datagrid init", "opt-datagrid setup", "datagrid install", "datagrid setup", "grid setup", "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update", "opt-datagrid migrate", "datagrid migrate", "grid migration", "replace glide-data-grid", "replace ag-grid".
 target: "@reopt-ai/opt-datagrid"
-targetMinVersion: "1.4.1"
+targetMinVersion: "1.4.2"
 ---
 
 # opt-datagrid Install
@@ -31,7 +31,7 @@ Consumer project depends on `@reopt-ai/opt-datagrid`, or is migrating away from 
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-datagrid` does not, as of 1.4.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-datagrid` does not, as of 1.4.2). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-datagrid-agent-rules -->

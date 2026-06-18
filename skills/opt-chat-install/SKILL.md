@@ -3,7 +3,7 @@ name: opt-chat-install
 description: |
   Install or upgrade @reopt-ai/opt-chat in a consumer project. Auto-branches by current install state. Triggers on "opt-chat install", "opt-chat init", "opt-chat setup", "chat install", "install chat", "set up AI chat", "opt-chat upgrade", "opt-chat update", "chat update".
 target: "@reopt-ai/opt-chat"
-targetMinVersion: "0.3.0"
+targetMinVersion: "0.3.1"
 ---
 
 # opt-chat Install
@@ -35,7 +35,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 0.3.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 0.3.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-chat-agent-rules -->

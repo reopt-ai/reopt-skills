@@ -2,7 +2,7 @@
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "2.1.0"
+targetMinVersion: "2.3.0"
 ---
 
 # Brandapp SDK Install
@@ -15,7 +15,7 @@ A consumer project adopting `@reopt-ai/brandapp-sdk` for the first time. Trigger
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source of truth for the rules block: the module's own agent-rules file, once it ships one. `@reopt-ai/brandapp-sdk` does **not** ship one as of 2.1.0, so use the fallback `agent-rules.md` bundled with this skill.
+Source of truth for the rules block: the module's own agent-rules file, once it ships one. `@reopt-ai/brandapp-sdk` does **not** ship one as of 2.3.0, so use the fallback `agent-rules.md` bundled with this skill.
 
 Append to the consumer's `AGENTS.md` (fall back to `CLAUDE.md` if `AGENTS.md` is absent — never both). Wrap the content between:
 
@@ -63,9 +63,9 @@ Paths are relative to `node_modules/@reopt-ai/brandapp-sdk/docs/`. `api-referenc
 
 | Task signal | Read |
 |---|---|
-| SDK init (`createReoptSDK` / `createLazySDK`, `lib/sdk.ts`), Better Auth + OAuth (`lib/auth.ts`), EAV (`defineEntity` / `defineSchema`, `linkedTo`, drift hash), webhooks (`createWebhookHandler`, `toleranceMs`), service token (`Authorization: Bearer`, 1.12+), React hooks | `docs/api-reference.md` |
+| SDK init (`createReoptSDK` / `createLazySDK`, `lib/sdk.ts`), Better Auth + OAuth (`lib/auth.ts`), EAV (`defineEntity` / `defineSchema`, `linkedTo`, drift hash, `backfill`), webhooks (`createWebhookHandler`, `toleranceMs`), service token (`Authorization: Bearer`, 1.12+), React hooks, AI (`sdk.ai.models()` / `sdk.ai.stream`, `useAiStream`, `useAiAgents`) | `docs/api-reference.md` |
 | Env vars + 3-tier namespace, host split (`brand.reopt.ai` / `id.reopt.ai`) | `docs/environment.md` |
-| Error classes / codes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `isReoptSDKError`) | `docs/errors.md` |
+| Error classes / codes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `QUERY_TOO_LARGE`; `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError`) | `docs/errors.md` |
 | Marketing site / CMS (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`; `cms` is read-only from 1.8+) | `docs/cms.md` |
 | File upload / management | `docs/files.md` |
 | Dev server (`createDevServer`, `instrumentation.ts`, offline development) | `docs/dev-server.md` |
