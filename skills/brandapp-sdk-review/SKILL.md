@@ -2,7 +2,7 @@
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "2.1.0"
+targetMinVersion: "2.3.0"
 ---
 
 # Brandapp SDK Review
@@ -15,7 +15,7 @@ A consumer project already uses `@reopt-ai/brandapp-sdk` and wants an audit. Tri
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 2.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 2.3.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/brandapp-sdk-agent-rules -->
@@ -31,12 +31,10 @@ Markers are shared with `brandapp-sdk-install` — same module, one block. If th
 grep '"@reopt-ai/brandapp-sdk"' package.json
 ```
 
-- `< 2.0.0` — env-var rename ships in 2.0 without aliases. Recommend `.env` migration + bump **first**; many patterns below assume 2.0 API surface.
-- `< 1.6.0` — 4xx error classes / `FetchOptions.signal,timeout` / webhook `toleranceMs` missing. Recommend 1.6+ before applying fixes.
-- `< 1.9.0` — narrowed EAV error classes missing (Error Pattern 3 / 4 only relevant on 1.9+).
-- `< 1.10.0` — host split missing; flag any hardcoded `www.reopt.ai`.
-- `< 1.11.0` — schema drift detection missing (Schema Pattern 5).
-- `< 1.12.0` — service token absent (Config Pattern 4).
+- `< 2.3.0` — AI errors not unified (streaming 402 was `STREAM_ERROR`, not `CreditLimitError`); `ModelAccessError` / `ModelNotFoundError` / `ContentFilterError` absent; `sdk.ai.models()` lacks `modality` / `isDefault`. Recommend 2.3 for AI work.
+- `< 2.2.0` — mutations retried by default (dup-write / dup-credit risk), AI `timeout` is wall-clock not idle, `backfill` does per-record PATCH, no `QUERY_TOO_LARGE` guard. Recommend 2.2+.
+- `< 2.0.0` — env-var rename ships in 2.0 without aliases. Migrate `.env` + bump **first**; patterns below assume 2.0+ surface.
+- `< 1.12.0` (pre-2.0 lineage) — service token (1.12), schema drift (1.11, Schema Pattern 5), host split (1.10, hardcoded `www.reopt.ai`), narrowed EAV errors (1.9, Error Pattern 3/4), 4xx classes + `toleranceMs` (1.6) land incrementally; bump toward 2.x.
 
 ## Step 3 — Detect anti-patterns by category
 

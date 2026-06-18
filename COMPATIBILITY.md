@@ -8,18 +8,21 @@ The **Target** column lists the single primary package (matches the skill's
 `target` / `targetMinVersion` frontmatter, which `pnpm validate` cross-checks).
 Per-version detail lives in each package's docs; this table stays terse.
 
-> **Verification level (2026-06-13 round):** this snapshot was reconciled by
-> reading the package sources — `@reopt-ai/cli` and `@reopt-ai/brandapp-sdk` in
-> the `reopt` monorepo, the `@reopt-ai/opt-*` packages in the `reopt-design`
-> repo — i.e. file layout, `package.json` `files`/`exports`, and the docs each
-> package actually ships. The `opt-*` versions marked `(npm)` were additionally
-> confirmed against GitHub Packages with `npm view` (the `reopt-design` 1.4.0
-> release family, 2026-06-13). It was **not** re-run through the full install →
-> `tsc --noEmit` → smoke procedure at the bottom of this file. Treat the rows
-> below as **source-checked**; run that procedure before claiming a row
-> runtime-verified.
+> **Verification level (2026-06-18 round):** reconciled by reading the package
+> sources — `@reopt-ai/cli` and `@reopt-ai/brandapp-sdk` in the `reopt`
+> monorepo, the `@reopt-ai/opt-*` packages in the `reopt-design` repo — i.e.
+> file layout, `package.json` `files`/`exports`, and the docs each package
+> actually ships. Versions marked `(npm)` were confirmed against GitHub Packages
+> with `npm view`: `brandapp-sdk` 2.3.0 (the 2.2 reliability + 2.3 AI-surface
+> rounds) and the `opt-*` 1.4.x family (`opt-datagrid` 1.4.2, `opt-editor`
+> 1.0.3, `opt-chat` 0.3.1). docs layout is unchanged from the prior round, so
+> routing was not touched — only versions + the brandapp-sdk agent-rules/review
+> content (new error classes, non-idempotent retry, AI surface). It was **not**
+> re-run through the full install → `tsc --noEmit` → smoke procedure at the
+> bottom of this file. Treat the rows below as **source-checked**; run that
+> procedure before claiming a row runtime-verified.
 
-## Current state — 2026-06-13
+## Current state — 2026-06-18
 
 ### CLI
 
@@ -31,17 +34,17 @@ Per-version detail lives in each package's docs; this table stays terse.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **2.1.0** | 2026-06-13 (src) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **2.1.0** | 2026-06-13 (src) |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **2.3.0** | 2026-06-18 (npm) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **2.3.0** | 2026-06-18 (npm) |
 
 ### Design / UI packages
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
 | `opt-ui-install` | `@reopt-ai/opt-ui` | **1.4.0** | 2026-06-13 (npm) |
-| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.4.1** | 2026-06-13 (npm) |
-| `opt-editor-install` | `@reopt-ai/opt-editor` | **1.0.2** | 2026-06-13 (npm) |
-| `opt-chat-install` | `@reopt-ai/opt-chat` | **0.3.0** | 2026-06-13 (npm) |
+| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.4.2** | 2026-06-18 (npm) |
+| `opt-editor-install` | `@reopt-ai/opt-editor` | **1.0.3** | 2026-06-18 (npm) |
+| `opt-chat-install` | `@reopt-ai/opt-chat` | **0.3.1** | 2026-06-18 (npm) |
 | `opt-shell-install` | `@reopt-ai/opt-shell` | **0.1.0** | 2026-06-13 (src) |
 
 > **Doc-layout note (routing-critical — skills point at literal paths):**

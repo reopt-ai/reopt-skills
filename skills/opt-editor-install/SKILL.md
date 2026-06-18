@@ -3,7 +3,7 @@ name: opt-editor-install
 description: |
   Install or upgrade @reopt-ai/opt-editor in a consumer project. Auto-branches by current install state. Triggers on "opt-editor install", "opt-editor init", "opt-editor setup", "editor install", "editor init", "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
 target: "@reopt-ai/opt-editor"
-targetMinVersion: "1.0.2"
+targetMinVersion: "1.0.3"
 ---
 
 # opt-editor Install
@@ -25,7 +25,7 @@ Consumer project depends on `@reopt-ai/opt-editor`. Triggers: "install", "init",
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.0.2). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.0.3). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-editor-agent-rules -->

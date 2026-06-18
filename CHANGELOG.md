@@ -13,6 +13,32 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Changed
 
+**Package version bump — 2026-06-18** (`brandapp-sdk` 2.3.0 + `reopt-design` patch family, npm-confirmed)
+
+- **`brandapp-sdk` 2.1.0 → 2.3.0.** docs layout unchanged (still top-level
+  `docs/`), so routing was not touched; bumped `targetMinVersion` +
+  `COMPATIBILITY.md` and reflected the 2.2 / 2.3 surface in the shared
+  agent-rules and the review skill:
+  - new error classes `CreditLimitError` (402), `ModelAccessError` (403),
+    `ModelNotFoundError` (404), `ContentFilterError` (422), guards
+    `isCreditLimitError` / `isModelAccessError`, plus the `QUERY_TOO_LARGE`
+    diagnostic — added to the errors doc-map row.
+  - new hard rules: mutations (POST/PATCH) aren't retried by default (2.2;
+    `Idempotency-Key`, `retryNonIdempotent` opt-in); AI streaming
+    `config.timeout` is idle, not wall-clock (2.2); streaming 402 →
+    `CreditLimitError` and provider errors → AI SDK `APICallError` (2.3); EAV
+    `backfill` batches via `bulkUpdate` (2.2).
+  - AI surface (`sdk.ai.models()`, `sdk.ai.stream`, `useAiStream`,
+    `useAiAgents`) + `backfill` added to the api-reference doc-map row.
+  - review version gate compressed (pre-2.0 lineage folded into one row) and
+    extended with `< 2.3.0` / `< 2.2.0` rows.
+- **opt-\* patch bumps** (docs structure unchanged — version-only):
+  `opt-datagrid` 1.4.1 → 1.4.2, `opt-editor` 1.0.2 → 1.0.3, `opt-chat`
+  0.3.0 → 0.3.1. `cli` / `opt-ui` / `opt-shell` / `opt-palette` /
+  `opt-devtool` / `opt-cli` unchanged.
+- `COMPATIBILITY.md` rows confirmed via `npm view`; verification note +
+  snapshot date rolled to 2026-06-18.
+
 **Skill / package re-sync — 2026-06-13** (source-checked against the live `reopt` monorepo + `reopt-design` repo)
 
 - **docs routing corrected to match what each package actually ships.** The v2
