@@ -13,6 +13,36 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Changed
 
+**`brandapp-sdk` 2.3.0 → 3.0.0 — 2026-06-26** (security-review follow-up, source-confirmed)
+
+- **Webhook contract realigned (3.0, breaking).** 2.x verified a raw-body hex
+  signature + in-body timestamp + `record.*` event types, which mismatched the
+  live platform sender and 401-rejected every production webhook. Reflected the
+  new contract in the shared agent-rules + install/review skills:
+  `verifySignature(timestamp, body, signature, secret)` (timestamp-first, signs
+  `"{timestamp}.{body}"`, `x-reopt-signature: sha256=…` + `x-reopt-timestamp`
+  headers); event types `contactCreated` / `contactUpdated` / `contactDeleted`
+  / `workflowRunCompleted` / `workflowRunFailed`; payload `{ id, type,
+  entityType, entityId, createdAt, data }`. Added review pattern **W2** (stale
+  2.x handlers / 3-arg `verifySignature`).
+- **Browser `clientSecret` blocked (3.0).** `createReoptSDK` /
+  `createBrandappProvider` throw `CONFIG_BROWSER_SECRET` if a `clientSecret`
+  reaches a browser; token-only client config is now allowed
+  (`{ brandappId, token }`, server-minted via `POST /api/v1/brandapp/{id}/token/mint`).
+  Added to the install env/safety steps, the errors doc-map row, and review
+  pattern **Cfg5**; retuned **Cfg4** (token wins, `clientSecret` redundant).
+- **Removed `@deprecated` aliases (3.0).** `ReoptAdapterConfig` /
+  `ReoptEavConfig` → `ReoptSDKConfig`; `ReoptAdapterError` → `ReoptSDKError`.
+  Added review pattern **Cfg6** (mechanical rename).
+- **Dev-server prod guard + log redaction (3.0).** In-memory dev server refuses
+  to start under `NODE_ENV=production` (override `REOPT_DEV_SERVER_ALLOW_PRODUCTION=1`);
+  `trace` debug now also redacts camelCase token keys. Noted in agent-rules +
+  install safety.
+- docs layout unchanged (still top-level `docs/`), so routing paths were not
+  touched. Bumped `targetMinVersion` 2.3.0 → 3.0.0 in both SKILL.md frontmatters
+  and the `brandapp-sdk-*` rows in `COMPATIBILITY.md` (verification note rolled
+  to 2026-06-26, source-checked). `reopt-design` / `cli` packages unchanged.
+
 **Package version bump — 2026-06-18** (`brandapp-sdk` 2.3.0 + `reopt-design` patch family, npm-confirmed)
 
 - **`brandapp-sdk` 2.1.0 → 2.3.0.** docs layout unchanged (still top-level
