@@ -8,21 +8,25 @@ The **Target** column lists the single primary package (matches the skill's
 `target` / `targetMinVersion` frontmatter, which `pnpm validate` cross-checks).
 Per-version detail lives in each package's docs; this table stays terse.
 
-> **Verification level (2026-06-18 round):** reconciled by reading the package
-> sources — `@reopt-ai/cli` and `@reopt-ai/brandapp-sdk` in the `reopt`
-> monorepo, the `@reopt-ai/opt-*` packages in the `reopt-design` repo — i.e.
-> file layout, `package.json` `files`/`exports`, and the docs each package
-> actually ships. Versions marked `(npm)` were confirmed against GitHub Packages
-> with `npm view`: `brandapp-sdk` 2.3.0 (the 2.2 reliability + 2.3 AI-surface
-> rounds) and the `opt-*` 1.4.x family (`opt-datagrid` 1.4.2, `opt-editor`
-> 1.0.3, `opt-chat` 0.3.1). docs layout is unchanged from the prior round, so
-> routing was not touched — only versions + the brandapp-sdk agent-rules/review
-> content (new error classes, non-idempotent retry, AI surface). It was **not**
-> re-run through the full install → `tsc --noEmit` → smoke procedure at the
-> bottom of this file. Treat the rows below as **source-checked**; run that
-> procedure before claiming a row runtime-verified.
+> **Verification level (2026-06-26 round):** `@reopt-ai/brandapp-sdk` **2.3.0 →
+> 3.0.0** reconciled by reading the package source in the `reopt` monorepo
+> (`packages/brandapp-sdk`) — `CHANGELOG.md`, `docs/migration.md`,
+> `src/core/config.ts` (`assertBrowserSafe` / `validateConfig`), the webhook
+> contract in `docs/api-reference.md`. 3.0 is a security-review follow-up: the
+> webhook verification contract + `verifySignature` signature changed (now
+> aligned to the live platform sender), browser `clientSecret` is blocked
+> (`CONFIG_BROWSER_SECRET`) with an additive token-only config, and the
+> long-`@deprecated` `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError`
+> aliases were removed. docs layout is unchanged (still top-level `docs/`), so
+> routing paths were not touched — only versions + the shared agent-rules and
+> the install/review surface. Source-checked, **not** re-run through the full
+> install → `tsc --noEmit` → smoke procedure at the bottom of this file.
+>
+> **Prior round (2026-06-18):** `opt-*` 1.4.x family confirmed via `npm view`
+> (`opt-datagrid` 1.4.2, `opt-editor` 1.0.3, `opt-chat` 0.3.1); unchanged this
+> round.
 
-## Current state — 2026-06-18
+## Current state — 2026-06-26
 
 ### CLI
 
@@ -34,8 +38,8 @@ Per-version detail lives in each package's docs; this table stays terse.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **2.3.0** | 2026-06-18 (npm) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **2.3.0** | 2026-06-18 (npm) |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-06-26 (src) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-06-26 (src) |
 
 ### Design / UI packages
 

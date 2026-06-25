@@ -2,7 +2,7 @@
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "2.3.0"
+targetMinVersion: "3.0.0"
 ---
 
 # Brandapp SDK Review
@@ -15,7 +15,7 @@ A consumer project already uses `@reopt-ai/brandapp-sdk` and wants an audit. Tri
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 2.3.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 3.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/brandapp-sdk-agent-rules -->
@@ -31,6 +31,7 @@ Markers are shared with `brandapp-sdk-install` — same module, one block. If th
 grep '"@reopt-ai/brandapp-sdk"' package.json
 ```
 
+- `< 3.0.0` — **webhook contract differs from the live platform sender**: 2.x `verifySignature(body, sig, secret)` + `record.*` event handlers silently 401-reject / never fire in prod. Browser `clientSecret` was allowed (now throws `CONFIG_BROWSER_SECRET`). `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` aliases still exist (removed in 3.0). Bump to 3.0 and run the W / Cfg patterns below.
 - `< 2.3.0` — AI errors not unified (streaming 402 was `STREAM_ERROR`, not `CreditLimitError`); `ModelAccessError` / `ModelNotFoundError` / `ContentFilterError` absent; `sdk.ai.models()` lacks `modality` / `isDefault`. Recommend 2.3 for AI work.
 - `< 2.2.0` — mutations retried by default (dup-write / dup-credit risk), AI `timeout` is wall-clock not idle, `backfill` does per-record PATCH, no `QUERY_TOO_LARGE` guard. Recommend 2.2+.
 - `< 2.0.0` — env-var rename ships in 2.0 without aliases. Migrate `.env` + bump **first**; patterns below assume 2.0+ surface.
@@ -78,7 +79,9 @@ For each match, name the pattern, point at the file/line, then route the consume
 | Cfg1 Hardcoded URL / stale `www.reopt.ai` | `baseUrl:` literal containing `www.reopt.ai` |
 | Cfg2 Missing `import "server-only"` | `createReopt*` / `createLazySDK` called in a file without server-only |
 | Cfg3 `!` non-null env assertions w/o validation | `process.env.BRANDAPP_*!` without zod / t3-env nearby |
-| Cfg4 Service token mixed with Basic Auth (1.12+) | `token:` and `clientSecret:` set on the same `ReoptSDKConfig` |
+| Cfg4 Redundant `clientSecret` alongside a `token` (token wins, 3.0) | `token:` and `clientSecret:` on the same `ReoptSDKConfig` — drop `clientSecret` |
+| Cfg5 `clientSecret` reachable in the browser (3.0 throws `CONFIG_BROWSER_SECRET`) | `NEXT_PUBLIC_BRANDAPP_CLIENT_SECRET`, or `clientSecret:` in a `"use client"` file / `createBrandappProvider` — mint a server token, pass `{ token }` |
+| Cfg6 Removed type/error aliases (3.0) | `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` — rename to `ReoptSDKConfig` / `ReoptSDKError` |
 
 ### Schema / types → `docs/api-reference.md`
 | Pattern | Grep signal |
@@ -106,6 +109,7 @@ For each match, name the pattern, point at the file/line, then route the consume
 | Pattern | Grep signal |
 |---|---|
 | W1 Hand-rolled HMAC verification | manual `crypto.createHmac` against the webhook secret — use `createWebhookHandler` |
+| W2 Stale 2.x webhook contract (3.0 breaking) | `record.created`/`record.updated`/`entity.`/`subscription.changed`/`customer.created` in `handlers:`, or `verifySignature(` called with 3 args — move to `contactCreated`/`contactUpdated`/`contactDeleted`/`workflowRun*` + timestamp-first `verifySignature(timestamp, body, sig, secret)` |
 
 ### Debug → `docs/environment.md` (`BRANDAPP_SDK_DEBUG` / `BRANDAPP_SDK_LOG_FORMAT`)
 | Pattern | Grep signal |
@@ -134,7 +138,7 @@ Group by category; lead with version-gate failures (Step 2). Do not paste full b
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Cfg*/Sch1/Sch4/Sch5 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Cfg1–Cfg5/Sch1/Sch4/Sch5 require human judgment — propose, don't apply.
 
 ## Safety
 
