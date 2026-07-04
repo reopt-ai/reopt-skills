@@ -11,7 +11,77 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Fixed
+
+**Content reconciliation against current source — 2026-07-04** (drift fixes surfaced by a full source audit of every skill; distinct from the version bumps below)
+
+- **opt-ui — wrong CSS import subpath (hard error).** `agent-rules.md` and
+  `SKILL.md` told consumers to `@import "@reopt-ai/opt-ui/styles"`, a subpath
+  that does not exist in the package `exports` (would fail to resolve). Corrected
+  to `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";`
+  (+ `@source` directive), matching `dist/docs/01-getting-started.md`. Also
+  degraded the ungrounded "Doctor (26 checks)" pipeline label to
+  "Doctor (environment audit)" (opt-cli computes the total dynamically).
+- **opt-editor — invented `contentRich` field + missing 1.0.4 hard rules.**
+  `contentRich` appears nowhere in the package; the canonical schema is
+  `EditorSpec` with rich text on each element's `content`. Fixed in `SKILL.md`
+  (Verify step) and `agent-rules.md`. Added two hard rules now that 1.0.4 ships
+  them: the `"use client"` boundary for `<Editor>` (vs RSC-safe `StaticRenderer`),
+  and `EditorMode` now `"stream" | "edit" | "diff"` (exhaustive handling must
+  cover the review-only `"diff"` branch). Added routing rows for
+  `03-recipes/08-editor-operations.md` (agent-mode ops) and
+  `09-diff-review-integration.md`. Genericized "Doctor (18 checks)".
+- **opt-chat — Tailwind requirement was false.** The skill required "Tailwind
+  configured with opt-ui tokens"; opt-chat ships **no** Tailwind peer. Styling is
+  opt-ui global CSS **or** `@reopt-ai/opt-chat/styles.css`. Reworded prereqs,
+  the styling row, the pipeline step, and the agent-rules hard rule; added a
+  `styles.css` wiring step + routing row and a `@reopt-ai/opt-chat/flow`
+  (agent-graph Canvas) row. Part-renderer count `25` → `28+` (README).
+- **opt-shell — peer requirement mislabel + missing value.** "Required peers"
+  listed opt-datagrid / opt-editor as required; `peerDependenciesMeta` marks only
+  `@reopt-ai/opt-palette` (+ react/react-dom) required — the adapters
+  (opt-datagrid, opt-editor, **opt-calendar**) are optional. Split into
+  required/optional in `SKILL.md`, the pipeline step, and `agent-rules.md`. Added
+  the missing `contentWidth` value `narrow`.
+- **reopt-eav — stale EAV command tree (major).** The CLI's "Phase A" rename
+  replaced `eav plan` (report) / `eav migrate create|run|status|validate` with
+  `eav diff` (report) / `eav plan <name>` (scaffold) / `eav migrate` / `eav
+  history` / `eav verify`, and dropped the `experimental` tag. Rewrote the Step 2
+  command map, Steps 3/5/6, the frontmatter triggers, and the CI-blocker safety
+  line against `src/index.ts` (the `--help` source of truth; the CLI's own
+  `README.md` is itself stale on this rename — flagged upstream).
+- **reopt-cli — missing `token mint` + stale EAV/exit-code refs.** Added the new
+  `reopt token mint` service-token flow (0.3.0/0.3.1) to Step 2 + doc-map, updated
+  the EAV routing row to the new command names, and extended the exit-code summary
+  with the EAV migrate/verify codes `6`–`10` (drift / destructive-blocked /
+  checksum-mismatch / checksum-conflict / lock-held).
+- **brandapp-sdk — error-class list completeness.** Added `DuplicateAuthUserError`
+  (409) and `AuthUserNotFoundError` to the shared agent-rules `errors.md`
+  enumeration (byte-identical across install + review) and to review pattern
+  `Err3` (linked-user bulk ops). No API drift — the 3.0 reconciliation held.
+- opt-datagrid, reopt-brandapp: audited, **no drift** — accurate as shipped.
+
 ### Changed
+
+**`reopt-design` patch family — 2026-07-04** (source-confirmed against `reopt-design/packages/*`)
+
+- **`opt-ui` 1.4.0 → 1.4.1** and **`opt-editor` 1.0.3 → 1.0.4.** Both patch
+  bumps. `dist/docs/` layout is byte-for-byte the tree the skills route to
+  (re-listed against source — every routed path resolves) and neither
+  `agent-rules.md` carries a version reference, so only `targetMinVersion` in
+  the two `SKILL.md` frontmatters (+ the matching "does not, as of X" body line)
+  and the `COMPATIBILITY.md` rows / verification note moved. `opt-ui` 1.4.1 is a
+  Drawer-animation token refactor (`OPT_ANIMATE_DRAWER` in `lib/styles.ts`,
+  runtime unchanged).
+- **`opt-cli` 1.1.0 → 1.1.1** (unified design CLI the UI skills call via `npx`).
+  `doctor` / `surface` commands intact — no skill edit, `COMPATIBILITY.md`
+  "Design CLI" version note bumped only.
+- **New tracked packages** added to `COMPATIBILITY.md` "Tracked but no installer
+  skill yet": `opt-ui-primitives` 1.4.2 (published a11y primitives), `opt-charts`
+  0.1.0 and `opt-calendar` 0.1.0 (published), `opt-doc-kit` 0.1.0 and `opt-uxflow`
+  0.1.0 (`private: true`, not on npm). No new installer skills authored.
+- `cli` 0.3.1, `brandapp-sdk` 3.0.0, `opt-datagrid` 1.4.2, `opt-chat` 0.3.1,
+  `opt-shell` 0.1.0 unchanged this round.
 
 **`brandapp-sdk` 2.3.0 → 3.0.0 — 2026-06-26** (security-review follow-up, source-confirmed)
 

@@ -15,7 +15,7 @@
 
 - `@reopt-ai/opt-harness` was renamed to `@reopt-ai/opt-shell`; the `Harness*` components are now `*Workspace` / `Shell*`. Migrate the dependency before writing new code.
 - Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
-- React 19+ required. Peers: `@reopt-ai/opt-palette` (theme), `@reopt-ai/opt-datagrid` / `@reopt-ai/opt-editor` (adapters).
+- React 19+ required. Peers: `@reopt-ai/opt-palette` (theme) is **required**; `@reopt-ai/opt-datagrid` / `@reopt-ai/opt-editor` / `@reopt-ai/opt-calendar` (adapters) are **optional** — install only the ones you use.
 - Every workspace recipe requires `header` and `content` slots — other slots are recipe-specific.
 - Pick a recipe via the decision tree in `shell-llms.txt`; for full-viewport tools use `ShellFullscreenToolSurface`, not a workspace recipe.
 - opt-shell consumes opt-ui tokens transitively — don't override chrome with raw colors.

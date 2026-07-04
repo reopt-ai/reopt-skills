@@ -20,7 +20,7 @@ Consumer project depends on `@reopt-ai/opt-shell`. Triggers: "install", "init", 
 |---|---|
 | Workspace recipes | `DashboardWorkspace`, `ListWorkspace`, `DetailWorkspace`, `EditorWorkspace`, landing — pick via the decision tree in `shell-llms.txt` |
 | Non-recipe surface | `ShellFullscreenToolSurface` (full-viewport tools — code editor, canvas) |
-| Policy | density, contentWidth (`full` / `wide` / `normal`), navigationMode, motion |
+| Policy | density, contentWidth (`full` / `wide` / `normal` / `narrow`), navigationMode, motion |
 | Adapters | data-engine wrappers supplying loading / empty / error chrome |
 | State UX | shared state boundaries; every recipe requires `header` + `content` slots |
 | Authoring audit | scoring / audit tooling behind the `./audit` sub-export |
@@ -49,13 +49,11 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shel
 
 1. **Registry auth** — `.npmrc` for GitHub Packages (PAT with `read:packages`, injected via shell / CI secret, never hardcoded).
 
-2. **Required peers** — opt-shell's `peerDependencies` (install / run their skills first if missing):
-   - `@reopt-ai/opt-palette` — theme generation engine
-   - `@reopt-ai/opt-datagrid` — data-grid adapter (`/opt-datagrid-install`)
-   - `@reopt-ai/opt-editor` — editor adapter (`/opt-editor-install`)
-   - `react` / `react-dom` 19+
+2. **Peers** — opt-shell's `peerDependencies` (install / run their skills first if missing):
+   - **Required:** `@reopt-ai/opt-palette` (theme engine), `react` / `react-dom` 19+
+   - **Optional** (only if you use that adapter): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`
 
-   opt-ui tokens come in transitively through these — run `/opt-ui-install` if the theme layer is missing.
+   opt-ui tokens come in transitively through opt-palette — run `/opt-ui-install` if the theme layer is missing.
 
 3. **App wiring** — properties of the consumer app:
    - A workspace recipe at the screen root (`header` + `content` slots are mandatory).
@@ -80,7 +78,7 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | 1 | Detect current state (incl. legacy `opt-harness` dep) | ✓ | ✓ |
 | 2 | `.npmrc` (GitHub Packages) | ✓ | – |
 | 3 | Install / update package | ✓ | ✓ |
-| 4 | Peer check (opt-palette / opt-datagrid / opt-editor / opt-ui tokens) | ✓ | ✓ |
+| 4 | Peer check (opt-palette required; opt-datagrid / opt-editor / opt-calendar optional) | ✓ | ✓ |
 | 5 | Shell manifest / policy config | ✓ | – |
 | 6 | First workspace recipe | ✓ | – |
 | 7 | Breaking-change edits | – | ✓ |
