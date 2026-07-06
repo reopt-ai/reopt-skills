@@ -1,6 +1,6 @@
 ---
 name: reopt-eav
-description: EAV schema status, sync, pull, plan, file-based migrations, and destructive-change guardrails for reopt Brandapp projects. Use when a task involves `reopt brandapp eav status`, `sync`, `pull`, `plan`, `migrate`, `--dry-run`, or `--delete-orphans`.
+description: EAV schema status, sync, pull, diff, file-based migrations (plan/migrate/history/verify), and destructive-change guardrails for reopt Brandapp projects. Use when a task involves `reopt brandapp eav status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`, `--dry-run`, or `--delete-orphans`.
 requires:
   - reopt-cli
   - reopt-brandapp
@@ -16,8 +16,8 @@ requires:
 - syncing schema changes to the server
 - generating a local schema from server state
 - reviewing destructive EAV changes in CI or local development
-- producing a markdown plan/risk report (`eav plan`)
-- file-based migrations (experimental `eav migrate`)
+- producing a markdown diff/risk report (`eav diff`)
+- file-based migrations (`eav plan` → `migrate` → `history` / `verify`)
 
 Load `reopt-cli` and `reopt-brandapp` first. Their shared agent-rules block (`<!-- BEGIN:reopt/cli-agent-rules -->`) covers this skill too — skip Step 1 if already pinned.
 
@@ -32,11 +32,11 @@ Same source/fallback/marker as `reopt-cli`. Idempotent: leave the block alone if
 | `eav status` (alias `st`) | Diff local schema vs server | – | stable |
 | `eav sync` (alias `up`) | Apply diff + generate types | ✓ | stable |
 | `eav pull` | Generate schema file from server | – | stable |
-| `eav plan` | Render diff + risk classification as markdown | – | stable |
-| `eav migrate create <name>` | Scaffold a migration file | – | experimental |
-| `eav migrate run` | Apply pending migrations | ✓ | experimental |
-| `eav migrate status` | Show pending / applied / drift | – | experimental |
-| `eav migrate validate` | CI checksum validation | – | experimental |
+| `eav diff` | Render schema diff vs server as a markdown report (preview) | – | stable |
+| `eav plan <name>` | Scaffold a new migration file (`--from-diff` auto-fills `up()` from the live diff) | – | stable |
+| `eav migrate` | Apply pending migrations sequentially behind an advisory lock (`--dry-run` to preview) | ✓ | stable |
+| `eav history` | Show pending / applied / drift / missing-file state | – | stable |
+| `eav verify` | CI-friendly checksum validation against applied migrations | – | stable |
 
 Common flags (`--schema <path>`, `--out <path>`, `--json`, `--watch`, `--dry-run`, `--delete-orphans`) — see `reopt brandapp eav <cmd> --help` for the live set per command.
 
@@ -49,7 +49,7 @@ reopt brandapp eav sync --json                         # 3. apply
 reopt brandapp eav sync --watch                        # during active schema work
 ```
 
-`eav plan` (separate from sync) — use when a schema change needs review (PR comment, design doc, change-control ticket). Groups the diff by risk class, renders deletes / required-field additions in their own sections. Does **not** apply the diff; pair with `eav sync` after sign-off.
+`eav diff` (separate from sync) — use when a schema change needs review (PR comment, design doc, change-control ticket). Renders the diff as markdown, grouping deletes / required-field additions in their own sections. Does **not** apply the diff; pair with `eav sync` after sign-off.
 
 ## Step 4 — Destructive guardrail (`--delete-orphans`)
 
@@ -63,12 +63,14 @@ reopt brandapp eav sync --watch                        # during active schema wo
 
 **Never run `--delete-orphans` blindly in automation.**
 
-## Step 5 — `eav migrate` (experimental)
+## Step 5 — File-based migrations (`plan` → `migrate` → `history` / `verify`)
 
 File-based migrations under `./eav-migrations/` (override with `--dir <path>`). Use when you need ordered, reviewable change files instead of live `sync`.
 
-- `migrate run` takes an advisory lock on the brandapp — two pipelines cannot apply the same migration concurrently. Surface this when scripting multi-region rollouts.
-- `migrate validate` is the CI step — fails when an applied migration's checksum drifts from the file on disk.
+- `eav plan <name>` scaffolds a new migration file; `--from-diff` auto-fills `up()` from the live server diff.
+- `eav migrate` applies pending migrations sequentially behind an advisory lock — two pipelines cannot apply the same migration concurrently. Surface this when scripting multi-region rollouts. `--dry-run` previews without executing.
+- `eav history` shows pending / applied / drift / missing-file state.
+- `eav verify` is the CI step — fails when an applied migration's checksum drifts from the file on disk.
 - Programmatic equivalent: `@reopt-ai/brandapp-sdk/eav/migrate` (`defineMigration` + `runner`). Identical results — use the SDK form when migrations live alongside app code (e.g. `npm run db:migrate` pre-deploy).
 
 ## Step 6 — Route to docs
@@ -76,8 +78,9 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 | Task signal | Read |
 |---|---|
 | Schema authoring (`defineEntity`, `defineSchema`, `linkedTo`, drift hash) | `@reopt-ai/brandapp-sdk/docs/api-reference.md` |
-| Migration runner internals, lock behavior | `reopt brandapp eav migrate --help` |
-| `eav plan` output format / risk classification | `reopt brandapp eav plan --help` |
+| Migration runner internals, lock behavior | `reopt brandapp eav migrate --help`, `reopt brandapp eav verify --help` |
+| `eav diff` output format / risk classification | `reopt brandapp eav diff --help` |
+| Migration scaffolding (`--from-diff`) | `reopt brandapp eav plan --help` |
 
 ## Lock file
 
@@ -88,4 +91,4 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 - Inherit all `reopt-cli` rules.
 - Always `--dry-run` before any mutating EAV operation.
 - `--delete-orphans` is the destructive switch — follow Step 4 in order, never shortcut.
-- Treat `migrate validate` failures as merge blockers in CI.
+- Treat `eav verify` failures as merge blockers in CI.

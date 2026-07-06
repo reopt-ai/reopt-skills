@@ -3,7 +3,7 @@ name: opt-ui-install
 description: |
   Install or upgrade @reopt-ai/opt-ui in a consumer project, or add a Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui surface", "opt-cli surface add", "add Surface".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.4.0"
+targetMinVersion: "1.4.1"
 ---
 
 # opt-ui Install
@@ -27,7 +27,7 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.4.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.4.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -49,7 +49,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 2. **Prereqs** — Node 18+, React 19+, Tailwind CSS v4. bun or npm.
 
 3. **App-shell wiring** — properties of the consumer app:
-   - Tailwind CSS v4 `@import "@reopt-ai/opt-ui/styles"` at the root stylesheet.
+   - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet (plus the `@source` directive — see getting-started).
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
    - Surface CLI: `npx @reopt-ai/opt-cli surface add <slug>` for page templates (Surfaces live in the internal `opt-ui-surface` package — not installed directly).
 
@@ -83,7 +83,7 @@ Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
 | 6 | Breaking-change edits | – | ✓ | – |
 | 7 | Deprecated fixes (opt-in) | – | ✓ | – |
 | 8 | Surface CLI workflow | opt | opt | ✓ |
-| 9 | Doctor (26 checks) | ✓ | ✓ | ✓ |
+| 9 | Doctor (environment audit) | ✓ | ✓ | ✓ |
 | 10 | Summary + rollback path | ✓ | ✓ | ✓ |
 
 Detailed step procedures live in module docs — start at `dist/docs/index.md`, then `dist/docs/01-getting-started.md`. Read before acting.

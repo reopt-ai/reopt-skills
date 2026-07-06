@@ -10,7 +10,7 @@
 |---|---|
 | SDK init (`createLazySDK`, `lib/sdk.ts`), Better Auth + OAuth (`lib/auth.ts`), EAV (`defineEntity`, `linkedTo`, drift hash, `findOne`, `upsert`, `listAll`, `bulkUpdate`, `bulkDelete`, `deleteWhere`, `count`, `backfill`, `asEnum` / coerce helpers), webhooks (`createWebhookHandler`, `verifySignature` timestamp-first, replay protection), service token (`Authorization: Bearer`, 1.12+), React hooks (`useUpsertRecord`, `useBulkCreateRecords`, infinite list), AI (`sdk.ai.models()` / `sdk.ai.stream`, `useAiStream`, `useAiAgents`) | `docs/api-reference.md` |
 | Env vars + 3-tier namespace, host split | `docs/environment.md` |
-| Error classes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `CONFIG_BROWSER_SECRET`, `QUERY_TOO_LARGE`; guards `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError`) | `docs/errors.md` |
+| Error classes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `DuplicateAuthUserError` 409, `AuthUserNotFoundError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `CONFIG_BROWSER_SECRET`, `QUERY_TOO_LARGE`; guards `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError`) | `docs/errors.md` |
 | Marketing-site / CMS helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`) | `docs/cms.md` |
 | File management | `docs/files.md` |
 | Dev server (offline development) | `docs/dev-server.md` |

@@ -3,7 +3,7 @@ name: opt-editor-install
 description: |
   Install or upgrade @reopt-ai/opt-editor in a consumer project. Auto-branches by current install state. Triggers on "opt-editor install", "opt-editor init", "opt-editor setup", "editor install", "editor init", "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
 target: "@reopt-ai/opt-editor"
-targetMinVersion: "1.0.3"
+targetMinVersion: "1.0.4"
 ---
 
 # opt-editor Install
@@ -25,7 +25,7 @@ Consumer project depends on `@reopt-ai/opt-editor`. Triggers: "install", "init",
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.0.3). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.0.4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-editor-agent-rules -->
@@ -61,7 +61,9 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-edit
 | Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
 | API (components, hooks, store, serialization, types) | `dist/docs/02-api/` |
 | AI streaming integration | `dist/docs/02-api/04-ai-stream.md`, `dist/docs/03-recipes/03-ai-streaming.md` |
-| Recipes (basic, custom blocks, markdown, image, diff-review, …) | `dist/docs/03-recipes/` |
+| High-level AI ops / agent-mode tools (EditorOperation, OperationCompiler) | `dist/docs/03-recipes/08-editor-operations.md` |
+| Diff-mode suggestion review (`mode="diff"`) | `dist/docs/03-recipes/09-diff-review-integration.md` |
+| Recipes (basic, custom blocks, markdown, image, …) | `dist/docs/03-recipes/` |
 | Troubleshooting | `dist/docs/05-troubleshooting.md` |
 
 ## Pipeline (auto-branch)
@@ -76,7 +78,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-edit
 | 6 | Editor component generation | ✓ | – |
 | 7 | Breaking-change edits | – | ✓ |
 | 8 | Deprecated fixes (opt-in) | – | ✓ |
-| 9 | Doctor (18 checks) + summary | ✓ | ✓ |
+| 9 | Doctor (environment audit) + summary | ✓ | ✓ |
 
 Detailed procedure lives in module docs — start at `dist/docs/index.md`, then `dist/docs/01-getting-started.md`. Read before acting.
 
@@ -92,4 +94,4 @@ Detailed procedure lives in module docs — start at `dist/docs/index.md`, then 
 
 1. `npx @reopt-ai/opt-cli doctor` passes.
 2. `npx tsc --noEmit` passes.
-3. Editor mounts and `StaticRenderer` renders stored `contentRich` without console warnings.
+3. Editor mounts and `StaticRenderer` renders a stored `EditorSpec` (its `content`) without console warnings.

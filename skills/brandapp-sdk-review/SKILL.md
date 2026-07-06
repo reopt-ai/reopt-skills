@@ -70,7 +70,7 @@ For each match, name the pattern, point at the file/line, then route the consume
 |---|---|
 | Err1 Generic `catch` instead of SDK error classes | `catch (e)` without `isReoptSDKError` / class check |
 | Err2 Unhandled API errors (no `handleApiError` wrapper) | route handlers without a centralized error handler |
-| Err3 EAV mutation on `linkedTo='brandappAuthUser'` without 1.9 narrowed catches | `records.create` on linked entity, no `AuthUserRecordExistsError` branch |
+| Err3 EAV mutation on `linkedTo='brandappAuthUser'` without 1.9 narrowed catches | `records.create` / bulk on linked entity, no `AuthUserRecordExistsError` / `DuplicateAuthUserError` / `AuthUserNotFoundError` branch |
 | Err4 Legacy `e.code === 'REQUEST_ERROR'` string check | literal string match — pre-1.9 only |
 
 ### Config / security → `docs/environment.md` (env / hosts), `docs/api-reference.md` (service token)

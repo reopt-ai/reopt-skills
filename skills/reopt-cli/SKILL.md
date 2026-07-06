@@ -29,10 +29,11 @@ Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does n
 
 ## Step 2 — Auth (consumer-side credentials; CLI docs cover usage)
 
-The CLI has two credential systems:
+The CLI has three credential systems:
 
 - **User session** — `reopt login` / `reopt status` / `reopt logout`. Tokens live in `~/.reopt/auth.json`. Session auto-refreshes inside the Better Auth extension window; do not over-engineer retry loops in CI.
 - **Brandapp OAuth credentials** — `BRANDAPP_CLIENT_ID` / `BRANDAPP_CLIENT_SECRET` env vars, or `reopt brandapp link` interactively. Stored in `~/.reopt/credentials.json` + `.reopt.json` (project root).
+- **Service token (CI/CD)** — `reopt token mint --ttl 15m --scope eav:migrate,eav:read` prints a short-lived, scoped JWT for headless pipelines; capture with `export BRANDAPP_CLIENT_TOKEN=$(reopt token mint --quiet)`. Pass to the SDK as a Bearer `token` — never ship a `clientSecret` where a scoped token works.
 
 Run `reopt status` (or `reopt status --ping`) before any mutating operation. If `auth: not logged in`, run `reopt login` first.
 
@@ -44,8 +45,9 @@ Prefer `--help` (live source of truth); the CLI ships **no** `dist/docs/`, so na
 |---|---|
 | Any command / flag | `reopt <cmd> --help` (live) |
 | Auth commands and session model | `README.md` § Authentication |
+| Service-token issuance (CI/CD) | `reopt token mint --help` |
 | Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `reopt brandapp --help` + see `reopt-brandapp` skill |
-| EAV ops (`status`, `sync`, `pull`, `plan`, `migrate`) | `reopt brandapp eav --help` + see `reopt-eav` skill |
+| EAV ops (`status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`) | `reopt brandapp eav --help` + see `reopt-eav` skill |
 | Schema-as-Code, MCP, completion, config | `README.md` §§ Schema-as-Code, Shell completion, Preferences |
 | Global flags, output formats, pagination | `README.md` § Output and global flags |
 | Exit codes | `README.md` § Exit codes |
@@ -57,7 +59,7 @@ Quick global-flag reminders (subset; full list in `--help`):
 - `--no-interactive` — required for unattended scripts (fail instead of prompt).
 - `--dry-run` — preview only (EAV sync, brandapp link/unlink).
 
-Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal.
+Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal. EAV migrate/verify add `6` drift-detected, `7` destructive-blocked, `8` checksum-mismatch, `9` checksum-conflict, `10` lock-held.
 
 ## Safety
 

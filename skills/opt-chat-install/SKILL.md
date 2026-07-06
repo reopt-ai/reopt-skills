@@ -20,10 +20,11 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 |---|---|
 | Core | Conversation, Message, PromptInput (composable) |
 | Hook | `useChatSession` (Vercel AI SDK wrapper) |
-| Parts | 25 message part renderers (reasoning, tool, artifact, code, agent, …) |
-| Input | Attachments, SpeechInput, ModelSelector |
+| Parts | 28+ message part renderers (reasoning, tool, artifact, code, agent, …) |
+| Input | Attachments, SpeechInput, ModelSelector, AudioPlayer / VoiceSelector |
 | Streaming | streamdown + shiki syntax highlighting |
-| Styling | Tailwind + opt-ui CSS variable tokens |
+| Flow | `@reopt-ai/opt-chat/flow` agent-graph Canvas (optional peer `@xyflow/react`) |
+| Styling | opt-ui global CSS **or** `@reopt-ai/opt-chat/styles.css` (CSS-variable tokens) — **no Tailwind config required** |
 
 ## Invocation
 
@@ -54,9 +55,10 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat
    ```
    PAT with `read:packages`. Never hardcode.
 
-2. **Prereqs** — Node 18+, React 19+, Tailwind configured with opt-ui tokens (or a compatible CSS variable token set), Vercel AI SDK–compatible AI endpoint.
+2. **Prereqs** — Node 18+, React 19+, a Vercel AI SDK–compatible AI endpoint. **No Tailwind required.** Optional peers: `react-jsx-parser` (JSXPreview parts), `@xyflow/react` (`/flow` Canvas).
 
 3. **App wiring** — properties of the consumer app:
+   - Styles: `import "@reopt-ai/opt-chat/styles.css"` at the app root **unless** opt-ui's global CSS is already loaded (they share keyframes / data-attribute tokens).
    - AI endpoint route (e.g. `app/api/chat/route.ts`) returning a Vercel AI SDK stream.
    - Default Chat component composition (Conversation > Message[] > PromptInput).
 
@@ -67,7 +69,9 @@ opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/RE
 | Task signal | Read |
 |---|---|
 | Quick start + composition (Conversation / Message / PromptInput) | `README.md` §§ Quick start, Component catalog |
-| Hooks (`useChatSession`), 25 part renderers, input (Attachments / SpeechInput / ModelSelector), streaming | `README.md` § Component catalog |
+| Hooks (`useChatSession`), 28+ part renderers, input (Attachments / SpeechInput / ModelSelector), streaming | `README.md` § Component catalog |
+| Styling / CSS import (opt-ui CSS or `styles.css`) | `README.md` § Styles |
+| Flow / agent-graph Canvas (`@reopt-ai/opt-chat/flow`) + optional peers | `README.md` §§ Optional peers, Flow |
 | opt-ui token / design-system integration | `README.md` § Design system integration |
 | Version migration / breaking changes | `README.md` § Migration, `CHANGELOG.md` |
 
@@ -78,7 +82,7 @@ opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/RE
 | 1 | Detect current state | ✓ | ✓ |
 | 2 | `.npmrc` (GitHub Packages) | ✓ | – |
 | 3 | Install / update package | ✓ | ✓ |
-| 4 | Tailwind configuration check | ✓ | ✓ |
+| 4 | Styles import check (opt-ui CSS or `styles.css`) | ✓ | ✓ |
 | 5 | AI SDK endpoint check | ✓ | – |
 | 6 | Generate default Chat component | ✓ | – |
 | 7 | Breaking-change edits | – | ✓ |

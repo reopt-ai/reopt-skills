@@ -15,8 +15,9 @@
 
 - Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
 - React 19+ required.
-- `EditorSpec` is the canonical content schema — do not parse `contentRich` JSON by hand.
-- `StaticRenderer` is for read-only rendering; `Editor` mounts the live editor. Don't swap.
+- `EditorSpec` is the canonical content schema — do not hand-parse the stored JSON. Rich text lives in each element's `content` field, not `attrs`.
+- `<Editor>` uses browser APIs (contentEditable/Selection) — it must live in a `"use client"` component (Next.js App Router). `StaticRenderer` / `specToHtml` are the RSC-safe read-only path. Don't swap them.
+- `EditorMode` is `"stream" | "edit" | "diff"` — any exhaustive mode handling (e.g. `switch (mode)`) must cover the review-only `"diff"` branch or it silently breaks.
 - Catalog block IDs are stable identifiers — renaming them is a breaking change for stored content.
 - AI streaming requires a Vercel AI SDK–compatible endpoint. Don't roll your own SSE protocol.
 - Apply breaking-change edits in logical groups (per category), never bulk.
