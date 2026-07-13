@@ -3,7 +3,7 @@ name: opt-shell-install
 description: |
   Install or upgrade @reopt-ai/opt-shell — the runtime product-frame layer (workspace recipes, density/contentWidth/navigation/motion policy, data-engine adapters, shared state boundaries). Formerly @reopt-ai/opt-harness. Auto-branches by current install state. Triggers on "opt-shell install", "opt-shell init", "opt-shell setup", "shell install", "app shell setup", "workspace recipe", "opt-shell upgrade", "opt-shell update", plus legacy "opt-harness install", "harness install", "harness setup".
 target: "@reopt-ai/opt-shell"
-targetMinVersion: "0.1.0"
+targetMinVersion: "1.0.0"
 ---
 
 # opt-shell Install
@@ -23,7 +23,7 @@ Consumer project depends on `@reopt-ai/opt-shell`. Triggers: "install", "init", 
 | Policy | density, contentWidth (`full` / `wide` / `normal` / `narrow`), navigationMode, motion |
 | Adapters | data-engine wrappers supplying loading / empty / error chrome |
 | State UX | shared state boundaries; every recipe requires `header` + `content` slots |
-| Authoring audit | scoring / audit tooling behind the `./audit` sub-export |
+| Authoring audit | `@reopt-ai/opt-cli/audit` + `opt harness` commands; published opt-shell 1.0.0 has no `./audit` export |
 
 ## Invocation
 
@@ -35,7 +35,7 @@ Consumer project depends on `@reopt-ai/opt-shell`. Triggers: "install", "init", 
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shell` ships `shell-llms.txt`, an agent guide, but not a marker-block file as of 0.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shell` ships `shell-llms.txt`, an agent guide, but not a marker-block file as of 1.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-shell-agent-rules -->
@@ -47,7 +47,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shel
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Registry auth** — `.npmrc` for GitHub Packages (PAT with `read:packages`, injected via shell / CI secret, never hardcoded).
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
 2. **Peers** — opt-shell's `peerDependencies` (install / run their skills first if missing):
    - **Required:** `@reopt-ai/opt-palette` (theme engine), `react` / `react-dom` 19+
@@ -68,7 +68,7 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 |---|---|
 | Recipe decision tree, slot rules, policy | `shell-llms.txt` |
 | Component / prop API, exports (`.`, `./core`, `./meta`) | `README.md` |
-| Authoring audit / scoring (`./audit`) | `shell-llms.txt`, `README.md` |
+| Authoring audit / scoring | `@reopt-ai/opt-cli/audit`; `npx @reopt-ai/opt-cli harness check|test|doctor` |
 | Breaking changes per version | `CHANGELOG.md` |
 
 ## Pipeline (auto-branch)
@@ -76,7 +76,7 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | # | Step | Init | Upgrade |
 |---|---|---|---|
 | 1 | Detect current state (incl. legacy `opt-harness` dep) | ✓ | ✓ |
-| 2 | `.npmrc` (GitHub Packages) | ✓ | – |
+| 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ |
 | 4 | Peer check (opt-palette required; opt-datagrid / opt-editor / opt-calendar optional) | ✓ | ✓ |
 | 5 | Shell manifest / policy config | ✓ | – |

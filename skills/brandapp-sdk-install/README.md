@@ -1,6 +1,6 @@
 # brandapp-sdk-install
 
-Install `@reopt-ai/brandapp-sdk` in a consumer project: .npmrc, env, SDK instance, Better Auth, EAV schema, webhooks.
+Install public npm package `@reopt-ai/brandapp-sdk` in a consumer project: legacy registry cleanup, env, SDK instance, Better Auth, EAV schema, webhooks.
 
 ## Use When
 

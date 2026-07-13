@@ -22,7 +22,7 @@
 - **Env namespace (2.0+):** `BRANDAPP_*` = your credentials. `REOPT_*` = platform hosts (rarely set). `BRANDAPP_SDK_*` = behavior toggles. `NEXT_PUBLIC_BRANDAPP_*` = browser-safe subset. No `REOPT_CLIENT_*` / `REOPT_BRANDAPP_ID` / `REOPT_WEBHOOK_SECRET` / `REOPT_SDK_*` / `NEXT_PUBLIC_REOPT_*` / `NEXT_PUBLIC_EAV_HASH` aliases — 2.0 dropped them.
 - `BRANDAPP_ID` = brandappId (app), not brandId (brand). MCP `reopt_brandapp_list` looks it up.
 - `BETTER_AUTH_URL` must match the browser-facing origin exactly.
-- Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell / CI secret.
+- `@reopt-ai/*` installs from public npm — never add a GitHub Packages scope or token. Remove only the exact legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` entry; preserve unrelated registry/auth settings and ask before changing user/global npm config.
 - Never put `NODE_TLS_REJECT_UNAUTHORIZED=0` in `.env` — script-scope only. Never in production.
 - `createReoptAdapter` / `createReoptOAuth` / `createReoptBetterAuth` throw in browser runtimes. Server-only (`import "server-only"`).
 - `cms` is read-only from 1.8+ — `posts.create/update/delete` and `tags.create` are gone. Content authoring lives in Reopt Studio.

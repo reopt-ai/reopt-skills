@@ -43,7 +43,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-data
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Registry auth** — `.npmrc` for GitHub Packages (PAT with `read:packages`, injected via shell / CI secret, never hardcoded).
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 2. **Prereqs** — Node 18+, React 19+, bun or npm.
 3. **TypeScript paths** — wire `@reopt-ai/opt-datagrid` into `tsconfig.json` paths if the project uses path aliases.
 4. **opt-ui theme** — opt-datagrid consumes opt-ui CSS variable tokens. If opt-ui is not installed yet, run `/opt-ui-install` first.
@@ -66,7 +66,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-data
 | # | Step | Init | Upgrade | Migrate |
 |---|---|---|---|---|
 | 1 | Detect current state | ✓ | ✓ | ✓ |
-| 2 | `.npmrc` + registry auth | ✓ | – | ✓ |
+| 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ | ✓ |
 | 4 | TypeScript paths | ✓ | – | ✓ |
 | 5 | Breaking-change edits | – | ✓ | – |

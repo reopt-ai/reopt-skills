@@ -8,20 +8,20 @@ The **Target** column lists the single primary package (matches the skill's
 `target` / `targetMinVersion` frontmatter, which `pnpm validate` cross-checks).
 Per-version detail lives in each package's docs; this table stays terse.
 
-> **Verification level (2026-07-04 round):** `reopt-design` patch family
-> reconciled by reading the package sources on disk
-> (`reopt-design/packages/*`): `@reopt-ai/opt-ui` **1.4.0 → 1.4.1** (Drawer
-> slide animations moved to `OPT_ANIMATE_DRAWER` tokens in `lib/styles.ts`;
-> runtime behavior unchanged) and `@reopt-ai/opt-editor` **1.0.3 → 1.0.4**. Both
-> are patch bumps: `dist/docs/` layout is byte-for-byte the same tree the skills
-> route to (re-listed against source — every path resolves), and neither
-> `agent-rules.md` carries a version reference, so only `targetMinVersion` +
-> these rows moved. The unified design CLI `@reopt-ai/opt-cli` bumped **1.1.0 →
-> 1.1.1** with `doctor` / `surface` commands intact (UI skills call it via
-> `npx`, no skill edit needed). `cli` 0.3.1, `brandapp-sdk` 3.0.0,
-> `opt-datagrid` 1.4.2, `opt-chat` 0.3.1, `opt-shell` 0.1.0 unchanged.
-> Source-checked, **not** re-run through the full install → `tsc --noEmit` →
-> smoke procedure at the bottom of this file.
+> **Verification level (2026-07-13 round):** every package targeted by a skill
+> was checked against the sibling monorepo source and the public npmjs registry.
+> `@reopt-ai/brandapp-sdk` 3.0.0, `@reopt-ai/cli` 0.3.1, `opt-ui` 1.4.1,
+> `opt-datagrid` 1.4.2, `opt-editor` 1.1.2, `opt-chat` 1.0.0, `opt-shell` 1.0.0,
+> and `opt-cli` 1.1.1 all resolve publicly with no install token. Install skills
+> now remove a legacy `@reopt-ai:registry=https://npm.pkg.github.com` project
+> override instead of creating one. `opt-chat` / `opt-shell` 1.0.0 are stable
+> public releases with no breaking API change from 0.x; `opt-editor` 1.1.2 uses
+> optional `ai >= 7` / `zod >= 3` peers for AI integration. Published
+> `opt-shell` 1.0.0 exports only `.`, `./core`, and `./meta`; its bundled
+> `./audit` references are stale, so authoring audits route to
+> `@reopt-ai/opt-cli/audit` / `opt harness`. Source + registry checked,
+> **not** re-run through the full install → `tsc --noEmit` → smoke procedure at
+> the bottom of this file.
 >
 > **Prior round (2026-06-26):** `@reopt-ai/brandapp-sdk` **2.3.0 →
 > 3.0.0** reconciled by reading the package source in the `reopt` monorepo
@@ -41,30 +41,34 @@ Per-version detail lives in each package's docs; this table stays terse.
 > (`opt-datagrid` 1.4.2, `opt-editor` 1.0.3, `opt-chat` 0.3.1); unchanged this
 > round.
 
-## Current state — 2026-07-04
+## Current state — 2026-07-13
+
+All targets in the three tables below are public npm packages. A GitHub
+Packages token or scoped `.npmrc` entry is neither required nor supported by
+the install skills.
 
 ### CLI
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `reopt-cli` | `@reopt-ai/cli` | **0.3.1** | 2026-06-13 (src) |
+| `reopt-cli` | `@reopt-ai/cli` | **0.3.1** | 2026-07-13 (src+npm) |
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-06-26 (src) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-06-26 (src) |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-07-13 (src+npm) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **3.0.0** | 2026-07-13 (src+npm) |
 
 ### Design / UI packages
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `opt-ui-install` | `@reopt-ai/opt-ui` | **1.4.1** | 2026-07-04 (src) |
-| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.4.2** | 2026-06-18 (npm) |
-| `opt-editor-install` | `@reopt-ai/opt-editor` | **1.0.4** | 2026-07-04 (src) |
-| `opt-chat-install` | `@reopt-ai/opt-chat` | **0.3.1** | 2026-06-18 (npm) |
-| `opt-shell-install` | `@reopt-ai/opt-shell` | **0.1.0** | 2026-06-13 (src) |
+| `opt-ui-install` | `@reopt-ai/opt-ui` | **1.4.1** | 2026-07-13 (src+npm) |
+| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.4.2** | 2026-07-13 (src+npm) |
+| `opt-editor-install` | `@reopt-ai/opt-editor` | **1.1.2** | 2026-07-13 (src+npm) |
+| `opt-chat-install` | `@reopt-ai/opt-chat` | **1.0.0** | 2026-07-13 (src+npm) |
+| `opt-shell-install` | `@reopt-ai/opt-shell` | **1.0.0** | 2026-07-13 (src+npm) |
 
 > **Doc-layout note (routing-critical — skills point at literal paths):**
 > - `@reopt-ai/brandapp-sdk` ships docs at top-level **`docs/`** (NOT
@@ -85,7 +89,7 @@ Per-version detail lives in each package's docs; this table stays terse.
 
 ### Design CLI (used by the UI skills)
 
-`@reopt-ai/opt-cli` (bin `opt`, current **1.1.1**) is the **unified** CLI for the design packages
+`@reopt-ai/opt-cli` (bin `opt`, current **1.1.1**, public npm) is the **unified** CLI for the design packages
 — `opt doctor`, `opt surface add <slug>`, `opt harness …`, `opt check`. The UI
 install skills call it via `npx @reopt-ai/opt-cli <cmd>`. There is **no**
 `opt-ui-cli` or `opt-editor-cli` package; skill copies that referenced those
@@ -95,11 +99,11 @@ names were incorrect and have been corrected.
 
 | Package | Current version | Status |
 |---|---|---|
-| `@reopt-ai/opt-ui-primitives` | 1.4.2 | published (native HTML/browser-API a11y primitives — peer of opt-ui) |
-| `@reopt-ai/opt-palette` | 0.1.0 | published (OKLCH color engine — peer of opt-shell / opt-ui) |
-| `@reopt-ai/opt-devtool` | 0.1.1 | published (renamed from `@reopt-ai/opt-inspect`) |
-| `@reopt-ai/opt-charts` | 0.1.0 | published (Recharts adapters + SVG viz / chart frames + shells) |
-| `@reopt-ai/opt-calendar` | 0.1.0 | published (events + booking/availability, drag/resize, recurrence, timezones) |
+| `@reopt-ai/opt-ui-primitives` | 1.4.2 | public npm (native HTML/browser-API a11y primitives — peer of opt-ui) |
+| `@reopt-ai/opt-palette` | 1.0.0 | public npm (stable OKLCH color engine — peer of opt-shell / opt-ui) |
+| `@reopt-ai/opt-devtool` | 1.0.0 | public npm (stable; renamed from `@reopt-ai/opt-inspect`) |
+| `@reopt-ai/opt-charts` | 1.0.0 | public npm (stable Recharts adapters + SVG viz / chart frames + shells) |
+| `@reopt-ai/opt-calendar` | 1.0.0 | public npm (stable events + booking/availability, drag/resize, recurrence, timezones) |
 | `@reopt-ai/opt-ui-surface` | 1.0.5 | internal, **not on npm** — add Surfaces via `npx @reopt-ai/opt-cli surface add <slug>` |
 | `@reopt-ai/opt-doc-kit` | 0.1.0 | internal, **not on npm** (`private: true`) — metadata-driven docs kit, apps/web workspace |
 | `@reopt-ai/opt-uxflow` | 0.1.0 | internal, **not on npm** (`private: true`) — UX flow builder |
@@ -108,6 +112,9 @@ names were incorrect and have been corrected.
 
 Run every time a new `@reopt-ai/*` package ships:
 
+- [ ] Does `npm view <package> version --@reopt-ai:registry=https://registry.npmjs.org`
+      resolve the intended public release? Do not let a legacy user `.npmrc`
+      silently probe GitHub Packages instead.
 - [ ] Does the package's docs dir (`docs/` **or** `dist/docs/`) cover the new
       API surface? Confirm the **exact path + filenames** — skills route to
       literal paths, so a renamed file silently breaks routing.

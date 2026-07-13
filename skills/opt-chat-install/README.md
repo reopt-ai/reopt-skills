@@ -1,6 +1,6 @@
 # opt-chat-install
 
-Install or upgrade `@reopt-ai/opt-chat` in a consumer project. Wires `.npmrc`, Tailwind content scan, AI SDK endpoint, and a starter Conversation component.
+Install or upgrade public npm package `@reopt-ai/opt-chat` in a consumer project. Clears legacy registry overrides, wires styles, an AI SDK endpoint, and a starter Conversation component.
 
 ## Use When
 
