@@ -3,7 +3,7 @@ name: opt-editor-install
 description: |
   Install or upgrade @reopt-ai/opt-editor in a consumer project. Auto-branches by current install state. Triggers on "opt-editor install", "opt-editor init", "opt-editor setup", "editor install", "editor init", "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update".
 target: "@reopt-ai/opt-editor"
-targetMinVersion: "1.0.4"
+targetMinVersion: "1.1.2"
 ---
 
 # opt-editor Install
@@ -25,7 +25,7 @@ Consumer project depends on `@reopt-ai/opt-editor`. Triggers: "install", "init",
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.0.4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 1.1.2). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-editor-agent-rules -->
@@ -37,14 +37,9 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-edit
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Registry auth** — project-root `.npmrc`:
-   ```
-   @reopt-ai:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-   ```
-   PAT with `read:packages`. Inject via shell / CI secret. **Never hardcode.**
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 18+, React 19+, bun or npm.
+2. **Prereqs** — Node 18+, React 19+, bun or npm. AI integration uses optional peers `ai >= 7` and `zod >= 3`; do not install them for a non-AI editor.
 
 3. **App wiring** — properties of the consumer app:
    - Editor CSS import at the app root.
@@ -71,7 +66,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-edit
 | # | Step | Init | Upgrade |
 |---|---|---|---|
 | 1 | Detect current state | ✓ | ✓ |
-| 2 | `.npmrc` (GitHub Packages) | ✓ | – |
+| 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ |
 | 4 | CSS import check | ✓ | ✓ |
 | 5 | Catalog generation | ✓ | – |

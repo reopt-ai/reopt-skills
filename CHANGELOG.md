@@ -63,6 +63,27 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Changed
 
+**Public npm migration + stable design packages — 2026-07-13** (source-confirmed in `../reopt` / `../reopt-design`, registry-confirmed on npmjs)
+
+- **All skill target packages now install from public npm.** Removed the
+  GitHub Packages PAT / scoped `.npmrc` setup from `brandapp-sdk-install` and
+  all five `opt-*-install` skills. Each install path now checks for the legacy
+  `@reopt-ai:registry=https://npm.pkg.github.com` override, removes only the
+  project-level entry, preserves unrelated auth, and asks before changing
+  user/global npm config. Updated the byte-identical brandapp install/review
+  fallbacks, all opt fallback rules, contributor READMEs, and root EN/KO docs.
+- **Latest public versions reconciled.** `opt-editor` **1.0.4 → 1.1.2**
+  (optional `ai >= 7` / `zod >= 3` peers), `opt-chat` **0.3.1 → 1.0.0**, and
+  `opt-shell` **0.1.0 → 1.0.0**. The two 1.0 releases declare no breaking API
+  change from 0.x. Compatibility tracking also moves `opt-palette`,
+  `opt-devtool`, `opt-charts`, and `opt-calendar` to their public 1.0.0
+  releases; existing versions of brandapp-sdk, cli, opt-ui, opt-datagrid,
+  opt-cli, and opt-ui-primitives were re-verified on npmjs.
+- **opt-shell audit route corrected.** The published 1.0.0 manifest exports
+  `.`, `./core`, and `./meta`, not the `./audit` path still mentioned by its
+  bundled README / `shell-llms.txt`. The skill now routes audit helpers to
+  `@reopt-ai/opt-cli/audit` and contract checks to `opt harness`.
+
 **`reopt-design` patch family — 2026-07-04** (source-confirmed against `reopt-design/packages/*`)
 
 - **`opt-ui` 1.4.0 → 1.4.1** and **`opt-editor` 1.0.3 → 1.0.4.** Both patch

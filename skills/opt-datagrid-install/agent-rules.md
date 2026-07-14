@@ -14,7 +14,7 @@
 
 ## Hard rules
 
-- Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
+- `@reopt-ai/*` installs from public npm — never add a GitHub Packages scope or token. Remove only the exact legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` entry; preserve unrelated registry/auth settings and ask before changing user/global npm config.
 - React 19+ required.
 - Theme integration goes through opt-ui CSS variable tokens — don't override grid internals with raw colors.
 - Migration mode processes files **one at a time** — never bulk-rewrite multiple grids in one pass.

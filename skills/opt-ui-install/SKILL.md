@@ -39,12 +39,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Registry auth** — project-root `.npmrc`:
-   ```
-   @reopt-ai:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-   ```
-   PAT with `read:packages`. Inject via shell / CI secret. **Never hardcode.**
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
 2. **Prereqs** — Node 18+, React 19+, Tailwind CSS v4. bun or npm.
 
@@ -76,7 +71,7 @@ Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
 | # | Step | Init | Upgrade | Surface |
 |---|---|---|---|---|
 | 1 | Detect current state | ✓ | ✓ | ✓ |
-| 2 | `.npmrc` (GitHub Packages) | ✓ | – | – |
+| 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ | – |
 | 4 | CSS import check | ✓ | ✓ | – |
 | 5 | OptThemeProvider setup | ✓ | – | – |

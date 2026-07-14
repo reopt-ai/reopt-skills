@@ -3,7 +3,7 @@ name: opt-chat-install
 description: |
   Install or upgrade @reopt-ai/opt-chat in a consumer project. Auto-branches by current install state. Triggers on "opt-chat install", "opt-chat init", "opt-chat setup", "chat install", "install chat", "set up AI chat", "opt-chat upgrade", "opt-chat update", "chat update".
 target: "@reopt-ai/opt-chat"
-targetMinVersion: "0.3.1"
+targetMinVersion: "1.0.0"
 ---
 
 # opt-chat Install
@@ -36,7 +36,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 0.3.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 1.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-chat-agent-rules -->
@@ -48,12 +48,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Registry auth** — project-root `.npmrc`:
-   ```
-   @reopt-ai:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-   ```
-   PAT with `read:packages`. Never hardcode.
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config. The “`.npmrc` 등록 후” comment in the bundled 1.0.0 README is stale setup text; do not follow it.
 
 2. **Prereqs** — Node 18+, React 19+, a Vercel AI SDK–compatible AI endpoint. **No Tailwind required.** Optional peers: `react-jsx-parser` (JSXPreview parts), `@xyflow/react` (`/flow` Canvas).
 
@@ -80,7 +75,7 @@ opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/RE
 | # | Step | Init | Upgrade |
 |---|---|---|---|
 | 1 | Detect current state | ✓ | ✓ |
-| 2 | `.npmrc` (GitHub Packages) | ✓ | – |
+| 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ |
 | 4 | Styles import check (opt-ui CSS or `styles.css`) | ✓ | ✓ |
 | 5 | AI SDK endpoint check | ✓ | – |

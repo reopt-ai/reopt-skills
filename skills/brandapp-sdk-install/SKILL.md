@@ -31,14 +31,7 @@ Append to the consumer's `AGENTS.md` (fall back to `CLAUDE.md` if `AGENTS.md` is
 
 These are properties of the consumer project, not the module. They will not appear in the module's `docs/`.
 
-1. **Registry auth** — project-root `.npmrc`:
-
-   ```
-   @reopt-ai:registry=https://npm.pkg.github.com
-   //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-   ```
-
-   `GITHUB_TOKEN` is a PAT with `read:packages`. Inject via shell or CI secret. **Never hardcode.**
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com` before installing. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
 2. **Env namespace (2.0+)** — 3 tiers, no aliases for renamed vars:
 
@@ -55,7 +48,7 @@ These are properties of the consumer project, not the module. They will not appe
 
 3. **Peer deps** — `better-auth` is required when using Auth. Optional: `@ai-sdk/provider`, `@tanstack/react-query`.
 
-4. **Optional dev-mode bootstrap** — `npx @reopt-ai/cli brandapp init` scaffolds the offline dev server (see `reopt-brandapp` skill). It does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`, `lib/auth.ts`, auth route handler, or webhook route — those remain this skill's responsibility.
+4. **Optional dev-mode bootstrap** — `npx @reopt-ai/cli brandapp init` scaffolds the offline dev server (see `reopt-brandapp` skill). It does **not** create `.env.local`, `lib/sdk.ts`, `lib/auth.ts`, auth route handler, or webhook route — those remain this skill's responsibility.
 
 ## Step 3 — Route to module docs
 
@@ -76,7 +69,7 @@ Paths are relative to `node_modules/@reopt-ai/brandapp-sdk/docs/`. `api-referenc
 
 ## Safety
 
-- Never hardcode `GITHUB_TOKEN` in `.npmrc`.
+- Do not add GitHub Packages auth for `@reopt-ai/*`; the packages are public on npm. Remove only the legacy project-level scope override and preserve unrelated registry settings.
 - Never put `NODE_TLS_REJECT_UNAUTHORIZED=0` in `.env` — script-scope only.
 - `BRANDAPP_ID` is the **brandappId** (app), not the brandId (brand).
 - `BETTER_AUTH_URL` must match the browser-facing origin exactly.

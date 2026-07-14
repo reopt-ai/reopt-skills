@@ -4,7 +4,7 @@ v2.0 rewrites every skill around the **slim convention** that Next.js 16.2+ uses
 
 - Each `@reopt-ai/*` package owns its own `dist/docs/` (API surface, code samples, per-version detail).
 - Each consumer project's `AGENTS.md` (or `CLAUDE.md`) gets a marker-bracketed block — `<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->` — that points the agent at those docs.
-- SKILL.md only keeps what the docs can't cover: `.npmrc`, env-namespace rules, peer deps, requires chains, destructive guardrails, security rules. Average SKILL.md size went from ~400 lines to ~80.
+- SKILL.md only keeps what the docs can't cover: legacy registry cleanup, env-namespace rules, peer deps, requires chains, destructive guardrails, security rules. Average SKILL.md size went from ~400 lines to ~80.
 
 This document is for consumers who already pinned an older release of `reopt-skills`.
 
@@ -14,6 +14,7 @@ This document is for consumers who already pinned an older release of `reopt-ski
 2. **References folder gone** — `references/breaking-changes.md`, `references/migration-*.md`, `references/*-patterns.md` are not shipped with skills anymore. The content has moved (or is moving) into the target package's `dist/docs/`. If you relied on a specific file path from v1, see the mapping below.
 3. **SKILL.md is much shorter** — agents reading SKILL.md will now route to module docs for API details instead of finding them inline.
 4. **Validator is stricter** — install/review SKILL.md > 150 lines fails; the marker reference is required.
+5. **Target packages are public on npm** — no GitHub Packages token or scoped `.npmrc` entry is required. Current install skills remove the legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` override while preserving unrelated registry settings.
 
 No skill names changed. The set of installable skills is the same 10.
 
@@ -34,6 +35,7 @@ If you want to stay on v1 for now, pin explicitly: `npx skills add reopt-ai/reop
 Re-running an install skill in v2 will:
 
 - Add a `<!-- BEGIN:reopt/<pkg>-agent-rules -->` block to your `AGENTS.md` (or `CLAUDE.md` if `AGENTS.md` doesn't exist).
+- Remove a legacy project-level GitHub Packages override for the `@reopt-ai` scope, if present; user/global npm config is not changed without confirmation.
 - Leave the rest of the file alone.
 
 Do this for every `@reopt-ai/*` package you use. Re-runs are safe; the marker matching is idempotent.

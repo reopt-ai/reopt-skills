@@ -4,7 +4,7 @@
 
 > English: see [README.md](./README.md).
 >
-> 스킬 관련 모듈과 CLI는 **2026년 5월** 공개 출시 예정입니다.
+> 이 스킬들이 대상으로 삼는 모든 패키지는 공개 npm 레지스트리에서 설치할 수 있습니다. GitHub Packages 토큰이나 스코프 전용 `.npmrc` 설정은 필요하지 않습니다.
 >
 > **v1.x 에서 업그레이드 중이신가요?** 슬림 스킬 재작성에 대한 안내는 [MIGRATION-v2.md](./MIGRATION-v2.md) 참고.
 
@@ -31,7 +31,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 1. **AGENTS.md 에 marker 블록을 박는다** — 컨슈머 프로젝트의 `AGENTS.md` (없으면 `CLAUDE.md`) 에 `<!-- BEGIN:reopt/<pkg>-agent-rules -->` … `<!-- END:reopt/<pkg>-agent-rules -->` 마커 사이에 모듈 가이드 블록을 추가합니다. 재설치나 버전 업그레이드 시 마커 사이만 교체되고 바깥 텍스트는 보존됩니다 (Next.js 16.2+ 가 쓰는 패턴과 동일).
 2. **모듈 docs 로 라우팅한다** — 각 `@reopt-ai/*` 패키지가 자기 docs 를 출판합니다 — `dist/docs/` (opt-ui / opt-datagrid / opt-editor), 최상위 `docs/` (brandapp-sdk), 또는 `README.md` / `shell-llms.txt` (cli, opt-chat, opt-shell). SKILL.md 는 API 표면을 복제하지 않고, "어떤 상황에 어느 docs 파일을 보라"는 라우팅만 제공합니다. 모듈 docs 는 설치된 버전에 핀 고정되지만, 스킬은 그렇지 않습니다.
 
-스킬에 남는 것은 모듈 안에 둘 수 없는 컨슈머 프로젝트 설정뿐입니다 — `.npmrc`, 레지스트리 인증, env 네임스페이스 규칙, peer deps, requires 체인, 파괴적 변경 가드레일, 보안 규칙.
+스킬에 남는 것은 모듈 안에 둘 수 없는 컨슈머 프로젝트 설정뿐입니다 — 레거시 레지스트리 설정 정리, env 네임스페이스 규칙, peer deps, requires 체인, 파괴적 변경 가드레일, 보안 규칙.
 
 타깃 패키지가 자기 `dist/agent-rules.md` 를 출판하기 전까지, 각 스킬은 SKILL.md 옆에 폴백 `agent-rules.md` 사본을 함께 출하합니다.
 
@@ -39,7 +39,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 
 ### CLI 워크플로우
 
-`reopt` CLI 자체에 대한 가이드. 비공개 패키지 접근이 필요 없습니다.
+`reopt` CLI 자체에 대한 가이드. CLI는 공개 npm 패키지입니다.
 
 | 스킬 | 다루는 내용 |
 | --- | --- |
@@ -53,7 +53,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 
 | 스킬 | 다루는 내용 |
 | --- | --- |
-| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | `reopt/brandapp-sdk-agent-rules` 블록을 박고, `.npmrc` (GitHub Packages 인증) + env 3-tier 네임스페이스(`BRANDAPP_*` / `REOPT_*` / `BRANDAPP_SDK_*`) + peer deps 를 세팅. `lib/sdk.ts`, `lib/auth.ts`, EAV 스키마, webhook, 마케팅 사이트 helper, 에러 처리는 모듈 docs 로 라우팅. |
+| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | `reopt/brandapp-sdk-agent-rules` 블록을 박고, 레거시 GitHub Packages override를 제거한 뒤 env 3-tier 네임스페이스(`BRANDAPP_*` / `REOPT_*` / `BRANDAPP_SDK_*`) + peer deps 를 세팅. `lib/sdk.ts`, `lib/auth.ts`, EAV 스키마, webhook, 마케팅 사이트 helper, 에러 처리는 모듈 docs 로 라우팅. |
 | [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | 기존 SDK 코드를 감사. 안티패턴을 10개 카테고리(init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS)로 묶고 grep key 와 함께 나열, 정답 수정은 모듈 `docs/` 로 라우팅. |
 
 ### 패키지 설치 / 업그레이드
@@ -66,7 +66,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | [`opt-editor-install`](./skills/opt-editor-install/) | Editor 컴포넌트 + 레시피 + `opt-cli doctor` 감사 + 선택적 AI 스트리밍 (`--with-ai`). |
 | [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK 엔드포인트 + Conversation 스캐폴드. Vercel AI SDK 호환. |
 | [`opt-datagrid-install`](./skills/opt-datagrid-install/) | 설치 / 업그레이드 / glide-data-grid·ag-grid·react-data-grid·MUI DataGrid 에서의 마이그레이션. |
-| [`opt-shell-install`](./skills/opt-shell-install/) | 제품 프레임 레이어 (구 opt-harness): workspace 레시피(Dashboard / List / Detail / Editor / Landing), density/contentWidth/navigation/motion 정책, 데이터 엔진 adapter, state boundary. Peer: opt-palette·opt-datagrid·opt-editor. |
+| [`opt-shell-install`](./skills/opt-shell-install/) | 제품 프레임 레이어 (구 opt-harness): workspace 레시피(Dashboard / List / Detail / Editor / Landing), density/contentWidth/navigation/motion 정책, 데이터 엔진 adapter, state boundary. 필수 peer: opt-palette; 선택 adapter peer: opt-datagrid·opt-editor·opt-calendar. |
 
 ## 어떤 스킬을 골라야 하나
 
@@ -91,10 +91,10 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 1. `reopt-cli` — `reopt login` 으로 로그인.
 2. `reopt-brandapp` — 프로젝트 `link`; 필요 시 dev 서버 부트스트랩을 위해 `init`.
 3. `reopt-eav` — `eav.schema.ts` 작성 후 `eav sync` 로 게시.
-4. `brandapp-sdk-install` — agent-rules 블록을 박고 `.npmrc` 작성, 모듈 docs 를 따라 SDK + Better Auth 라우트 핸들러 연결.
+4. `brandapp-sdk-install` — agent-rules 블록을 박고 레거시 레지스트리 override를 정리한 뒤, 모듈 docs 를 따라 SDK + Better Auth 라우트 핸들러 연결.
 5. (시간이 흐른 뒤) `brandapp-sdk-review` — SDK 가 발전함에 따라 주기적으로 감사.
 
-`reopt-brandapp init` 과 `brandapp-sdk-install` 은 **중복이 아니라 보완 관계**입니다. `init` 은 **개발 모드 파일**(`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`, `instrumentation.ts`, `package.json` 의 `dev:local` 스크립트, `.gitignore` 의 `.reopt/`)을 작성하고, `brandapp-sdk-install` 은 **SDK 앱 코드**를 모듈 docs 를 따라 작성합니다(`.npmrc`, `.env.local`, `lib/sdk.ts`, `lib/auth*.ts`, auth 라우트 핸들러, 선택적 webhook). 로컬 개발까지 가능한 신규 프로젝트를 만들려면 둘 다 실행하세요.
+`reopt-brandapp init` 과 `brandapp-sdk-install` 은 **중복이 아니라 보완 관계**입니다. `init` 은 **개발 모드 파일**(`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`, `instrumentation.ts`, `package.json` 의 `dev:local` 스크립트, `.gitignore` 의 `.reopt/`)을 작성하고, `brandapp-sdk-install` 은 레거시 프로젝트 레지스트리 override를 정리한 뒤 **SDK 앱 코드**를 모듈 docs 에 따라 작성합니다(`.env.local`, `lib/sdk.ts`, `lib/auth*.ts`, auth 라우트 핸들러, 선택적 webhook). 로컬 개발까지 가능한 신규 프로젝트를 만들려면 둘 다 실행하세요.
 
 ## 구조
 

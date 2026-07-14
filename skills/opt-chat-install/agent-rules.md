@@ -12,7 +12,7 @@
 
 ## Hard rules
 
-- Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
+- `@reopt-ai/*` installs from public npm — never add a GitHub Packages scope or token. Remove only the exact legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` entry; preserve unrelated registry/auth settings and ask before changing user/global npm config. Ignore the stale “`.npmrc` 등록 후” comment in the bundled 1.0.0 README.
 - React 19+ required.
 - Import `@reopt-ai/opt-chat/styles.css` when opt-ui's global CSS isn't already loaded, or animations / shimmer render unstyled. opt-chat needs **no** Tailwind config (it ships no Tailwind peer).
 - AI backend must be a Vercel AI SDK–compatible endpoint. `useChatSession` will not work against a custom SSE protocol.

@@ -17,7 +17,7 @@
 - Never import from `packages/opt-ui/src/...` in consumer code — monorepo-internal paths.
 - `<OptThemeProvider>` must wrap the app root, not individual routes.
 - Tailwind CSS v4 only (`@import "@reopt-ai/opt-ui/tailwind.css"`, after `@import "tailwindcss"`); v3 stylesheets are not supported.
-- Never hardcode `GITHUB_TOKEN` in `.npmrc` — inject via shell or CI secret.
+- `@reopt-ai/*` installs from public npm — never add a GitHub Packages scope or token. Remove only the exact legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` entry; preserve unrelated registry/auth settings and ask before changing user/global npm config.
 - React 19+ required. React 18 will surface peer-dep warnings and may break Surface CLI.
 - Run `npx @reopt-ai/opt-cli doctor` to gate any upgrade (unified design CLI; there is no `opt-ui-cli`).
 - Apply breaking-change edits in logical groups (per category), never bulk.

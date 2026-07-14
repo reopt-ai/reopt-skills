@@ -56,7 +56,7 @@ Term types: `termsOfService`, `privacyPolicy`, `marketingConsent`, `custom`.
 
 Detection: presence of `next` in `package.json`. Non-Next projects get only `.env.development` + `reopt.seed.ts` + `.gitignore` and must wire `startDevServer()` manually.
 
-`init` does **not** create `.npmrc`, `.env.local`, `lib/sdk.ts`, `lib/auth.ts`, auth route handler, or webhook files — those belong to `brandapp-sdk-install`. The two skills are complementary; run `init` first, then `brandapp-sdk-install` for the SDK app code.
+`init` does **not** create `.env.local`, `lib/sdk.ts`, `lib/auth.ts`, auth route handler, or webhook files, and does not clean legacy package-registry overrides — those belong to `brandapp-sdk-install`. The two skills are complementary; run `init` first, then `brandapp-sdk-install` for the SDK app code.
 
 ## Step 4 — Route to docs
 
