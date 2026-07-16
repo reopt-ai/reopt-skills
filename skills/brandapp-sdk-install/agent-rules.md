@@ -12,6 +12,7 @@
 | Env vars + 3-tier namespace, host split | `docs/environment.md` |
 | Error classes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `DuplicateAuthUserError` 409, `AuthUserNotFoundError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `CONFIG_BROWSER_SECRET`, `QUERY_TOO_LARGE`; guards `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError`) | `docs/errors.md` |
 | Marketing-site / CMS helpers (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`) | `docs/cms.md` |
+| Plans catalog + hosted checkout (3.1: `plans.createCheckout` / `getCheckout` / `cancel`, `CheckoutSession`, `RequiredTermsError`) — **not yet in `docs/`**; read the `@reopt-ai/brandapp-sdk/plans` export types (`dist/plans/index.d.ts`) | (types) |
 | File management | `docs/files.md` |
 | Dev server (offline development) | `docs/dev-server.md` |
 | Migration / breaking changes | `docs/migration.md` |
@@ -35,3 +36,4 @@
 - AI streaming `config.timeout` is an **idle** (between-chunk) gap, not wall-clock (2.2+). Streaming 402 surfaces as `CreditLimitError`; AI SDK provider errors are `APICallError` (2.3+).
 - Large EAV `backfill` batches via `bulkUpdate` (2.2+) — tune `BackfillOptions.batchSize`; don't hand-roll per-record update loops.
 - The in-memory dev server refuses to start under `NODE_ENV=production` (3.0) unless `REOPT_DEV_SERVER_ALLOW_PRODUCTION=1`. `trace` debug now also redacts camelCase token keys (`accessToken` / `refreshToken` / `idToken` / `clientSecret`).
+- **Plans hosted checkout (3.1, additive):** `sdk.plans.createCheckout({ planId, successUrl, cancelUrl }, accessToken)` → `CheckoutSession`; redirect the browser to `checkoutUrl`. Sandbox (the default) drives a virtual id.reopt.ai payment through the full catalog → subscribe → pay → entitlement loop; a live-payment Brandapp returns HTTP 409 `LIVE_MODE_UNSUPPORTED` (keep the first-party brandfront flow). Handle `RequiredTermsError` (`isRequiredTermsError`, HTTP 422 `REQUIRED_TERMS`) — read `error.missingTermsIds`, collect consent via `sdk.terms.list()` + `sdk.terms.consent()`, then retry. `plans.cancel(accessToken)` keeps access until the paid period ends. `getCheckout` never re-exposes `checkoutUrl` (returns `null`). Usage meters stay read-only. Surface not in `docs/` yet — read the `@reopt-ai/brandapp-sdk/plans` types.
