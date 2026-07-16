@@ -2,7 +2,7 @@
 name: brandapp-sdk-install
 description: Install @reopt-ai/brandapp-sdk in a consumer project. Sets up auth, OAuth client, EAV, API routes, and env config. Triggers on "brandapp-sdk install", "brandapp-sdk init", "brandapp sdk setup", "brandapp sdk bootstrap", "apply SDK", "brandapp integration".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "3.0.0"
+targetMinVersion: "3.1.0"
 ---
 
 # Brandapp SDK Install
@@ -15,7 +15,7 @@ A consumer project adopting `@reopt-ai/brandapp-sdk` for the first time. Trigger
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source of truth for the rules block: the module's own agent-rules file, once it ships one. `@reopt-ai/brandapp-sdk` does **not** ship one as of 3.0.0, so use the fallback `agent-rules.md` bundled with this skill.
+Source of truth for the rules block: the module's own agent-rules file, once it ships one. `@reopt-ai/brandapp-sdk` does **not** ship one as of 3.1.0, so use the fallback `agent-rules.md` bundled with this skill.
 
 Append to the consumer's `AGENTS.md` (fall back to `CLAUDE.md` if `AGENTS.md` is absent — never both). Wrap the content between:
 
@@ -60,7 +60,8 @@ Paths are relative to `node_modules/@reopt-ai/brandapp-sdk/docs/`. `api-referenc
 |---|---|
 | SDK init (`createReoptSDK` / `createLazySDK`, `lib/sdk.ts`; token-only client config), Better Auth + OAuth (`lib/auth.ts`), EAV (`defineEntity` / `defineSchema`, `linkedTo`, drift hash, `backfill`), webhooks (`createWebhookHandler`, `verifySignature(timestamp, body, signature, secret)`, `toleranceMs`, `contactCreated`/`workflowRun*` events — 3.0 contract), service token (`Authorization: Bearer`, 1.12+), React hooks, AI (`sdk.ai.models()` / `sdk.ai.stream`, `useAiStream`, `useAiAgents`) | `docs/api-reference.md` |
 | Env vars + 3-tier namespace, host split (`brand.reopt.ai` / `id.reopt.ai`) | `docs/environment.md` |
-| Error classes / codes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `CONFIG_BROWSER_SECRET`, `QUERY_TOO_LARGE`; `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError`) | `docs/errors.md` |
+| Error classes / codes (`AuthError`, `ForbiddenError`, `AuthUserRecordExistsError`, `LimitExceededError`, `CreditLimitError` 402, `ModelAccessError` 403, `ModelNotFoundError` 404, `ContentFilterError` 422, `RequiredTermsError` 422 (3.1), `LIVE_MODE_UNSUPPORTED` 409 (3.1), `CONFIG_BROWSER_SECRET`, `QUERY_TOO_LARGE`; `isReoptSDKError` / `isCreditLimitError` / `isModelAccessError` / `isRequiredTermsError`) | `docs/errors.md` |
+| Plans catalog + hosted checkout (3.1: `plans.createCheckout` / `getCheckout` / `cancel`, sandbox vs live `LIVE_MODE_UNSUPPORTED`, `RequiredTermsError` → `terms.list`/`consent` retry) — **not yet in `docs/`** | `@reopt-ai/brandapp-sdk/plans` types (`dist/plans/index.d.ts`) |
 | Marketing site / CMS (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`; `cms` is read-only from 1.8+) | `docs/cms.md` |
 | File upload / management | `docs/files.md` |
 | Dev server (`createDevServer`, `instrumentation.ts`, offline development) | `docs/dev-server.md` |

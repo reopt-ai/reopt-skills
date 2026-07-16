@@ -2,7 +2,7 @@
 name: brandapp-sdk-review
 description: Review consumer project code for @reopt-ai/brandapp-sdk usage anti-patterns and suggest improvements. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "3.0.0"
+targetMinVersion: "3.1.0"
 ---
 
 # Brandapp SDK Review
@@ -15,7 +15,7 @@ A consumer project already uses `@reopt-ai/brandapp-sdk` and wants an audit. Tri
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 3.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 3.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/brandapp-sdk-agent-rules -->
@@ -31,6 +31,7 @@ Markers are shared with `brandapp-sdk-install` — same module, one block. If th
 grep '"@reopt-ai/brandapp-sdk"' package.json
 ```
 
+- `< 3.1.0` — no `plans` hosted checkout (`createCheckout` / `getCheckout` / `cancel`, `RequiredTermsError`). If the app builds subscription / checkout UI, recommend 3.1 and run Err5 below.
 - `< 3.0.0` — **webhook contract differs from the live platform sender**: 2.x `verifySignature(body, sig, secret)` + `record.*` event handlers silently 401-reject / never fire in prod. Browser `clientSecret` was allowed (now throws `CONFIG_BROWSER_SECRET`). `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` aliases still exist (removed in 3.0). Bump to 3.0 and run the W / Cfg patterns below.
 - `< 2.3.0` — AI errors not unified (streaming 402 was `STREAM_ERROR`, not `CreditLimitError`); `ModelAccessError` / `ModelNotFoundError` / `ContentFilterError` absent; `sdk.ai.models()` lacks `modality` / `isDefault`. Recommend 2.3 for AI work.
 - `< 2.2.0` — mutations retried by default (dup-write / dup-credit risk), AI `timeout` is wall-clock not idle, `backfill` does per-record PATCH, no `QUERY_TOO_LARGE` guard. Recommend 2.2+.
@@ -72,6 +73,7 @@ For each match, name the pattern, point at the file/line, then route the consume
 | Err2 Unhandled API errors (no `handleApiError` wrapper) | route handlers without a centralized error handler |
 | Err3 EAV mutation on `linkedTo='brandappAuthUser'` without 1.9 narrowed catches | `records.create` / bulk on linked entity, no `AuthUserRecordExistsError` / `DuplicateAuthUserError` / `AuthUserNotFoundError` branch |
 | Err4 Legacy `e.code === 'REQUEST_ERROR'` string check | literal string match — pre-1.9 only |
+| Err5 Plans checkout without `RequiredTermsError` / 409 `LIVE_MODE_UNSUPPORTED` handling (3.1) | `plans.createCheckout(` with no `isRequiredTermsError` / live-mode branch |
 
 ### Config / security → `docs/environment.md` (env / hosts), `docs/api-reference.md` (service token)
 | Pattern | Grep signal |
@@ -138,7 +140,7 @@ Group by category; lead with version-gate failures (Step 2). Do not paste full b
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Cfg1–Cfg5/Sch1/Sch4/Sch5 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Err5/Cfg1–Cfg5/Sch1/Sch4/Sch5 require human judgment — propose, don't apply.
 
 ## Safety
 

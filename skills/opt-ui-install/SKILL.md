@@ -3,7 +3,7 @@ name: opt-ui-install
 description: |
   Install or upgrade @reopt-ai/opt-ui in a consumer project, or add a Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui surface", "opt-cli surface add", "add Surface".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.4.1"
+targetMinVersion: "1.5.0"
 ---
 
 # opt-ui Install
@@ -27,7 +27,7 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.4.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.5.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -46,9 +46,10 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 3. **App-shell wiring** — properties of the consumer app:
    - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet (plus the `@source` directive — see getting-started).
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
-   - Surface CLI: `npx @reopt-ai/opt-cli surface add <slug>` for page templates (Surfaces live in the internal `opt-ui-surface` package — not installed directly).
+   - Surface CLI: `npx @reopt-ai/opt-cli surface add <slug>` for page templates (Surfaces live in the internal `opt-ui-surface` package — not installed directly). `opt surface diff` (opt-cli 1.2+) bulk-checks every installed Surface against the bundled registry (`--json` / `--exit-code` for CI).
+   - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and example code.
 
-4. **Doctor** — `npx @reopt-ai/opt-cli doctor` runs the environment audit (unified design CLI; there is no `opt-ui-cli`).
+4. **Doctor** — `npx @reopt-ai/opt-cli doctor` runs the environment audit (unified design CLI; there is no `opt-ui-cli`). opt-cli 1.2+ lists `@reopt-ai/opt-shell@^1.0.0` as a **peer** — install it if `opt` warns about a missing peer.
 
 ## Step 3 — Route to module docs
 

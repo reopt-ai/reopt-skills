@@ -11,6 +11,30 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Changed
+
+**Package sync — 2026-07-16** (sibling monorepo source re-checked after a bump; versions frozen until a release is cut per `AGENTS.md`)
+
+- **brandapp-sdk 3.0.0 → 3.1.0** (`brandapp-sdk-install` / `brandapp-sdk-review`).
+  Additive `sdk.plans` hosted checkout (`createCheckout` / `getCheckout` /
+  `cancel`, `CheckoutSession`) with new `RequiredTermsError` (422
+  `REQUIRED_TERMS`) and `LIVE_MODE_UNSUPPORTED` (409, live-payment Brandapps).
+  The checkout surface is **not in `docs/` yet**, so the shared `agent-rules.md`
+  gained a hard rule + doc-map row pointing at the `@reopt-ai/brandapp-sdk/plans`
+  export types, install Step 3 gained a plans routing row + error codes, and
+  review gained a `< 3.1.0` version gate + `Err5` (checkout without
+  `RequiredTermsError` / live-mode handling). `targetMinVersion` bumped to 3.1.0
+  in both skills.
+- **opt-ui 1.4.1 → 1.5.0** (`opt-ui-install`). Drawer slide animations tokenized
+  (`OPT_ANIMATE_DRAWER`); runtime behavior + exports unchanged.
+  `targetMinVersion` bumped to 1.5.0.
+- **opt-cli 1.1.1 → 1.2.0** (design CLI used by the UI skills). Added
+  `opt component` (opt-ui/opt-charts metadata) and `opt surface diff` (bulk
+  drift) notes to `opt-ui-install`; flagged the **`@reopt-ai/opt-shell` →
+  `peerDependencies`** move so opt-ui-only consumers know to install it.
+- **Tracked-only bumps** in `COMPATIBILITY.md`: `opt-ui-primitives` 1.4.2 →
+  1.5.0, `opt-charts` 1.0.0 → 1.1.0.
+
 ### Fixed
 
 **Content reconciliation against current source — 2026-07-04** (drift fixes surfaced by a full source audit of every skill; distinct from the version bumps below)
