@@ -7,7 +7,7 @@ requires:
 
 # reopt Brandapp
 
-> This is NOT the reopt CLI you know. Run `reopt brandapp --help` / `reopt brandapp <cmd> --help` for the live command tree. Read `node_modules/@reopt-ai/cli/README.md` § Commands for narrative guides (the CLI ships no `dist/docs/`).
+> This is NOT the reopt CLI you know. Run `reopt brandapp --help` / `reopt brandapp <cmd> --help` for the live command tree. The CLI ships no `dist/docs/`; if narrative context is needed, locate the `README.md` from the actual CLI installation or source checkout instead of assuming a local `node_modules` path.
 
 ## When to apply
 

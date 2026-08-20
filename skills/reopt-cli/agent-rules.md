@@ -1,17 +1,17 @@
 # This is NOT the reopt CLI you know
 
-`@reopt-ai/cli` adds subcommands and shifts flag semantics frequently. Run `reopt --help` (or `reopt <subcommand> --help`) to see the live command tree before scripting anything. The CLI ships no `dist/docs/` — read `node_modules/@reopt-ai/cli/README.md` for narrative guides.
+`@reopt-ai/cli` adds subcommands and shifts flag semantics frequently. Run `reopt --help` (or `reopt <subcommand> --help`) to see the live command tree before scripting anything. The CLI ships no `dist/docs/`; for narrative guides, locate the `README.md` from the actual CLI package installation or source checkout instead of assuming a local `node_modules` path.
 
 ## Doc map
 
 | Task | Read (`--help` is live source of truth; CLI ships no docs dir) |
 |---|---|
 | Any command / flag | `reopt <cmd> --help` |
-| Auth, status, session model | `README.md` § Authentication |
+| Auth, status, session model | `reopt login --help`, `reopt status --help`; installed CLI `README.md` § Authentication |
 | Brandapp / EAV ops | `reopt brandapp --help`, `reopt brandapp eav --help` |
-| Schema-as-Code, MCP, completion, config | `README.md` §§ Schema-as-Code, Shell completion, Preferences |
-| Global flags, output formats, pagination | `README.md` § Output and global flags |
-| Exit codes | `README.md` § Exit codes |
+| Schema-as-Code, MCP, completion, config | relevant `--help`; installed CLI `README.md` §§ Schema-as-Code, Shell completion, Preferences |
+| Global flags, output formats, pagination | `reopt --help`; installed CLI `README.md` § Output and global flags |
+| Exit codes | installed CLI `README.md` § Exit codes |
 
 ## Hard rules
 

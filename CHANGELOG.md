@@ -13,6 +13,13 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ### Changed
 
+**Portable CLI documentation routing — 2026-08-21** (no target-version change)
+
+- Updated `reopt-cli`, `reopt-brandapp`, `reopt-eav`, and the shared CLI
+  agent-rules fallback to prefer the live `--help` command tree and resolve the
+  CLI package/source `README.md` from the actual installation. Removed the
+  assumption that every consumer has `node_modules/@reopt-ai/cli/README.md`.
+
 **Package sync — 2026-07-16** (sibling monorepo source re-checked after a bump; versions frozen until a release is cut per `AGENTS.md`)
 
 - **brandapp-sdk 3.0.0 → 3.1.0** (`brandapp-sdk-install` / `brandapp-sdk-review`).

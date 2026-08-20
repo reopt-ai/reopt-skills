@@ -7,7 +7,7 @@ targetMinVersion: "0.3.1"
 
 # reopt CLI
 
-> This is NOT the reopt CLI you know. Run `reopt --help` / `reopt <cmd> --help` for the live command tree, and read `node_modules/@reopt-ai/cli/README.md` for narrative guides (the CLI ships no `dist/docs/`).
+> This is NOT the reopt CLI you know. Run `reopt --help` / `reopt <cmd> --help` for the live command tree. The CLI ships no `dist/docs/`; when narrative context is needed, locate the `README.md` from the actual CLI package installation or source checkout instead of assuming a local `node_modules` path.
 
 ## When to apply
 
@@ -39,18 +39,18 @@ Run `reopt status` (or `reopt status --ping`) before any mutating operation. If 
 
 ## Step 3 — Route to module docs / `--help`
 
-Prefer `--help` (live source of truth); the CLI ships **no** `dist/docs/`, so narrative detail lives in `node_modules/@reopt-ai/cli/README.md`:
+Prefer `--help` as the live source of truth. The CLI ships **no** `dist/docs/`; its package `README.md` provides narrative detail, but the path depends on whether the CLI is installed locally, globally, or run from a source checkout. Resolve the actual installation before using the README section references below.
 
 | Task signal | Read |
 |---|---|
 | Any command / flag | `reopt <cmd> --help` (live) |
-| Auth commands and session model | `README.md` § Authentication |
+| Auth commands and session model | `reopt login --help`, `reopt status --help`; installed CLI `README.md` § Authentication |
 | Service-token issuance (CI/CD) | `reopt token mint --help` |
 | Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `reopt brandapp --help` + see `reopt-brandapp` skill |
 | EAV ops (`status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`) | `reopt brandapp eav --help` + see `reopt-eav` skill |
-| Schema-as-Code, MCP, completion, config | `README.md` §§ Schema-as-Code, Shell completion, Preferences |
-| Global flags, output formats, pagination | `README.md` § Output and global flags |
-| Exit codes | `README.md` § Exit codes |
+| Schema-as-Code, MCP, completion, config | relevant `--help`; installed CLI `README.md` §§ Schema-as-Code, Shell completion, Preferences |
+| Global flags, output formats, pagination | `reopt --help`; installed CLI `README.md` § Output and global flags |
+| Exit codes | installed CLI `README.md` § Exit codes; summary below |
 
 Quick global-flag reminders (subset; full list in `--help`):
 
