@@ -236,6 +236,26 @@ harness commands, not block/component commands. There is no `opt-ui-cli` or
 `@reopt-ai/opt-ui-surface` is no longer a workspace package and has never been
 published to npm. Page templates now come from the signed `opt block` registry.
 
+### Landing in the next `@reopt-ai/cli` release (not in 0.5.0)
+
+`packages/cli` gained a large MCP body of work after 0.5.0 shipped. The **remote**
+server (`https://mcp.reopt.ai`) is already deployed and its CRM surface is live —
+`reopt-cli` documents that today, since a hosted connector is independent of the
+installed CLI version. What is **not** yet published, and must not be documented
+as installed surface until the release lands:
+
+- `packages/cli/plugin.json` + `mcp.json` — `@reopt-ai/cli` packaged as an
+  Agent Plugins 1.0.0 plugin, declaring the remote MCP server only. A repo guard
+  fails any plugin declaring both stdio and remote (10 of their tool names
+  collide, and stdio's shared tools all fail before `reopt login`).
+- `packages/cli/src/remote-tools.ts` — the shared tool registry that now feeds
+  `title` / `annotations` to both surfaces. Published `reopt mcp` (0.5.0) still
+  advertises its 14 tools with **no annotations**, so approval-gating clients
+  treat them all as "ask".
+
+When that release cuts: bump `reopt-cli` `targetMinVersion`, and revisit the
+Step 4 wording that currently says the manifest is absent from 0.5.0.
+
 ## Drift checklist
 
 Run every time a new `@reopt-ai/*` package ships:

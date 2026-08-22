@@ -20,6 +20,39 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   CLI package/source `README.md` from the actual installation. Removed the
   assumption that every consumer has `node_modules/@reopt-ai/cli/README.md`.
 
+**Skill hardening — 2026-08-22** (no target-version change)
+
+- **`reopt-cli` gains an MCP section (Step 4) + shared agent rules.** Reopt runs
+  **two** MCP servers whose tool names collide, and nothing in `--help` says so:
+  the remote connector `https://mcp.reopt.ai` advertises 26 tools (10 shared +
+  EAV 6 + CRM 10) with client-side OAuth, while local stdio `reopt mcp`
+  advertises 14 (the same 10 + `reopt_status` / `reopt_brandapp_doctor` /
+  `reopt_schema_validate` / `reopt_sdk_inspect`). Registering both hands the
+  model two tools for one job, and stdio's 10 shared tools all fail before
+  `reopt login`. Counts were cross-checked against the live remote tool list and
+  the CLI's `src/mcp/tools.ts`, not taken from a commit message.
+- **CRM tool guardrails are now skill-owned** (a security rule, so it belongs in
+  SKILL.md rather than routed docs). `reopt_customer_*` / `reopt_segment_*` /
+  `reopt_journey_*` require `customer:read` / `customer:write` — excluded from
+  connector defaults, so an unasked connector is refused; workspace binding is
+  mandatory there; `customer_list` / `segment_preview` expose **no** unmask
+  parameter, raw PII opens only through single-record `customer_get` on the
+  write quota with an audit flag; `customData` keys are attribute UUIDs that
+  need `customer_field_list`; and `customer_note_add` is the only write.
+- Added the "always call `reopt_workspace_list` first" rule — a guessed
+  `workspaceId` returns an **empty result, not an error**, which is the one
+  failure a model cannot diagnose on its own.
+- The unreleased CLI Agent-Plugin packaging is recorded in `COMPATIBILITY.md`
+  as a watch item rather than documented as installed surface: `plugin.json` /
+  `mcp.json` / `remote-tools.ts` landed after 0.5.0 shipped. This avoids
+  repeating the 2026-07-24 landmine, where skills documented CLI env-var names
+  that did not exist at the declared `targetMinVersion`.
+- **`brandapp-sdk-review` line budget (follow-up).** Converted the ten
+  per-category pattern tables to bullet lists — each table cost two lines of
+  `| Pattern | Grep signal |` / `|---|---|` header for zero content. All 48
+  pattern rows are preserved verbatim: **137 → 117 lines**, restoring 33 lines
+  of headroom under the 150-line cap (was 7 after the 4.0 sync).
+
 **Package sync — 2026-08-22** (both sibling monorepos + public npm `latest`
 re-checked; versions stay under `[Unreleased]` until a repository release is cut)
 
