@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "organization": "reopt",
-  "updatedAt": "2026-06-13",
+  "updatedAt": "2026-08-22",
   "abstract": "Install or upgrade @reopt-ai/opt-shell (product-frame layer: workspace recipes, policy, data-engine adapters, state boundaries; formerly @reopt-ai/opt-harness). Pins the agent-rules marker block and routes to shell-llms.txt + README.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"

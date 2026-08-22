@@ -91,6 +91,10 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **F1 Parallel file-manager client** — custom `/files` / `/folders` REST wrappers while `sdk.files` is absent — use the SDK's file/folder CRUD
 - **F2 Unsafe preview or domain-error handling** — `fetch(file.url).text()` instead of `readContent`, or upload/delete/folder mutations without `STORAGE_LIMIT` / `FILE_IN_USE` / `FOLDER_NOT_EMPTY` branches
 
+### Terms / consent / push → `docs/api-reference.md` §§ Terms Client, Feedback Client
+- **T1 Private copy of the terms text or consent table** — terms/consent strings or a `consents` table in the app's own schema while `sdk.terms` is unused — terms are brand-owned (2026-08-03) and bind Brandapp + brandfront alike
+- **T2 Hand-rolled device-token endpoints** — bespoke `/push` or FCM/APNs token routes beside a user table instead of `sdk.push` (`registerDeviceToken` / `unregisterDeviceToken` / `listDevices`, Bearer + self-scoped)
+
 ### Webhook → `docs/api-reference.md`
 - **W1 Hand-rolled HMAC verification** — manual `crypto.createHmac` against the webhook secret — use `createWebhookHandler`
 - **W2 Stale 2.x webhook contract (3.0 breaking)** — `record.created`/`record.updated`/`entity.`/`subscription.changed`/`customer.created` in `handlers:`, or `verifySignature(` called with 3 args — move to `contactCreated`/`contactUpdated`/`contactDeleted`/`workflowRun*` + timestamp-first `verifySignature(timestamp, body, sig, secret)`
@@ -107,7 +111,7 @@ For each finding emit `[pattern-id] pattern-name`, `file:line`, one-line `why` f
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Err5/Cfg1–Cfg5/Sch1/Sch4/Sch5/F1/F2/W3 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Err5/Cfg1–Cfg5/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
 
 ## Safety
 

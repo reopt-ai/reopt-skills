@@ -68,6 +68,10 @@ Paths are relative to `node_modules/@reopt-ai/brandapp-sdk/`. `docs/api-referenc
 | Marketing site / CMS (`toMetadata`, `toSitemapItems`, `toRssFeed`, `verifySession`, `optimizeUrl`; `cms` is read-only from 1.8+) | `docs/cms.md` |
 | OIDC Single Logout (3.2+): back-channel receive (`createBackchannelLogoutHandler`, `verifyBackchannelLogoutToken`) + RP-initiated (`buildEndSessionUrl`), `dev.mintLogoutToken` for tests — `@reopt-ai/brandapp-sdk/logout` | `docs/logout.md` |
 | Files (folders, upload/list, rename/move, text preview, usage meter, React hooks) | `docs/files.md` |
+| Terms + consent (`sdk.terms`): `list` / `listWithMeta` (Basic Auth, callable signed-out), `listMyConsents` / `consent` / `withdraw` (Bearer). Terms are **brand-owned** — the same set binds Brandapp and brandfront; `currentVersion.contentRich` is an `EditorSpec` renderable by opt-editor's StaticRenderer | `docs/api-reference.md` § Terms Client |
+| Feedback two-way thread (`sdk.feedback`, 3.4+): `create` / `list` / `get` | `docs/api-reference.md` § Feedback Client |
+| Push device tokens (`sdk.push`): `registerDeviceToken` / `unregisterDeviceToken` / `listDevices` — Bearer, self-scoped, no raw tokens returned | declaration JSDoc from the installed `@reopt-ai/brandapp-sdk/push` export — `docs/` has only a one-line entry-point row for this surface |
+| AI SDK provider (`createBrandappProvider`, `@reopt-ai/brandapp-sdk/ai-provider`) | `docs/api-reference.md` § AI SDK Provider |
 | Dev server (`createDevServer`, `instrumentation.ts`, offline development) | `docs/dev-server.md` |
 | Version migration / breaking changes | `docs/migration.md` for `≤ 3.0.0` — **it has no section past `2.x → 3.0.0`**, so read `CHANGELOG.md` for 3.1–4.0 (hosted checkout, Files, EAV `select`, Better Auth 1.7) |
 | Testing the integration | `docs/testing.md` |
