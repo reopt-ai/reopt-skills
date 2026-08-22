@@ -18,7 +18,7 @@
 - Never hardcode credentials. Inject via shell / CI secret.
 - Never print credential values.
 - Never commit anything under `~/.reopt/`.
-- Always `--dry-run` before `--delete-orphans` on EAV sync.
+- Always `--dry-run` before a destructive EAV sync. Since CLI 0.4.0 `eav sync` is safe-mode: `--delete-orphans`, `isRequired`/`isUnique` promotions, and select-option removals are blocked (exit `7`) unless you also pass `--force`.
 - Pass arguments as arrays when invoking the CLI programmatically (`spawn(["reopt", "brandapp", "eav", "sync"])`, not a string).
 - `experimental` subcommands (`brandapp dev`, `brandapp env *`, `eav migrate *`) may shift — surface the label when recommending.
 - `reopt mcp` bypasses commander; standard `--help` and option parsing do not apply.

@@ -2,7 +2,7 @@
 name: reopt-cli
 description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
 target: "@reopt-ai/cli"
-targetMinVersion: "0.3.1"
+targetMinVersion: "0.5.0"
 ---
 
 # reopt CLI
@@ -17,7 +17,7 @@ targetMinVersion: "0.3.1"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.3.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.5.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -54,7 +54,7 @@ Prefer `--help` as the live source of truth. The CLI ships **no** `dist/docs/`; 
 
 Quick global-flag reminders (subset; full list in `--help`):
 
-- `--format json|table|csv|yaml` — JSON is the agent-friendly default.
+- `--format json|table|csv|yaml` — JSON is the agent-friendly default. Since 0.4.0, `json`/`ndjson`/`yaml` emit **raw server items** (ids preserved, MCP-identical) to **stdout**; `table`/`csv` apply the per-command projection. Scripts that read synthesized fields (e.g. `workspace list` composite `role`) must switch to raw fields.
 - `--page-all` + `--page-limit` + `--page-delay` — paginated iteration; JSON output becomes NDJSON.
 - `--no-interactive` — required for unattended scripts (fail instead of prompt).
 - `--dry-run` — preview only (EAV sync, brandapp link/unlink).
@@ -69,3 +69,4 @@ Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config
 4. Inject secrets through a secret manager in CI.
 5. Use `--dry-run` before any mutating EAV operation, and especially before `--delete-orphans`.
 6. Pass arguments as arrays when invoking the CLI programmatically.
+7. `.reopt.config.mjs` is trust-on-first-use (0.4.0) — it executes JS on load, so a changed/untrusted file is ignored non-interactively (stderr warning) or prompts on a TTY. In CI, set `REOPT_TRUST_CONFIG=1` to trust + record its hash, or use `.reopt.json` (exempt from TOFU).

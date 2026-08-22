@@ -5,5 +5,5 @@ Install or upgrade `@reopt-ai/opt-editor` in a consumer project. Generates the b
 ## Use When
 
 - setting up `@reopt-ai/opt-editor` for the first time (catalog + Editor component)
-- upgrading opt-editor and running the environment audit + breaking-change fixes
+- upgrading to opt-editor 2.0 and applying the runtime-schema import + stored-document migration gates
 - adding AI streaming (`--with-ai`) to an existing editor

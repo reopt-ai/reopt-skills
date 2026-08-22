@@ -37,7 +37,7 @@ Same source/fallback/marker as `reopt-cli`. If the marker block is already prese
 | `brandapp init` | Scaffold dev-mode files (see below) | – | – | stable |
 | `brandapp dev` | Offline EAV/Auth/AI/Files server | – | – | experimental |
 | `brandapp seed` | Apply seed data to dev server | – | – | stable |
-| `brandapp env list/create/use/destroy` | Sandbox cloud envs | ✓ | ✓ | experimental |
+| `brandapp env list/create/use/destroy` | Sandbox cloud envs | – | ✓ | experimental |
 
 Term types: `termsOfService`, `privacyPolicy`, `marketingConsent`, `custom`.
 
@@ -72,6 +72,7 @@ Detection: presence of `next` in `package.json`. Non-Next projects get only `.en
 - In a monorepo, `.reopt.json` is resolved by walking upward from the current dir.
 - Run `reopt brandapp doctor` before CI jobs that depend on linked brandapps.
 - `brandapp link` has no `--dry-run`; use `brandapp list --json` first if you need a preview.
+- `brandapp env *` uses **brandapp service credentials (Basic)** since CLI 0.4.0, not the `reopt login` user session — a link or `BRANDAPP_CLIENT_ID`/`BRANDAPP_CLIENT_SECRET` is enough; `reopt login` is not required. `env create` provisions a **preview** env (`--type` / `--ai-limit` warn and are ignored); OAuth `clientId`/`clientSecret` are issued in Studio, not in the JSON output. `env destroy` confirms first (type the name, or `--force`).
 - `brandapp env use` overwrites `.env.local` keys for `BRANDAPP_CLIENT_ID` / `BRANDAPP_CLIENT_SECRET` / `BRANDAPP_ID` (v2.0 namespace). Run it from the project that should target the sandbox.
 - `dev`, `env *`, and `eav migrate *` are flagged experimental — surface that label when recommending so users know the API may shift.
 - `init` is non-destructive without `--force`; warn before passing `--force` over an existing scaffold.

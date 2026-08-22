@@ -1,9 +1,9 @@
 ---
 name: opt-ui-install
 description: |
-  Install or upgrade @reopt-ai/opt-ui in a consumer project, or add a Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui surface", "opt-cli surface add", "add Surface".
+  Install or upgrade @reopt-ai/opt-ui in a consumer project, wire app.css, or add a Block/Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui app.css", "opt-ui block", "opt-cli block add", "opt-ui surface", "add Surface".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.5.0"
+targetMinVersion: "1.6.0"
 ---
 
 # opt-ui Install
@@ -18,16 +18,15 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ```
 /opt-ui-install                  # Auto-branch (missing → init, installed → upgrade)
-/opt-ui-install surface <name>   # Add a Surface page template
+/opt-ui-install block <name>     # Add a page-template Block (Surface is a legacy alias)
 /opt-ui-install --upgrade        # Explicit upgrade
 /opt-ui-install --check          # Analyze only (no edits)
-/opt-ui-install --target=1.2.0   # Pin a specific version
 /opt-ui-install --dry-run        # Analyze only
 ```
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.5.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.6.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -41,15 +40,16 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 
 1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 18+, React 19+, Tailwind CSS v4. bun or npm.
+2. **Prereqs** — Node 20+, React 19+, Tailwind CSS v4. bun or npm.
 
 3. **App-shell wiring** — properties of the consumer app:
    - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet (plus the `@source` directive — see getting-started).
+   - Optional app-frame base layer (1.6+): `@import "@reopt-ai/opt-ui/app.css";` for focus-visible, cursor, reduced-motion, text-scale, shortcut-hint, and skip-link behavior. It is required when opt-shell policies should affect the whole document.
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
-   - Surface CLI: `npx @reopt-ai/opt-cli surface add <slug>` for page templates (Surfaces live in the internal `opt-ui-surface` package — not installed directly). `opt surface diff` (opt-cli 1.2+) bulk-checks every installed Surface against the bundled registry (`--json` / `--exit-code` for CI).
+   - Block CLI: `npx @reopt-ai/opt-cli block add <slug>` vendors page-template Surfaces from the signed public registry. `block diff` bulk-checks drift (`--json` / `--exit-code` for CI); `block remove` safely uninstalls. `opt surface …` is a deprecated alias.
    - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and example code.
 
-4. **Doctor** — `npx @reopt-ai/opt-cli doctor` runs the environment audit (unified design CLI; there is no `opt-ui-cli`). opt-cli 1.2+ lists `@reopt-ai/opt-shell@^1.0.0` as a **peer** — install it if `opt` warns about a missing peer.
+4. **CLI checks** — run `npx @reopt-ai/opt-cli block doctor` when Blocks are installed. Run `npx @reopt-ai/opt-cli harness doctor` only when the project has a harness config. There is no top-level `opt doctor`. opt-shell is an optional, lazy-loaded opt-cli peer; do not install it for block/component commands alone.
 
 ## Step 3 — Route to module docs
 
@@ -78,8 +78,8 @@ Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
 | 5 | OptThemeProvider setup | ✓ | – | – |
 | 6 | Breaking-change edits | – | ✓ | – |
 | 7 | Deprecated fixes (opt-in) | – | ✓ | – |
-| 8 | Surface CLI workflow | opt | opt | ✓ |
-| 9 | Doctor (environment audit) | ✓ | ✓ | ✓ |
+| 8 | Block CLI workflow | opt | opt | ✓ |
+| 9 | Relevant CLI check (`block doctor`; `harness doctor` when configured) | opt | opt | ✓ |
 | 10 | Summary + rollback path | ✓ | ✓ | ✓ |
 
 Detailed step procedures live in module docs — start at `dist/docs/index.md`, then `dist/docs/01-getting-started.md`. Read before acting.
@@ -94,6 +94,6 @@ Detailed step procedures live in module docs — start at `dist/docs/index.md`, 
 
 ## Verify
 
-1. `npx @reopt-ai/opt-cli doctor` passes (or explained skips).
+1. `npx @reopt-ai/opt-cli block doctor` passes when Blocks are installed; configured shell projects also pass `harness doctor`.
 2. `npx tsc --noEmit` passes.
 3. App renders without OptThemeProvider warnings.

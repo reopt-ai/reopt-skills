@@ -20,6 +20,124 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   CLI package/source `README.md` from the actual installation. Removed the
   assumption that every consumer has `node_modules/@reopt-ai/cli/README.md`.
 
+**Package sync — 2026-08-22** (both sibling monorepos + public npm `latest`
+re-checked; versions stay under `[Unreleased]` until a repository release is cut)
+
+- **brandapp-sdk 3.6.0 → 4.0.0** (`brandapp-sdk-install` / `brandapp-sdk-review`).
+  4.0 moves the SDK onto **Better Auth 1.7**, which rebuilt generic OAuth on the
+  social-provider path: `createReoptOAuthClient()` and
+  `signIn.oauth2({ providerId })` are removed (1.7 ships no client plugin),
+  sign-in is `signInWithReopt()` / `linkReoptAccount()` from
+  `@reopt-ai/brandapp-sdk/better-auth/client`, and the callback moved to
+  `${baseURL}/api/auth/callback/reopt`. `targetMinVersion` bumped to 4.0.0 in
+  both skills. The shared `agent-rules.md` gained six hard rules (1.7 client
+  surface, callback path, `tokenEndpointAuthMethod`, app-local `signOut()` +
+  `providerLogout` opt-in, issuer-namespaced accounts, remote-adapter
+  `consumeOne`/`incrementOne`). Install gained a pre-upgrade ordering step —
+  register the new redirect URI **before** bumping — and a `better-auth@^1.7.1`
+  peer floor (every peer is declared optional, so npm installs none of them).
+- **Review skill: an inverted grep signal is fixed.** `Auth5` keyed on
+  `signIn.oauth2(`, which 4.0 **removes** — it was matching the broken call as
+  if it were the correct one. `Auth5` now checks that the sign-in result is
+  handled, and the new **`Auth8`** flags the removed 1.6 surface
+  (`createReoptOAuthClient`, `genericOAuthClient`, `signIn.oauth2(`,
+  `oauth2.link(`, the literal `/api/auth/oauth2/callback/reopt`, `better-auth`
+  pinned `<1.7.1`). New `Cfg7` flags a per-environment `REOPT_ID_BASE_URL`,
+  which silently forks existing users into new accounts under 4.0's
+  issuer-namespaced account lookup. Step 2 gained `>= 4.0.0` / `< 4.0.0` gates;
+  older gates were compressed to stay inside the 150-line budget.
+- **Docs-routing correction (pre-existing bug, found this round).** `docs/`
+  contains no Better Auth wiring at all — `createReoptBetterAuth` /
+  `createReoptOAuth` / `createReoptAdapter` live only in the package
+  `README.md`, and `docs/api-reference.md`'s "Auth Client" section is the
+  user-token API (`sdk.auth.*`), a different surface. Both skills had routed
+  "Better Auth + OAuth" there. That surface now routes to `README.md` +
+  `CHANGELOG.md` `[4.0.0]`, and every "migration / breaking changes" route now
+  states that `docs/migration.md` stops at `2.x → 3.0.0` and covers none of
+  3.1–4.0.
+- **Compatibility matrix.** Recorded the 2026-08-22 round and sharpened the
+  drift checklist: the public-npm probe needs the **scoped**
+  `--@reopt-ai:registry=` flag, because a plain `--registry=` does not override
+  a `@reopt-ai:registry` line in the user `.npmrc` and GitHub Packages answers
+  with much older versions — which reads as "no drift" while a major release has
+  already shipped.
+- No other target moved: `cli` 0.5.0, `opt-ui` 1.6.0, `opt-datagrid` 1.5.0,
+  `opt-editor` 2.0.0, `opt-chat` 1.1.0, `opt-shell` 1.1.0, design CLI 1.3.0.
+
+**Verification refresh — 2026-08-10** (no target-version change)
+
+- Re-checked both sibling monorepos, every targeted package's live public npm
+  `latest` tag, and all eight published tarball inventories. Versions, exports,
+  doc paths, Node engine floors, and fallback requirements remain unchanged from
+  the 2026-08-08 refresh; no package has started shipping `agent-rules.md`.
+- The only later `brandapp-sdk/package.json` source changes are development-only
+  dependency updates (`opt-editor` 1.1.2 → 2.0.0 and `@ai-sdk/provider` 4.0.4 →
+  4.0.7). No relevant `reopt-design` target-package commit landed after the
+  prior snapshot, so no SKILL.md behavior or routing change was required.
+
+**Package sync — 2026-08-08** (both sibling monorepos, public npm metadata,
+published manifests, and tarball file inventories re-checked; versions remain
+under `[Unreleased]` until a repository release is cut)
+
+- **brandapp-sdk 3.3.0 → 3.6.0** (`brandapp-sdk-install` /
+  `brandapp-sdk-review`). Added routing and review rules for 3.4 subscription
+  lifecycle webhooks + live Paddle checkout/unified cancellation, 3.5 Files
+  folders/rename/move/read/usage APIs, and 3.6 EAV record-list `select`
+  projection. Corrected the review projection pattern from the nonexistent
+  `attributes:` option to `select:`. The installed 3.6 checkout client documents
+  hosted order review as the current required-terms flow, while two bundled docs
+  still show an older `RequiredTermsError` catch; the skills now call out that
+  narrow documentation conflict instead of prescribing the stale flow.
+- **reopt-design target refresh.** `opt-ui` **1.5.0 → 1.6.0** adds the optional
+  `app.css` document bootstrap and block-registry terminology;
+  `opt-datagrid` **1.4.2 → 1.5.0** adds the server-safe `/ai-stream` entry and a
+  bounded value cache while preserving standalone theme fallbacks;
+  `opt-editor` **1.1.2 → 2.0.0** moves runtime schemas from `/server` to
+  `/schemas` and requires canonical V2 stored content (the migration script
+  named by the README is not shipped in the npm tarball);
+  `opt-chat` **1.0.0 → 1.1.0** makes `PromptInput` a native form and replaces
+  StickToBottom-era conversation props; and `opt-shell` **1.0.0 → 1.1.0** adds
+  document policies, persisted preferences, and shortcut layers. Package-specific
+  doc routes, peers, checks, fallbacks, and shared agent rules were reconciled,
+  including the suite-wide published **Node 20+** runtime floor.
+- **opt-cli 1.2.0 → 1.3.0** (used by the design skills). Made `opt block` the
+  primary signed-registry command (`surface` is deprecated), added `opt project`
+  sync routing, and corrected verification commands: the CLI has no top-level
+  `opt doctor` / `opt check`; use `opt block doctor` and, when opt-shell is
+  installed, `opt harness doctor`. opt-shell is an optional lazy peer for
+  harness commands, not a prerequisite for block/component operations.
+- **Compatibility inventory.** Added public `studio-catalog` 2.0.0 and
+  `opt-filemanager` 0.1.0, updated `opt-devtool` to 1.0.1, and recorded that the
+  retired `opt-ui-surface` package is neither in the workspace nor published.
+
+**Package sync — 2026-07-24** (sibling monorepo source re-checked after a two-package bump; versions frozen until a release is cut per `AGENTS.md`)
+
+- **cli 0.3.1 → 0.5.0** (`reopt-cli` / `reopt-eav`). `targetMinVersion` bumped to
+  0.5.0 to make the skill honest: the 2.0-era env-var rename (`REOPT_CLIENT_*` /
+  `REOPT_ENV` / `REOPT_BRANDAPP_ID` → `BRANDAPP_*`, **no aliases**) finally landed
+  in the CLI in 0.4.0, and the skills already documented the `BRANDAPP_*` names —
+  which do not exist on 0.3.1. Documented 0.4.0 breaking behavior in `reopt-cli`:
+  `json`/`ndjson`/`yaml` now emit **raw server items to stdout**, and
+  `.reopt.config.mjs` is trust-on-first-use (`REOPT_TRUST_CONFIG=1` for CI).
+  Corrected the `reopt-eav` destructive workflow — `eav sync` runs in
+  **safe-mode** (0.4.0), so `--delete-orphans` (and `isRequired`/`isUnique`
+  promotions / select-option removals) is blocked with exit `7` unless `--force`;
+  Step 4 now applies with `--delete-orphans --force`. Noted the sync advisory lock
+  (exit `10`) and 0.5.0's `--timeout`/`--max-retries` reaching `eav`.
+- **brandapp-sdk 3.1.0 → 3.3.0** (`brandapp-sdk-install` / `brandapp-sdk-review`).
+  Additive OIDC **Single Logout** (3.2.0, `@reopt-ai/brandapp-sdk/logout`): the
+  shared `agent-rules.md` gained a doc-map row + hard rule (back-channel receive
+  `createBackchannelLogoutHandler`, RP-initiated `buildEndSessionUrl`, persist the
+  `id_token` `sid`, never hand-roll `logout_token` verification), install Step 3
+  gained a `docs/logout.md` routing row, and review gained a `< 3.2.0` version
+  gate that flags hand-rolled logout. 3.3.0 backward-compatible hardening
+  (retryable 503 vs 400, reliable error `requestId`) folded into the gate +
+  agent-rules. Fixed a stale host reference — the prod main API is
+  **`brandapp.reopt.ai`** (the older `brand.reopt.ai` is legacy; auth stays
+  `id.reopt.ai`) — in both SKILLs and the shared agent-rules, and broadened review
+  `Cfg1` to also flag `brand.reopt.ai`. `targetMinVersion` bumped to 3.3.0 in both
+  skills.
+
 **Package sync — 2026-07-16** (sibling monorepo source re-checked after a bump; versions frozen until a release is cut per `AGENTS.md`)
 
 - **brandapp-sdk 3.0.0 → 3.1.0** (`brandapp-sdk-install` / `brandapp-sdk-review`).

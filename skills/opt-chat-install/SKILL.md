@@ -1,9 +1,9 @@
 ---
 name: opt-chat-install
 description: |
-  Install or upgrade @reopt-ai/opt-chat in a consumer project. Auto-branches by current install state. Triggers on "opt-chat install", "opt-chat init", "opt-chat setup", "chat install", "install chat", "set up AI chat", "opt-chat upgrade", "opt-chat update", "chat update".
+  Install or upgrade @reopt-ai/opt-chat in a consumer project, including its AI SDK 7 form/conversation contract. Auto-branches by current install state. Triggers on "opt-chat install", "opt-chat init", "opt-chat setup", "chat install", "install chat", "set up AI chat", "opt-chat upgrade", "opt-chat update", "chat update", "PromptInput form", "Conversation migration".
 target: "@reopt-ai/opt-chat"
-targetMinVersion: "1.0.0"
+targetMinVersion: "1.1.0"
 ---
 
 # opt-chat Install
@@ -20,7 +20,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 |---|---|
 | Core | Conversation, Message, PromptInput (composable) |
 | Hook | `useChatSession` (Vercel AI SDK wrapper) |
-| Parts | 28+ message part renderers (reasoning, tool, artifact, code, agent, …) |
+| Parts | Rich message part renderers (reasoning, tool, artifact, code, agent, sources, …) |
 | Input | Attachments, SpeechInput, ModelSelector, AudioPlayer / VoiceSelector |
 | Streaming | streamdown + shiki syntax highlighting |
 | Flow | `@reopt-ai/opt-chat/flow` agent-graph Canvas (optional peer `@xyflow/react`) |
@@ -36,7 +36,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 1.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 1.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-chat-agent-rules -->
@@ -48,14 +48,16 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat
 
 ## Step 2 — Consumer-side setup (this skill owns; docs cannot)
 
-1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config. The “`.npmrc` 등록 후” comment in the bundled 1.0.0 README is stale setup text; do not follow it.
+1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 18+, React 19+, a Vercel AI SDK–compatible AI endpoint. **No Tailwind required.** Optional peers: `react-jsx-parser` (JSXPreview parts), `@xyflow/react` (`/flow` Canvas).
+2. **Prereqs** — Node 20+, React 19+, an AI SDK v7-compatible endpoint (`ai` 7 / `@ai-sdk/react` 4 are direct dependencies in 1.1). **No Tailwind required.** Optional peers: `react-jsx-parser` (JSXPreview parts), `@xyflow/react` (`/flow` Canvas).
 
 3. **App wiring** — properties of the consumer app:
    - Styles: `import "@reopt-ai/opt-chat/styles.css"` at the app root **unless** opt-ui's global CSS is already loaded (they share keyframes / data-attribute tokens).
    - AI endpoint route (e.g. `app/api/chat/route.ts`) returning a Vercel AI SDK stream.
    - Default Chat component composition (Conversation > Message[] > PromptInput).
+
+4. **1.1 upgrade scan** — `PromptInput` now renders a native `<form>` (never nest it in another form); replace removed StickToBottom-era Conversation props (`initial`, `resize`) with `autoScroll`, `scrollEdgeThreshold`, `scrollPreviousItemPeek`, or `scrollMargin`. Pass native AI SDK tool-part approval states/objects rather than maintaining a parallel status model.
 
 ## Step 3 — Route to module docs
 
@@ -64,7 +66,7 @@ opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/RE
 | Task signal | Read |
 |---|---|
 | Quick start + composition (Conversation / Message / PromptInput) | `README.md` §§ Quick start, Component catalog |
-| Hooks (`useChatSession`), 28+ part renderers, input (Attachments / SpeechInput / ModelSelector), streaming | `README.md` § Component catalog |
+| Hooks (`useChatSession`), part renderers, input (Attachments / SpeechInput / ModelSelector), streaming | `README.md` § Component catalog |
 | Styling / CSS import (opt-ui CSS or `styles.css`) | `README.md` § Styles |
 | Flow / agent-graph Canvas (`@reopt-ai/opt-chat/flow`) + optional peers | `README.md` §§ Optional peers, Flow |
 | opt-ui token / design-system integration | `README.md` § Design system integration |
