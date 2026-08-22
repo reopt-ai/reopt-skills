@@ -49,19 +49,21 @@ reopt brandapp eav sync --json                         # 3. apply
 reopt brandapp eav sync --watch                        # during active schema work
 ```
 
+Since 0.4.0 a mutating `eav sync` takes the same advisory lock as `eav migrate` (exit `10` on contention); a no-op sync skips the lock (0.5.0). `--timeout` / `--max-retries` now apply to `eav` commands (0.5.0).
+
 `eav diff` (separate from sync) — use when a schema change needs review (PR comment, design doc, change-control ticket). Renders the diff as markdown, grouping deletes / required-field additions in their own sections. Does **not** apply the diff; pair with `eav sync` after sign-off.
 
-## Step 4 — Destructive guardrail (`--delete-orphans`)
+## Step 4 — Destructive guardrail (`--delete-orphans` + safe-mode)
 
-`--delete-orphans` permanently removes server-side attributes and their values. Required order:
+`--delete-orphans` permanently removes server-side attributes and their values. Since CLI 0.4.0 `eav sync` runs in **safe-mode**: destructive changes — orphan deletes, `isRequired`/`isUnique` promotions, and select/multiselect option removals — are **blocked with exit `7`** unless you also pass `--force`. Required order:
 
 1. `reopt brandapp eav status --delete-orphans --json` — inspect every planned deletion.
 2. Verify every deletion is intentional.
 3. Confirm no application code still depends on those fields.
-4. `reopt brandapp eav sync --delete-orphans --dry-run --json` — preview.
-5. Only then `reopt brandapp eav sync --delete-orphans --json` — apply.
+4. `reopt brandapp eav sync --delete-orphans --dry-run --json` — preview (safe-mode reports what would be blocked).
+5. Only then `reopt brandapp eav sync --delete-orphans --force --json` — apply (`--force` bypasses safe-mode; without it the run exits `7`).
 
-**Never run `--delete-orphans` blindly in automation.**
+**Never run `--delete-orphans --force` blindly in automation.**
 
 ## Step 5 — File-based migrations (`plan` → `migrate` → `history` / `verify`)
 
@@ -90,5 +92,5 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 
 - Inherit all `reopt-cli` rules.
 - Always `--dry-run` before any mutating EAV operation.
-- `--delete-orphans` is the destructive switch — follow Step 4 in order, never shortcut.
+- `--delete-orphans` is the destructive switch; `--force` bypasses safe-mode (exit `7`) — follow Step 4 in order, never shortcut.
 - Treat `eav verify` failures as merge blockers in CI.

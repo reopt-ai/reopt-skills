@@ -14,9 +14,11 @@
 ## Hard rules
 
 - `@reopt-ai/*` installs from public npm — never add a GitHub Packages scope or token. Remove only the exact legacy project-level `@reopt-ai:registry=https://npm.pkg.github.com` entry; preserve unrelated registry/auth settings and ask before changing user/global npm config.
-- React 19+ required.
+- Node 20+ and React 19+ required.
 - AI SDK integration requires optional peers `ai >= 7` and `zod >= 3`; do not require them for non-AI editor usage.
 - `EditorSpec` is the canonical content schema — do not hand-parse the stored JSON. Rich text lives in each element's `content` field, not `attrs`.
+- In 2.0, import runtime Zod schema values from `@reopt-ai/opt-editor/schemas`; `/server` is zod-free and retains only related type exports. `/ai-sdk` re-exports remain valid.
+- Persist canonical V2 only. Migrate V1 `props` / rich-text `attrs.text` with a backup and dry run before upgrade; the README's `migrate:v1-to-v2` package script is not present in the published tarball.
 - `<Editor>` uses browser APIs (contentEditable/Selection) — it must live in a `"use client"` component (Next.js App Router). `StaticRenderer` / `specToHtml` are the RSC-safe read-only path. Don't swap them.
 - `EditorMode` is `"stream" | "edit" | "diff"` — any exhaustive mode handling (e.g. `switch (mode)`) must cover the review-only `"diff"` branch or it silently breaks.
 - Catalog block IDs are stable identifiers — renaming them is a breaking change for stored content.

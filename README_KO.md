@@ -45,7 +45,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | --- | --- |
 | [`reopt-cli`](./skills/reopt-cli/) | 다른 reopt 스킬이 가장 먼저 로드하는 베이스라인 — auth(`login`/`status`/`logout`), 글로벌 플래그, MCP, `config get/set`, 종료 코드, 자격증명 처리 규칙. 공유되는 `reopt/cli-agent-rules` 블록을 박습니다. |
 | [`reopt-brandapp`](./skills/reopt-brandapp/) | `brandapp list` / `link` / `unlink` / `doctor` / `term list`, `init`을 통한 프로젝트 스캐폴딩, 오프라인 `dev` + `seed` 흐름, 샌드박스 `env list/create/use/destroy`. |
-| [`reopt-eav`](./skills/reopt-eav/) | EAV 스키마 라이프사이클 — 라이브 흐름용 `status` / `sync` / `pull` / `plan`, 파일 기반 마이그레이션용 `migrate create/run/status/validate` (experimental), `--delete-orphans` 파괴적 변경 가드레일. |
+| [`reopt-eav`](./skills/reopt-eav/) | EAV 스키마 라이프사이클 — `status` / `sync` / `pull` / `diff`, 마이그레이션 `plan` / `migrate` / `history` / `verify`, safe-mode와 `--delete-orphans --force` 가드레일. |
 
 ### Brandapp SDK 통합
 
@@ -53,7 +53,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 
 | 스킬 | 다루는 내용 |
 | --- | --- |
-| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | `reopt/brandapp-sdk-agent-rules` 블록을 박고, 레거시 GitHub Packages override를 제거한 뒤 env 3-tier 네임스페이스(`BRANDAPP_*` / `REOPT_*` / `BRANDAPP_SDK_*`) + peer deps 를 세팅. `lib/sdk.ts`, `lib/auth.ts`, EAV 스키마, webhook, 마케팅 사이트 helper, 에러 처리는 모듈 docs 로 라우팅. |
+| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | `reopt/brandapp-sdk-agent-rules` 블록을 박고 레거시 registry override를 제거한 뒤 env namespace + peer를 설정. Auth, EAV, 구독 webhook, Plans checkout, Files, logout, CMS, 오류 처리는 설치된 모듈 docs로 라우팅. |
 | [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | 기존 SDK 코드를 감사. 안티패턴을 10개 카테고리(init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS)로 묶고 grep key 와 함께 나열, 정답 수정은 모듈 `docs/` 로 라우팅. |
 
 ### 패키지 설치 / 업그레이드
@@ -62,11 +62,11 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 
 | 스킬 | 다루는 내용 |
 | --- | --- |
-| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + `opt-cli doctor` 감사 + Surface CLI (`opt-cli surface add`). |
-| [`opt-editor-install`](./skills/opt-editor-install/) | Editor 컴포넌트 + 레시피 + `opt-cli doctor` 감사 + 선택적 AI 스트리밍 (`--with-ai`). |
-| [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK 엔드포인트 + Conversation 스캐폴드. Vercel AI SDK 호환. |
+| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + 선택적 app-frame CSS + Block CLI (`opt-cli block add/doctor`). |
+| [`opt-editor-install`](./skills/opt-editor-install/) | Editor 컴포넌트 + 레시피 + 2.0 schema/data migration gate + 선택적 AI 스트리밍 (`--with-ai`). |
+| [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK 7 엔드포인트 + Conversation 스캐폴드 + 1.1 native-form `PromptInput` 계약. |
 | [`opt-datagrid-install`](./skills/opt-datagrid-install/) | 설치 / 업그레이드 / glide-data-grid·ag-grid·react-data-grid·MUI DataGrid 에서의 마이그레이션. |
-| [`opt-shell-install`](./skills/opt-shell-install/) | 제품 프레임 레이어 (구 opt-harness): workspace 레시피(Dashboard / List / Detail / Editor / Landing), density/contentWidth/navigation/motion 정책, 데이터 엔진 adapter, state boundary. 필수 peer: opt-palette; 선택 adapter peer: opt-datagrid·opt-editor·opt-calendar. |
+| [`opt-shell-install`](./skills/opt-shell-install/) | 제품 프레임 레이어 (구 opt-harness): workspace 레시피, document-level policy, 저장되는 preference/shortcut, adapter, state boundary. 필수 peer: opt-palette; 선택 adapter peer: opt-datagrid·opt-editor·opt-calendar. |
 
 ## 어떤 스킬을 골라야 하나
 

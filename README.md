@@ -43,7 +43,7 @@ Guidance for the `reopt` CLI itself. The CLI is public on npm.
 | --- | --- |
 | [`reopt-cli`](./skills/reopt-cli/) | Baseline rules every other reopt skill loads first — auth (`login` / `status` / `logout`), global flags, MCP server, `config get/set`, exit codes, secret handling. Pins the shared `reopt/cli-agent-rules` block. |
 | [`reopt-brandapp`](./skills/reopt-brandapp/) | `brandapp list` / `link` / `unlink` / `doctor` / `term list`, project scaffolding via `init`, the offline `dev` + `seed` flow, and sandbox `env list/create/use/destroy`. |
-| [`reopt-eav`](./skills/reopt-eav/) | EAV schema lifecycle: `status` / `sync` / `pull` / `plan` (live flow), `migrate create/run/status/validate` (file-based, experimental), plus the `--delete-orphans` guardrail. |
+| [`reopt-eav`](./skills/reopt-eav/) | EAV schema lifecycle: `status` / `sync` / `pull` / `diff`, migration `plan` / `migrate` / `history` / `verify`, plus safe-mode and `--delete-orphans --force` guardrails. |
 
 ### Brandapp SDK integration
 
@@ -51,7 +51,7 @@ For consumer projects that use `@reopt-ai/brandapp-sdk`. Runs **inside the consu
 
 | Skill | What it covers |
 | --- | --- |
-| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | Pins `reopt/brandapp-sdk-agent-rules`, removes legacy GitHub Packages overrides, sets up the env 3-tier namespace (`BRANDAPP_*` / `REOPT_*` / `BRANDAPP_SDK_*`) + peer deps, and routes the agent to module docs for `lib/sdk.ts`, `lib/auth.ts`, EAV schema, webhooks, marketing-site helpers, and errors. |
+| [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | Pins `reopt/brandapp-sdk-agent-rules`, removes legacy registry overrides, sets up the env namespace + peers, and routes to the installed docs for Auth, EAV, subscription webhooks, Plans checkout, Files, logout, CMS, and errors. |
 | [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | Audit existing SDK usage. Lists anti-patterns across 10 categories (init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS) with grep keys; routes the agent to the module's `docs/` for canonical fixes. |
 
 ### Package install / upgrade
@@ -60,11 +60,11 @@ For consumer projects that use the `@reopt-ai/opt-*` component packages.
 
 | Skill | What it covers |
 | --- | --- |
-| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + `opt-cli doctor` audit + Surface CLI (`opt-cli surface add`). |
-| [`opt-editor-install`](./skills/opt-editor-install/) | Editor component + recipes + `opt-cli doctor` audit + optional AI streaming (`--with-ai`). |
-| [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK endpoint + Conversation scaffold; Vercel AI SDK compatible. |
+| [`opt-ui-install`](./skills/opt-ui-install/) | Tailwind v4 + `OptThemeProvider` + optional app-frame CSS + Block CLI (`opt-cli block add/doctor`). |
+| [`opt-editor-install`](./skills/opt-editor-install/) | Editor component + recipes + 2.0 schema/data migration gate + optional AI streaming (`--with-ai`). |
+| [`opt-chat-install`](./skills/opt-chat-install/) | AI SDK 7 endpoint + Conversation scaffold, including the 1.1 native-form `PromptInput` contract. |
 | [`opt-datagrid-install`](./skills/opt-datagrid-install/) | Install / upgrade / migrate from glide-data-grid, ag-grid, react-data-grid, MUI DataGrid. |
-| [`opt-shell-install`](./skills/opt-shell-install/) | Product-frame layer (formerly opt-harness): workspace recipes (Dashboard / List / Detail / Editor / Landing), density/contentWidth/navigation/motion policy, data-engine adapters, state boundaries. Required peer: opt-palette; optional adapter peers: opt-datagrid, opt-editor, opt-calendar. |
+| [`opt-shell-install`](./skills/opt-shell-install/) | Product-frame layer (formerly opt-harness): workspace recipes, document-level policy, persisted preferences/shortcuts, adapters, and state boundaries. Required peer: opt-palette; optional adapter peers: opt-datagrid, opt-editor, opt-calendar. |
 
 ## Choosing a skill
 
