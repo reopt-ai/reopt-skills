@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "organization": "reopt",
-  "updatedAt": "2026-05-15",
+  "updatedAt": "2026-08-22",
   "abstract": "Install, upgrade, or migrate to @reopt-ai/opt-datagrid. Pins the agent-rules marker block and routes API surface to module dist/docs/.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"

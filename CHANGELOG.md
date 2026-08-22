@@ -11,6 +11,8 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-08-22
+
 ### Changed
 
 **Portable CLI documentation routing — 2026-08-21** (no target-version change)
@@ -19,6 +21,28 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   agent-rules fallback to prefer the live `--help` command tree and resolve the
   CLI package/source `README.md` from the actual installation. Removed the
   assumption that every consumer has `node_modules/@reopt-ai/cli/README.md`.
+
+**Doc-map gap closed — 2026-08-22** (no target-version change)
+
+- **Four `@reopt-ai/brandapp-sdk` exports were reachable but unrouted.**
+  `sdk.terms`, `sdk.feedback`, `sdk.push`, and the `ai-provider` entry have all
+  been on the SDK root since before 3.6, yet no skill doc map named them — an
+  agent scanning the map had no way to learn they exist. Added rows to both
+  SKILL.md doc maps and the shared `agent-rules.md`.
+- **Terms are brand-owned** (platform change, 2026-08-03): one set binds the
+  Brandapp and the brandfront, so a per-app copy of the text or a private
+  consent table is now a review finding (**T1**). `list` / `listWithMeta` work
+  signed-out under Basic Auth; `consent` / `withdraw` / `listMyConsents` take the
+  user's Bearer token. `currentVersion.contentRich` is an `EditorSpec` for
+  opt-editor's StaticRenderer, with plain `content` kept for search and legal
+  record. Checkout consent stays separate — the hosted order-review page
+  collects it, which `Err5` already covers.
+- **`sdk.push` is a documentation gap, routed accordingly.** `docs/` carries
+  only a one-line entry-point row for it — no section — so the skills route to
+  the declaration JSDoc from the installed `@reopt-ai/brandapp-sdk/push` export,
+  the same treatment `plans` gets. New **T2** flags hand-rolled device-token
+  endpoints; all three methods are Bearer + self-scoped and `listDevices` never
+  returns raw tokens.
 
 **Skill hardening — 2026-08-22** (no target-version change)
 

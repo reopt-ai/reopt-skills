@@ -1,7 +1,7 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "organization": "reopt",
-  "updatedAt": "2026-05-15",
+  "updatedAt": "2026-08-22",
   "abstract": "Brandapp CLI workflows — link, doctor, term, init, dev, seed, env. Shares the reopt/cli-agent-rules marker block with reopt-cli.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"
