@@ -11,6 +11,24 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Added
+
+**Public reopt Data SDK skills — 2026-08-27**
+
+- Added `data-sdk-install` for Next.js-first installation and upgrade of
+  the public `data-sdk-client` / `data-sdk-server` suite, with
+  first-party ingest, request-scoped identity, consent, and optional devtool
+  guardrails. It connects existing credentials and never provisions remote Data
+  resources.
+- Added `data-sdk-review` as a read-only audit of package versions, credential
+  boundaries, proxy/bootstrap behavior, identity, consent, delivery, and
+  production devtool exposure. Both skills share the
+  `reopt/data-sdk-agent-rules` marker fallback.
+- Verified the source, public npm metadata and tarball README layout for client
+  0.1.6, server 0.1.6, devtool 0.1.0, and contract 0.6.3 against the
+  `reopt-data-sdk-example` reference app. Internal SDK development
+  workflow remains private to the `reopt-data` repository.
+
 ## [2.1.0] — 2026-08-22
 
 ### Changed

@@ -1,0 +1,9 @@
+{
+  "version": "2.1.0",
+  "organization": "reopt",
+  "updatedAt": "2026-08-27",
+  "abstract": "Install or upgrade the public @reopt-ai/data-sdk-client + data-sdk-server suite. Pins the agent-rules marker block, connects existing credentials, wires Next.js first-party ingest/proxy/bootstrap, and routes to the installed package READMEs.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}

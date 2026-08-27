@@ -54,6 +54,15 @@ For consumer projects that use `@reopt-ai/brandapp-sdk`. Runs **inside the consu
 | [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | Pins `reopt/brandapp-sdk-agent-rules`, removes legacy registry overrides, sets up the env namespace + peers, and routes to the installed docs for Auth, EAV, subscription webhooks, Plans checkout, Files, logout, CMS, and errors. |
 | [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | Audit existing SDK usage. Lists anti-patterns across 10 categories (init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS) with grep keys; routes the agent to the module's `docs/` for canonical fixes. |
 
+### Data SDK integration
+
+For consumer projects that send browser and server analytics to reopt Data. Internal SDK development workflows stay in the `reopt-data` repository and are not distributed here.
+
+| Skill | What it covers |
+| --- | --- |
+| [`data-sdk-install`](./skills/data-sdk-install/) | Install or upgrade the public client/server suite. Next.js App Router first, including request-scoped identity, bootstrap, first-party ingest, consent, and optional devtools. |
+| [`data-sdk-review`](./skills/data-sdk-review/) | Read-only audit of package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, and devtool exposure. |
+
 ### Package install / upgrade
 
 For consumer projects that use the `@reopt-ai/opt-*` component packages.
@@ -80,6 +89,8 @@ Two axes decide which skill applies:
 | Diff / sync / pull / migrate the EAV schema | `reopt-eav` |
 | Add `@reopt-ai/brandapp-sdk` to a Next.js app for the first time | `brandapp-sdk-install` |
 | Audit an existing app's SDK usage for anti-patterns | `brandapp-sdk-review` |
+| Add reopt Data analytics to a consumer app | `data-sdk-install` |
+| Audit an existing reopt Data SDK integration | `data-sdk-review` |
 | Adopt or upgrade an `opt-*` component package (incl. the `opt-shell` product frame) | the matching `opt-*-install` skill |
 
 ## Typical adoption order
@@ -93,6 +104,8 @@ For a new Brandapp + Next.js consumer:
 5. (over time) `brandapp-sdk-review` — periodic audit as the SDK evolves.
 
 `reopt-brandapp init` and `brandapp-sdk-install` are complementary, not duplicates: `init` writes the **dev-mode** files (`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`, `instrumentation.ts`, `package.json` `dev:local` script, `.gitignore` `.reopt/`); `brandapp-sdk-install` writes the **SDK app code** by routing through module docs (`.env.local`, `lib/sdk.ts`, `lib/auth*.ts`, auth route handler, optional webhook) and removes a legacy project-level registry override when present. Run both for a full local-dev-capable greenfield setup.
+
+For reopt Data, run `data-sdk-install` against an existing project and credentials, then use `data-sdk-review` as a release or upgrade gate. These public skills do not create remote Data resources and do not contain the internal SDK contributor loop.
 
 ## Structure
 

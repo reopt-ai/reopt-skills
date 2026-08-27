@@ -56,6 +56,15 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | [`brandapp-sdk-install`](./skills/brandapp-sdk-install/) | `reopt/brandapp-sdk-agent-rules` 블록을 박고 레거시 registry override를 제거한 뒤 env namespace + peer를 설정. Auth, EAV, 구독 webhook, Plans checkout, Files, logout, CMS, 오류 처리는 설치된 모듈 docs로 라우팅. |
 | [`brandapp-sdk-review`](./skills/brandapp-sdk-review/) | 기존 SDK 코드를 감사. 안티패턴을 10개 카테고리(init / Auth / Error / Config / Schema / Perf / React / Webhook / Debug / CMS)로 묶고 grep key 와 함께 나열, 정답 수정은 모듈 `docs/` 로 라우팅. |
 
+### Data SDK 통합
+
+브라우저·서버 분석 이벤트를 reopt Data로 보내는 외부 컨슈머 프로젝트용입니다. SDK 자체를 개발하는 내부 워크플로는 `reopt-data` 저장소에서만 관리하며 여기에는 배포하지 않습니다.
+
+| 스킬 | 다루는 내용 |
+| --- | --- |
+| [`data-sdk-install`](./skills/data-sdk-install/) | 공개 client/server 제품군 설치·업그레이드. Next.js App Router를 우선 지원하며 요청 스코프 identity, bootstrap, first-party ingest, consent, 선택적 devtool을 연결합니다. |
+| [`data-sdk-review`](./skills/data-sdk-review/) | package version, credential boundary, Next.js proxy/bootstrap, identity, consent, delivery, devtool 노출을 읽기 전용으로 감사합니다. |
+
 ### 패키지 설치 / 업그레이드
 
 `@reopt-ai/opt-*` 컴포넌트 패키지를 사용하는 컨슈머 프로젝트용.
@@ -82,6 +91,8 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | EAV 스키마 diff / sync / pull / 마이그레이션 | `reopt-eav` |
 | Next.js 앱에 `@reopt-ai/brandapp-sdk` 를 처음 도입 | `brandapp-sdk-install` |
 | 이미 SDK 를 쓰는 앱의 안티패턴 감사 | `brandapp-sdk-review` |
+| 컨슈머 앱에 reopt Data 분석 도입 | `data-sdk-install` |
+| 기존 reopt Data SDK 통합 감사 | `data-sdk-review` |
 | `opt-*` 컴포넌트 패키지 (opt-shell 제품 프레임 포함) 도입 또는 업그레이드 | 해당 `opt-*-install` 스킬 |
 
 ## 일반적인 도입 순서
@@ -95,6 +106,8 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 5. (시간이 흐른 뒤) `brandapp-sdk-review` — SDK 가 발전함에 따라 주기적으로 감사.
 
 `reopt-brandapp init` 과 `brandapp-sdk-install` 은 **중복이 아니라 보완 관계**입니다. `init` 은 **개발 모드 파일**(`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`, `instrumentation.ts`, `package.json` 의 `dev:local` 스크립트, `.gitignore` 의 `.reopt/`)을 작성하고, `brandapp-sdk-install` 은 레거시 프로젝트 레지스트리 override를 정리한 뒤 **SDK 앱 코드**를 모듈 docs 에 따라 작성합니다(`.env.local`, `lib/sdk.ts`, `lib/auth*.ts`, auth 라우트 핸들러, 선택적 webhook). 로컬 개발까지 가능한 신규 프로젝트를 만들려면 둘 다 실행하세요.
+
+reopt Data는 기존 프로젝트와 자격증명을 준비한 뒤 `data-sdk-install`을 실행하고, 릴리스·업그레이드 게이트로 `data-sdk-review`를 사용합니다. 공개 스킬은 원격 Data 리소스를 만들지 않으며 내부 SDK 기여자 루프를 포함하지 않습니다.
 
 ## 구조
 
