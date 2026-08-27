@@ -158,11 +158,11 @@ Per-version detail lives in each package's docs; this table stays terse.
 > (`opt-datagrid` 1.4.2, `opt-editor` 1.0.3, `opt-chat` 0.3.1); unchanged this
 > round.
 
-## Current state — 2026-08-22
+## Current state — 2026-08-27
 
-All targets in the three tables below are public npm packages. A GitHub
-Packages token or scoped `.npmrc` entry is neither required nor supported by
-the install skills.
+All targets in the tables below are public npm packages. A GitHub Packages
+token or scoped `.npmrc` entry is neither required nor supported by the install
+skills.
 
 ### CLI
 
@@ -177,6 +177,18 @@ the install skills.
 | `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **4.0.0** | 2026-08-22 (src+npm) |
 | `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **4.0.0** | 2026-08-22 (src+npm) |
 
+### Data SDK
+
+The public skills treat `@reopt-ai/data-sdk-client` as the primary target and
+version-gate the companion suite during execution. Verified companions:
+`@reopt-ai/data-sdk-server` 0.1.6, `@reopt-ai/data-sdk-devtool` 0.1.0, and
+`@reopt-ai/data-contract` 0.6.3.
+
+| Skill | Target | Min version | Last verified |
+|---|---|---|---|
+| `data-sdk-install` | `@reopt-ai/data-sdk-client` | **0.1.6** | 2026-08-27 (src+npm+example) |
+| `data-sdk-review` | `@reopt-ai/data-sdk-client` | **0.1.6** | 2026-08-27 (src+npm+example) |
+
 ### Design / UI packages
 
 | Skill | Target | Min version | Last verified |
@@ -188,6 +200,10 @@ the install skills.
 | `opt-shell-install` | `@reopt-ai/opt-shell` | **1.1.0** | 2026-08-10 (src+npm) |
 
 > **Doc-layout note (routing-critical — skills point at literal paths):**
+> - `@reopt-ai/data-sdk-client`, `data-sdk-server`, and `data-sdk-devtool`
+>   ship **README.md only** as agent-facing documentation; no package ships a
+>   `docs/` directory. The production-shaped reference implementation lives in
+>   the separate `reopt-ai/reopt-data-sdk-example` repository.
 > - `@reopt-ai/brandapp-sdk` ships docs at top-level **`docs/`** (NOT
 >   `dist/docs/`) — flat files `api-reference.md`, `cms.md`, `dev-server.md`,
 >   `environment.md`, `errors.md`, `files.md`, `logout.md`, `migration.md`,
