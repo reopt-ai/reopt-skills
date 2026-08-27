@@ -2,7 +2,7 @@
 name: reopt-cli
 description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
 target: "@reopt-ai/cli"
-targetMinVersion: "0.5.0"
+targetMinVersion: "0.6.0"
 ---
 
 # reopt CLI
@@ -17,7 +17,7 @@ targetMinVersion: "0.5.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.5.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.6.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -70,12 +70,12 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 |---|---|---|
 | Address | `https://mcp.reopt.ai` (streamable-http; staging `mcp.reopt.io`) | `reopt mcp` |
 | Auth | OAuth / dynamic client registration, handled by the client | the CLI's own session — `reopt login` first |
-| Tools | **26** — 10 shared + EAV (6) + CRM (10) | **14** — the same 10 + 4 local-only |
+| Tools | **30** — 10 shared + EAV (6) + CRM (14, incl. 4 feedback/proposal) | **14** — the same 10 + 4 local-only |
 
-- **Prefer remote.** It is the near-superset and needs no CLI login. The stdio server's 10 shared tools all fail before `reopt login`, so an unauthenticated install presents a half-broken tool list. Reopt's own agent-plugin packaging settled on remote-only for exactly this reason, with a guard that rejects a plugin declaring both — that manifest ships in the CLI release after 0.5.0, so do not look for it in an installed 0.5.0.
+- **Prefer remote.** It is the near-superset and needs no CLI login. The stdio server's 10 shared tools all fail before `reopt login`, so an unauthenticated install presents a half-broken tool list. Since 0.6.0 the installed package **is** an Agent Plugins 1.0.0 bundle: `plugin.json` + `mcp.json` (remote server only — a repo guard rejects declaring both) + `skills/` (`reopt-shared`, `reopt-brandapp`, `reopt-eav`). A client that speaks the standard discovers the remote server from `node_modules/@reopt-ai/cli` with no manual wiring; those bundled skills are the CLI's own copies and do not replace this repo's marker-pinning skills.
 - **Add stdio only for its 4 local-only tools** — `reopt_status`, `reopt_brandapp_doctor`, `reopt_schema_validate`, `reopt_sdk_inspect`. They read local project files and are meaningless outside a checkout.
 - **Call `reopt_workspace_list` first, always.** A guessed `workspaceId` returns an **empty result, not an error** — the one failure mode a model cannot diagnose on its own. A workspace-bound connector sees only its bound workspace there.
-- Published `reopt mcp` (0.5.0) ships its 14 tools with **no annotations**, so a client that decides human approval from `readOnlyHint` treats every stdio tool as "ask".
+- Since 0.6.0 both surfaces advertise `title` + `readOnlyHint` / `destructiveHint` / `idempotentHint` / `openWorldHint` on every tool, so approval-gating clients can auto-allow reads. A 0.5.0 `reopt mcp` still ships **no annotations** (everything is "ask"). The stdio server speaks MCP 2026-07-28 and still accepts 2025-era clients.
 
 ### CRM tools are governed differently
 
@@ -86,7 +86,7 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 - **Masking is the tool shape, not a flag.** `reopt_customer_list` / `reopt_segment_preview` have **no unmask parameter at all** — a roster cannot leave in one call. Raw values open only in single-record `reopt_customer_get`, which spends the **write** quota (10/min vs 100/min read) and is audit-flagged. Read each response's `pii: "masked" | "raw"` rather than treating a masked value as a real address.
 - **`customData` keys are attribute UUIDs.** `reopt_customer_get` attaches labels (orphaned key → `label: null`); `reopt_customer_field_list` returns the workspace definitions, and segment `customAttribute` conditions take the same ids — without it those filters are unreachable.
 
-`reopt_customer_note_add` is the **only** write on this surface. Creating customers, editing attributes, sending messages, and deleting were left off deliberately. Do not simulate one through the CLI or SDK unless the user asks for it directly.
+Writes on this surface are `reopt_customer_note_add` plus two **proposals** — `reopt_customer_feedback_propose_reply` and `reopt_customer_propose_note` (0.6.0). A proposal sends nothing and changes no CRM state: it queues a `WorkspaceProposal` for a workspace member to edit, approve, or dismiss in Studio. Check `reopt_customer_feedback_get.pendingProposals` before proposing to avoid duplicates. `reopt_customer_feedback_list` / `_get` (read, `customer:read`) expose the full thread and linked tasks. Creating customers, editing attributes, sending messages, and deleting were left off deliberately — do not simulate one through the CLI or SDK unless the user asks for it directly.
 
 ## Safety
 

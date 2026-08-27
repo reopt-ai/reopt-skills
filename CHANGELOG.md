@@ -11,6 +11,19 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Changed
+
+**`@reopt-ai/cli` 0.5.0 → 0.6.0 — 2026-08-27** (`reopt-cli` `targetMinVersion` → 0.6.0)
+
+- The agent-integration work recorded as "landing in the next release" has
+  shipped. `reopt-cli` Step 4 and the shared `cli-agent-rules` fallback now
+  document the installed `plugin.json` + `mcp.json` + `skills/` bundle (remote
+  MCP server only), the remote catalog at **30** tools (four new feedback /
+  proposal tools — proposals queue a `WorkspaceProposal` for Studio approval and
+  never send or mutate CRM state), and per-tool annotations on both surfaces
+  (a 0.5.0 `reopt mcp` still has none). The CLI command tree is unchanged, so
+  `reopt-brandapp` / `reopt-eav` are untouched.
+
 ### Added
 
 **Public reopt Data SDK skills — 2026-08-27**

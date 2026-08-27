@@ -168,7 +168,7 @@ skills.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `reopt-cli` | `@reopt-ai/cli` | **0.5.0** | 2026-08-10 (src+npm) |
+| `reopt-cli` | `@reopt-ai/cli` | **0.6.0** | 2026-08-27 (src+npm) |
 
 ### BrandApp SDK
 
@@ -252,25 +252,29 @@ harness commands, not block/component commands. There is no `opt-ui-cli` or
 `@reopt-ai/opt-ui-surface` is no longer a workspace package and has never been
 published to npm. Page templates now come from the signed `opt block` registry.
 
-### Landing in the next `@reopt-ai/cli` release (not in 0.5.0)
+### `@reopt-ai/cli` 0.6.0 — agent-integration release (2026-08-27)
 
-`packages/cli` gained a large MCP body of work after 0.5.0 shipped. The **remote**
-server (`https://mcp.reopt.ai`) is already deployed and its CRM surface is live —
-`reopt-cli` documents that today, since a hosted connector is independent of the
-installed CLI version. What is **not** yet published, and must not be documented
-as installed surface until the release lands:
+The MCP body of work that was pending after 0.5.0 shipped in **0.6.0**; the
+command tree (`login` / `status` / `token` / `brandapp *` / `eav *`) is
+unchanged, so `reopt-brandapp` and `reopt-eav` needed no edits. What an
+installed 0.6.0 now carries, and what `reopt-cli` Step 4 documents as installed
+surface:
 
-- `packages/cli/plugin.json` + `mcp.json` — `@reopt-ai/cli` packaged as an
-  Agent Plugins 1.0.0 plugin, declaring the remote MCP server only. A repo guard
-  fails any plugin declaring both stdio and remote (10 of their tool names
-  collide, and stdio's shared tools all fail before `reopt login`).
-- `packages/cli/src/remote-tools.ts` — the shared tool registry that now feeds
-  `title` / `annotations` to both surfaces. Published `reopt mcp` (0.5.0) still
-  advertises its 14 tools with **no annotations**, so approval-gating clients
-  treat them all as "ask".
+- `plugin.json` + `mcp.json` + `skills/` (`reopt-shared`, `reopt-brandapp`,
+  `reopt-eav`) — an Agent Plugins 1.0.0 bundle declaring **only** the remote
+  server `https://mcp.reopt.ai`. The bundled skills are the CLI's own copies;
+  this repo's skills stay the marker-pinning layer on top.
+- Remote catalog grew from 26 to **30** tools: `reopt_customer_feedback_list` /
+  `_get` (`customer:read`) and `reopt_customer_feedback_propose_reply` /
+  `reopt_customer_propose_note` (`customer:write`, queue a `WorkspaceProposal`
+  for Studio approval — they never send or mutate CRM state).
+- Every tool on both surfaces advertises `title` + read-only / destructive /
+  idempotent / open-world hints; the stdio server speaks MCP 2026-07-28 and
+  keeps 2025-era clients working. Build moved tsup → tsdown (fixes the lost
+  executable bit on `dist/index.js`).
 
-When that release cuts: bump `reopt-cli` `targetMinVersion`, and revisit the
-Step 4 wording that currently says the manifest is absent from 0.5.0.
+Still **not** shipped: `dist/agent-rules.md` — the `reopt/cli-agent-rules`
+fallback remains authoritative.
 
 ## Drift checklist
 
