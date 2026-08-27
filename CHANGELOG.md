@@ -11,6 +11,8 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+## [2.2.0] — 2026-08-27
+
 ### Changed
 
 **`@reopt-ai/cli` 0.5.0 → 0.6.0 — 2026-08-27** (`reopt-cli` `targetMinVersion` → 0.6.0)

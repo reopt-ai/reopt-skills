@@ -1,7 +1,7 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "organization": "reopt",
-  "updatedAt": "2026-08-22",
+  "updatedAt": "2026-08-27",
   "abstract": "Baseline reopt CLI guidance — auth, global flags, secret handling. Pins the shared reopt/cli-agent-rules marker block consumed by reopt-brandapp and reopt-eav.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"
