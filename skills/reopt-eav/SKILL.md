@@ -1,6 +1,6 @@
 ---
 name: reopt-eav
-description: EAV schema status, sync, pull, diff, file-based migrations (plan/migrate/history/verify), and destructive-change guardrails for reopt Brandapp projects. Use when a task involves `reopt brandapp eav status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`, `--dry-run`, or `--delete-orphans`.
+description: EAV schema status, sync, pull, diff, file-based migrations (plan/migrate/history/verify), record inspection and pruning (`eav records list/get/count/delete-where`), and destructive-change guardrails for reopt Brandapp projects. Use when a task involves `reopt brandapp eav status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`, `records`, `--dry-run`, `--delete-orphans`, or `delete-where`.
 requires:
   - reopt-cli
   - reopt-brandapp
@@ -18,6 +18,7 @@ requires:
 - reviewing destructive EAV changes in CI or local development
 - producing a markdown diff/risk report (`eav diff`)
 - file-based migrations (`eav plan` → `migrate` → `history` / `verify`)
+- reading, counting, or pruning **records** for operational debugging (`eav records`, CLI 0.7.0+)
 
 Load `reopt-cli` and `reopt-brandapp` first. Their shared agent-rules block (`<!-- BEGIN:reopt/cli-agent-rules -->`) covers this skill too — skip Step 1 if already pinned.
 
@@ -37,6 +38,8 @@ Same source/fallback/marker as `reopt-cli`. Idempotent: leave the block alone if
 | `eav migrate` | Apply pending migrations sequentially behind an advisory lock (`--dry-run` to preview) | ✓ | stable |
 | `eav history` | Show pending / applied / drift / missing-file state | – | stable |
 | `eav verify` | CI-friendly checksum validation against applied migrations | – | stable |
+| `eav records list` / `get <id>` / `count` | Read records of one entity (`--entity <name\|id>`, `--filter '<AttributeFilter[] JSON>'`, `--auth-user`, `--sort` / `--order`, `--select`, `--limit` / `--page`) | – | 0.7.0 |
+| `eav records delete-where` | Delete every record matching a filter — counts first, exit `7` without `--force` | ✓ (data) | 0.7.0 |
 
 Common flags (`--schema <path>`, `--out <path>`, `--json`, `--watch`, `--dry-run`, `--delete-orphans`) — see `reopt brandapp eav <cmd> --help` for the live set per command.
 
@@ -75,6 +78,16 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 - `eav verify` is the CI step — fails when an applied migration's checksum drifts from the file on disk.
 - Programmatic equivalent: `@reopt-ai/brandapp-sdk/eav/migrate` (`defineMigration` + `runner`). Identical results — use the SDK form when migrations live alongside app code (e.g. `npm run db:migrate` pre-deploy).
 
+## Step 5b — Records (data, not schema; CLI 0.7.0+)
+
+`eav records` is the only `eav` group that touches **data**. `--entity` and each filter's `attributeId` take an attribute **name or UUID** (the CLI resolves names and lists the known ones on a miss), so the generated `ATTRIBUTE_IDS` map is not needed by hand. Operators: `eq`, `neq`, `contains`, `gt`, `lt`, `gte`, `lte`, `is_null`, `is_not_null`, `after`, `before`, `in`, `not_in` (`in` / `not_in` need a non-empty array of ≤100 scalars — an empty list is rejected, never read as "match all"; drop the filter instead). Requests whose filter cannot narrow via an index (e.g. `neq` / `not_in` over a large entity) are refused with 422 `QUERY_TOO_BROAD` — lead with `eq` / `in` / `--auth-user`.
+
+```bash
+reopt brandapp eav records count -e sessions -f '[{"attributeId":"expires_at","operator":"before","value":"2026-01-01"}]'
+reopt brandapp eav records delete-where -e sessions -f '<same filter>'          # reports N matches, exits 7
+reopt brandapp eav records delete-where -e sessions -f '<same filter>' --force  # deletes; reports matched vs deleted
+```
+
 ## Step 6 — Route to docs
 
 | Task signal | Read |
@@ -83,6 +96,7 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 | Migration runner internals, lock behavior | `reopt brandapp eav migrate --help`, `reopt brandapp eav verify --help` |
 | `eav diff` output format / risk classification | `reopt brandapp eav diff --help` |
 | Migration scaffolding (`--from-diff`) | `reopt brandapp eav plan --help` |
+| Record filters, sort, projection, `delete-where` semantics | `reopt brandapp eav records <cmd> --help`; filter shape + `QUERY_TOO_BROAD` limits in `@reopt-ai/brandapp-sdk/docs/api-reference.md` § EAV Client |
 
 ## Lock file
 
@@ -93,4 +107,5 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 - Inherit all `reopt-cli` rules.
 - Always `--dry-run` before any mutating EAV operation.
 - `--delete-orphans` is the destructive switch; `--force` bypasses safe-mode (exit `7`) — follow Step 4 in order, never shortcut.
+- `eav records delete-where` deletes **data**: always run it once without `--force`, read the match count, and never script `--force` against a filter you have not counted in the same run.
 - Treat `eav verify` failures as merge blockers in CI.

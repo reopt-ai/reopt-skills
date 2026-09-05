@@ -2,7 +2,7 @@
   "version": "2.2.0",
   "organization": "reopt",
   "updatedAt": "2026-08-27",
-  "abstract": "Read-only audit of an existing @reopt-ai/data-sdk-client + data-sdk-server integration: package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, and devtool exposure. Routes fixes to the installed package READMEs.",
+  "abstract": "Read-only audit of an existing @reopt-ai/data-sdk-client + data-sdk-server integration: package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, error tracking, and devtool exposure. Routes fixes to the installed package READMEs.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"
   ]

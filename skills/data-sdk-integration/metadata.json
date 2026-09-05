@@ -1,0 +1,9 @@
+{
+  "version": "2.2.0",
+  "organization": "reopt",
+  "updatedAt": "2026-08-27",
+  "abstract": "Post-install product instrumentation with the reopt Data SDK: measurement plan, typed event contract, browser/server delivery, consent, event catalogue as code via @reopt-ai/data-cli, and funnel verification. Requires data-sdk-install.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills"
+  ]
+}

@@ -65,7 +65,9 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | Task signal | Read |
 |---|---|
 | Recipe decision tree, slot rules, policy | `shell-llms.txt` |
-| Component / prop API, exports (`.`, `./core`, `./meta`) | `README.md` |
+| Component / prop API, exports (`.`, `./core`, `./meta`) | `README.md` §§ "Module map", "Which component do I need?", "Hooks" |
+| Slot rules, z-index, theme wiring | `README.md` §§ "Slot contract", "z-index scale", "Theme configuration" |
+| Agent-facing protocol + lint rules | `README.md` §§ "AI Agent Protocol", "ESLint Plugin" |
 | Authoring audit / scoring | `@reopt-ai/opt-cli/audit`; `npx @reopt-ai/opt-cli harness check|test|doctor` |
 | Breaking changes per version | `CHANGELOG.md` |
 

@@ -1,8 +1,8 @@
 ---
 name: brandapp-sdk-review
-description: Review consumer project code for @reopt-ai/brandapp-sdk anti-patterns across Auth, EAV, Plans, Files, and webhooks. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit", "checkout review", "Files API review", "subscription webhook audit".
+description: Review consumer project code for @reopt-ai/brandapp-sdk anti-patterns across Auth, EAV (incl. 4.2 concurrency / TTL), Plans, Files, analytics bridge, and webhooks. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit", "checkout review", "Files API review", "subscription webhook audit".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "4.0.0"
+targetMinVersion: "4.2.0"
 ---
 
 # Brandapp SDK Review
@@ -11,7 +11,7 @@ targetMinVersion: "4.0.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 4.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap the source between `<!-- BEGIN:reopt/brandapp-sdk-agent-rules -->` and `<!-- END:reopt/brandapp-sdk-agent-rules -->`.
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 4.2.0). Fallback: `agent-rules.md` bundled with this skill. Wrap the source between `<!-- BEGIN:reopt/brandapp-sdk-agent-rules -->` and `<!-- END:reopt/brandapp-sdk-agent-rules -->`.
 
 Markers are shared with `brandapp-sdk-install` — same module, one block. If the block already exists from install, leave it alone (replace only when stale).
 
@@ -21,6 +21,7 @@ Inspect the installed version with `grep '"@reopt-ai/brandapp-sdk"' package.json
 
 Also read the installed `better-auth` version — 4.0 and 1.7 move together.
 
+- `< 4.2.0` — no record `version` / `ifVersion`, `increments`, or `expiresAt`, and no 422 `QUERY_TOO_BROAD` (broad filters were silently truncated). P10–P12 below assume 4.2; below it, flag the hand-rolled pattern and recommend the bump. `< 4.1.0` also has no `sdk.analytics` / `startBrandappAnalytics`.
 - `>= 4.0.0` — **Better Auth 1.7 wiring is mandatory.** `better-auth < 1.7.1` in `package.json` is a broken install. Run Auth5/Auth8; the 1.6 client plugin, `signIn.oauth2`, and the `/api/auth/oauth2/callback/reopt` path no longer exist.
 - `< 4.0.0` — the app is on the 1.6 flow. Before recommending the bump, check that any **self-registered** redirect URI has `${BETTER_AUTH_URL}/api/auth/callback/reopt` added in the studio (exact match) — upgrading first breaks sign-in. Then Auth8 lists the call-site rewrites.
 - `< 3.6.0` — no EAV record-list `select` projection (wide list views must fetch all values; recommend 3.6 before applying Perf2); `< 3.5.0` also has no Files folders, rename/move, `readContent`, `usage`, or matching React hooks (recommend 3.5 for file-manager work).
@@ -43,6 +44,9 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **P7 Per-item `records.delete` loop** — `Promise.all(` + `.map(` + `records.delete`
 - **P8 Per-item `records.update` loop** — `Promise.all(` + `.map(` + `records.update`
 - **P9 `.length` on `listAllRecords` for counting** — `.length` on a `listAllRecords` result
+- **P10 Hand-rolled optimistic lock (4.2)** — a custom `version` / `revision` attribute compared in app code, or `records.get` → `records.update` without `ifVersion` on a contended entity — pass `ifVersion: record.version`, catch `PreconditionFailedError`
+- **P11 Client-side counter math (4.2)** — `values: { [attr]: current + n }` / `- n` on a number attribute — use `increments`
+- **P12 Home-made TTL / lease cleanup (4.2)** — a cron or `delete-where` sweep over an `expires_at` attribute, or claim/lock entities cleaned by hand — set `expiresAt` and let the server expire them
 
 ### Auth wiring → package `README.md` (Better Auth wiring) + `docs/api-reference.md` (`sdk.auth`, session helpers)
 - **Auth1 No error boundary on `useSession`** — `authClient.useSession()` without try/catch or ErrorBoundary nearby
@@ -68,6 +72,7 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **Cfg4 Redundant `clientSecret` alongside a `token` (token wins, 3.0)** — `token:` and `clientSecret:` on the same `ReoptSDKConfig` — drop `clientSecret`
 - **Cfg5 `clientSecret` reachable in the browser (3.0 throws `CONFIG_BROWSER_SECRET`)** — `NEXT_PUBLIC_BRANDAPP_CLIENT_SECRET`, or `clientSecret:` in a `"use client"` file / `createBrandappProvider` — mint a server token, pass `{ token }`
 - **Cfg6 Removed type/error aliases (3.0)** — `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` — rename to `ReoptSDKConfig` / `ReoptSDKError`
+- **Cfg8 Analytics bridge misuse (4.1)** — `@reopt-ai/brandapp-sdk/analytics` imported without the `@reopt-ai/data-sdk` peer installed, `@reopt-ai/data-sdk-client` substituted for it, or `startBrandappAnalytics` result used without a `null` guard
 - **Cfg7 Per-environment `REOPT_ID_BASE_URL` (4.0)** — the var set to different hosts across `.env*` / deploy configs — 4.0 namespaces accounts by the discovered `issuer`, so a moved host resolves existing users as new accounts
 - **D1 Custom SDK request logging** — bespoke `fetch` wrapper instead of `BRANDAPP_SDK_DEBUG` / `BRANDAPP_SDK_LOG_FORMAT`
 
@@ -111,7 +116,7 @@ For each finding emit `[pattern-id] pattern-name`, `file:line`, one-line `why` f
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/Auth*/Err3/Err5/Cfg1–Cfg5/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/P11/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/P10/P12/Auth*/Err3/Err5/Cfg1–Cfg5/Cfg7/Cfg8/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
 
 ## Safety
 

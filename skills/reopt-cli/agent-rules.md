@@ -20,6 +20,7 @@
 - Never print credential values.
 - Never commit anything under `~/.reopt/`.
 - Always `--dry-run` before a destructive EAV sync. Since CLI 0.4.0 `eav sync` is safe-mode: `--delete-orphans`, `isRequired`/`isUnique` promotions, and select-option removals are blocked (exit `7`) unless you also pass `--force`.
+- `eav records` (0.7.0) is the only `eav` group that touches **data**, not schema. `delete-where` always counts first and exits `7` without `--force`; run it once without the flag, read the match count, then re-run with `--force`. `in` / `not_in` filters take a non-empty array (an empty list is a 400, never "no restriction") — to lift a restriction, drop the filter. `--entity` and filter `attributeId` accept names or UUIDs; a duplicate entity name is refused.
 - Pass arguments as arrays when invoking the CLI programmatically (`spawn(["reopt", "brandapp", "eav", "sync"])`, not a string).
 - `experimental` subcommands (`brandapp dev`, `brandapp env *`, `eav migrate *`) may shift — surface the label when recommending.
 - `reopt mcp` bypasses commander; standard `--help` and option parsing do not apply.
