@@ -11,6 +11,104 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Added
+
+- Added `data-sdk-integration`, a post-install workflow for turning product
+  journeys into a typed event contract, sharing sanitized payloads with existing
+  providers, instrumenting browser and server-confirmed outcomes, synchronizing
+  consent, managing the event catalogue as code, and verifying complete funnels.
+  It requires `data-sdk-install` and leaves remote provisioning and catalogue
+  mutations behind their existing authorization boundaries.
+
+### Changed
+
+**Sibling-repo drift round — 2026-09-05** (`reopt`, `reopt-design`, `reopt-data`
+re-checked; `COMPATIBILITY.md` verification block records the details)
+
+- **Data SDK: `reopt-data` bin moved to `@reopt-ai/data-cli`.**
+  `data-sdk-server` 0.5.0 dropped its bin, so `data-sdk-install` Step 4 now
+  wires source maps through `@reopt-ai/data-cli` (`reopt-data sourcemap inject`
+  / `upload`, `REOPT_DATA_ORG_KEY`, `--delete-after-upload`, `--path-prefix` +
+  `--host-app` for shared deployments, exit `6` on partial failure) and
+  version-gates the move (a server ≥ 0.5.0 with the old `postbuild` breaks
+  until data-cli is a dev dependency; Node 22+). Docs routing for source maps
+  and the event catalogue now points at the installed data-cli README instead
+  of the example repo. `data-sdk-review` gains matching **Packages** / **Error
+  tracking** checks and a **Catalogue** category (lock file, `--force` pushes,
+  `event verify`, conversions, rollup keys, `event types`). The shared
+  `data-sdk-agent-rules` fallback adds the data-cli README, refuses the
+  deprecated `@reopt-ai/data-sdk` meta-package, rewrites the source-map rule,
+  and adds an "Event catalogue rules" section (still byte-identical across both
+  skills). `data-sdk-integration` names the CLI package, the `init` / `pull` →
+  `diff` → `push` → `verify` order, and `event types` for a typed `track()`;
+  it also gains a `metadata.json`. Client `targetMinVersion` stays 0.2.0
+  (client README unchanged through 0.4.0); verified companions are server
+  0.5.0, contract 0.10.0, data-cli 0.1.0.
+- **`@reopt-ai/cli` 0.6.0 → 0.7.0** (`reopt-cli` `targetMinVersion` → 0.7.0):
+  `reopt-cli` routes the new `eav records` group and extends the exit-`7`
+  summary; `reopt-eav` adds the records rows to its command map, a "Records
+  (data, not schema)" step (name-or-id resolution, operator list incl. `in` /
+  `not_in`, `QUERY_TOO_BROAD`, the count-then-`--force` order), a docs row, and
+  a safety rule; the shared `cli-agent-rules` fallback adds the `delete-where`
+  and empty-`in` rules. `reopt-brandapp` unchanged.
+- **`@reopt-ai/brandapp-sdk` 4.0.0 → 4.2.0** (`brandapp-sdk-install` /
+  `brandapp-sdk-review` `targetMinVersion` → 4.2.0): install routes the 4.2 EAV
+  concurrency / TTL surface (`ifVersion`, `increments`, `expiresAt`,
+  `QUERY_TOO_BROAD`) and the 4.1 analytics bridge
+  (`@reopt-ai/brandapp-sdk/analytics` — documented only in `CHANGELOG.md` +
+  declaration JSDoc; peers on the npm-deprecated `@reopt-ai/data-sdk` name, not
+  `data-sdk-client`), and adds an `expiresAt` clock-skew safety note. Review
+  adds `< 4.2.0` / `< 4.1.0` version gates and patterns P10 (hand-rolled
+  optimistic lock), P11 (client-side counter math), P12 (home-made TTL sweep),
+  Cfg8 (analytics bridge misuse). The shared `brandapp-sdk-agent-rules`
+  fallback adds the EAV concurrency + TTL and analytics-bridge rules and the
+  analytics doc-map row.
+- **Design:** `opt-ui-install` `targetMinVersion` → 1.12.5 and states that
+  1.7–1.12.5 are additive (no breaking-changes entry past 1.5; opt-cli 1.3.1
+  regenerated the component catalog). `opt-datagrid-install`
+  `targetMinVersion` → 1.6.1, adds the `@reopt-ai/opt-datagrid/toolbar` chrome
+  entry point, the corrected `height` default (`420`, no auto-fill) and
+  `getRowThemeOverride` / `--opt-surface` behavior, and a toolbar docs row.
+  `opt-editor` / `opt-chat` / `opt-shell` targets unchanged.
+- **Corrections from the published-tarball smoke** (`data-sdk-install` /
+  `data-sdk-review`): `exceptionRateLimit` is `capture.exceptionRateLimit`,
+  not a root config key, and `addExceptionStep` is a method on the client
+  instance (`getInstance()` / `useReoptClient()`), not a package export. The
+  source-map routing row no longer lists `sourcemap list` / `delete`, which
+  the published data-cli 0.1.0 does not ship; a `reopt-data config link` row
+  is added.
+- Docs-routing precision for unchanged targets: `opt-ui-install` adds
+  `opt guide` / `opt ids` (opt-cli 1.3.1); `opt-chat-install` routes 1.1
+  migration detail to `CHANGELOG.md` (the README migration section covers
+  0.1 → 0.2 only); `opt-shell-install` names the README sections it routes
+  to; `reopt-cli` adds the README "Agent plugin" section for MCP.
+- `COMPATIBILITY.md`: new verification block (source + published-tarball
+  smoke), updated matrix, data-cli / opt-meta / deprecated `data-sdk` rows in
+  the tracked table, opt-cli 1.3.1.
+
+**Data SDK 0.1.6 → 0.2.0 (error tracking) — 2026-08-29** (`data-sdk-install` /
+`data-sdk-review` `targetMinVersion` → 0.2.0; companions server 0.2.0, devtool
+0.2.0, contract 0.7.0)
+
+- `data-sdk-install` gains a Step 4 for opt-in error tracking in the order a
+  consumer should wire it: browser capture (`capture.exceptions`, keep the
+  per-type rate limit), `captureException` with `level` / `fingerprint`,
+  `createOnRequestError` on the server, breadcrumbs (`capture.exceptionSteps`
+  + `addExceptionStep`), `release` / `__REOPT_RELEASE__`, then source maps via
+  the `reopt-data inject-chunk-ids` + `upload-sourcemaps` bin keyed by chunk
+  URL, and the optional repository link. Docs routing points at the client
+  README's "`$exception_list`" and "Release tracking" sections and at the
+  example repo for the `postbuild` shape. Verify now includes one test error
+  reaching the project's Errors page and, after an upload, a symbolicated frame.
+- `data-sdk-review` adds an **Error tracking** category (rate limit disabled in
+  production, `captureException` in loops or carrying PII, client-computed group
+  ids, throwing `beforeCapture`, hand-typed or missing `release`, maps uploaded
+  by filename, `inject-chunk-ids` after upload, unrecorded public source maps).
+- The shared `data-sdk-agent-rules` fallback gains an "Error tracking rules"
+  section (still byte-identical across both skills). Existing rules unchanged.
+- Both skills now name `REOPT_DATA_API_KEY` (organization key, CI/server only)
+  alongside `clientSecret` in their secrets rules.
+
 ## [2.2.0] — 2026-08-27
 
 ### Changed

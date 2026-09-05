@@ -2,7 +2,7 @@
 name: reopt-cli
 description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
 target: "@reopt-ai/cli"
-targetMinVersion: "0.6.0"
+targetMinVersion: "0.7.0"
 ---
 
 # reopt CLI
@@ -17,7 +17,7 @@ targetMinVersion: "0.6.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.6.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.7.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -47,9 +47,9 @@ Prefer `--help` as the live source of truth. The CLI ships **no** `dist/docs/`; 
 | Auth commands and session model | `reopt login --help`, `reopt status --help`; installed CLI `README.md` § Authentication |
 | Service-token issuance (CI/CD) | `reopt token mint --help` |
 | Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `reopt brandapp --help` + see `reopt-brandapp` skill |
-| EAV ops (`status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`) | `reopt brandapp eav --help` + see `reopt-eav` skill |
+| EAV schema ops (`status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`) and record ops (`eav records list` / `get` / `count` / `delete-where`, 0.7.0) | `reopt brandapp eav --help` + see `reopt-eav` skill |
 | Schema-as-Code, completion, config | relevant `--help`; installed CLI `README.md` §§ Schema-as-Code, Shell completion, Preferences |
-| MCP — which server, which tools, CRM handling | **Step 4 below.** No `--help` output states that two Reopt MCP servers exist or that their tool names collide |
+| MCP — which server, which tools, CRM handling | **Step 4 below** + installed CLI `README.md` § "Agent plugin (skills + MCP server)". No `--help` output states that two Reopt MCP servers exist or that their tool names collide |
 | Global flags, output formats, pagination | `reopt --help`; installed CLI `README.md` § Output and global flags |
 | Exit codes | installed CLI `README.md` § Exit codes; summary below |
 
@@ -60,7 +60,7 @@ Quick global-flag reminders (subset; full list in `--help`):
 - `--no-interactive` — required for unattended scripts (fail instead of prompt).
 - `--dry-run` — preview only (EAV sync, brandapp link/unlink).
 
-Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal. EAV migrate/verify add `6` drift-detected, `7` destructive-blocked, `8` checksum-mismatch, `9` checksum-conflict, `10` lock-held.
+Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal. EAV migrate/verify add `6` drift-detected, `7` destructive-blocked (safe-mode `sync`, and `eav records delete-where` without `--force`), `8` checksum-mismatch, `9` checksum-conflict, `10` lock-held.
 
 ## Step 4 — MCP: two servers share one tool namespace
 
@@ -94,6 +94,6 @@ Writes on this surface are `reopt_customer_note_add` plus two **proposals** — 
 2. Never print credential values.
 3. Never commit files under `~/.reopt/`.
 4. Inject secrets through a secret manager in CI.
-5. Use `--dry-run` before any mutating EAV operation, and especially before `--delete-orphans`.
+5. Use `--dry-run` before any mutating EAV operation, and especially before `--delete-orphans`. `eav records delete-where` (0.7.0) is the only `eav` command that deletes **data**: run it without `--force` first (counts matches, exits `7`), then re-run with `--force` only after reviewing the count.
 6. Pass arguments as arrays when invoking the CLI programmatically.
 7. `.reopt.config.mjs` is trust-on-first-use (0.4.0) — it executes JS on load, so a changed/untrusted file is ignored non-interactively (stderr warning) or prompts on a TTY. In CI, set `REOPT_TRUST_CONFIG=1` to trust + record its hash, or use `.reopt.json` (exempt from TOFU).

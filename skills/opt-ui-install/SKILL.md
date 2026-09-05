@@ -3,7 +3,7 @@ name: opt-ui-install
 description: |
   Install or upgrade @reopt-ai/opt-ui in a consumer project, wire app.css, or add a Block/Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui app.css", "opt-ui block", "opt-cli block add", "opt-ui surface", "add Surface".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.6.0"
+targetMinVersion: "1.12.5"
 ---
 
 # opt-ui Install
@@ -26,7 +26,7 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.6.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.12.5). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -47,7 +47,8 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
    - Optional app-frame base layer (1.6+): `@import "@reopt-ai/opt-ui/app.css";` for focus-visible, cursor, reduced-motion, text-scale, shortcut-hint, and skip-link behavior. It is required when opt-shell policies should affect the whole document.
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
    - Block CLI: `npx @reopt-ai/opt-cli block add <slug>` vendors page-template Surfaces from the signed public registry. `block diff` bulk-checks drift (`--json` / `--exit-code` for CI); `block remove` safely uninstalls. `opt surface …` is a deprecated alias.
-   - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and example code.
+   - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and example code. opt-cli **1.3.1** regenerated that catalog for the 1.10–1.12 opt-ui additions; an older opt-cli will not list them.
+   - 1.7 → 1.12.5 are **additive** releases (detail primitives such as `DescriptionList` / `Identity` / `EventTimeline` / `Flyout`, catalog-screen components such as `Callout` / `SegmentedControl` / `CatalogFrame` / `InspectorLayout` / `QueryFilterBar`, plus `FieldToken` / `Facet` / `InlineEdit` and friends). `05-migration/01-breaking-changes.md` has no entry past 1.5, so an upgrade from 1.6+ is a version bump plus a `tsc` run; do not invent breaking-change edits.
 
 4. **CLI checks** — run `npx @reopt-ai/opt-cli block doctor` when Blocks are installed. Run `npx @reopt-ai/opt-cli harness doctor` only when the project has a harness config. There is no top-level `opt doctor`. opt-shell is an optional, lazy-loaded opt-cli peer; do not install it for block/component commands alone.
 
@@ -57,9 +58,9 @@ Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
 
 | Task signal | Read |
 |---|---|
-| Start here — doc index | `dist/docs/index.md` |
+| Start here — doc index | `dist/docs/index.md`, or `npx @reopt-ai/opt-cli guide` (lists every shipped doc with component counts; `opt guide <slug>` prints one — present in opt-cli 1.3.1) |
 | Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
-| Component API & props (core / visuals / shells / surfaces) | `dist/docs/02-components/` |
+| Component API & props (core / visuals / shells / surfaces) | `dist/docs/02-components/`; `npx @reopt-ai/opt-cli component <Name>` for one component's contract, `opt ids list|show|stats` for the `data-opt-id` registry |
 | Surface components | `dist/docs/02-components/04-surfaces.md` |
 | Recipes (forms, dashboards, layouts) | `dist/docs/03-recipes/` |
 | Theme, styling, design tokens | `dist/docs/04-theming.md` |

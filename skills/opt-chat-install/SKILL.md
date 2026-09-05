@@ -70,7 +70,7 @@ opt-chat ships **no** `dist/docs/`. Route to `node_modules/@reopt-ai/opt-chat/RE
 | Styling / CSS import (opt-ui CSS or `styles.css`) | `README.md` § Styles |
 | Flow / agent-graph Canvas (`@reopt-ai/opt-chat/flow`) + optional peers | `README.md` §§ Optional peers, Flow |
 | opt-ui token / design-system integration | `README.md` § Design system integration |
-| Version migration / breaking changes | `README.md` § Migration, `CHANGELOG.md` |
+| Version migration / breaking changes | `CHANGELOG.md` (1.1 detail lives only there); `README.md` § "Migration 0.1 → 0.2" covers the 0.x rename only |
 
 ## Pipeline (auto-branch)
 

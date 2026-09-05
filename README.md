@@ -60,8 +60,9 @@ For consumer projects that send browser and server analytics to reopt Data. Inte
 
 | Skill | What it covers |
 | --- | --- |
-| [`data-sdk-install`](./skills/data-sdk-install/) | Install or upgrade the public client/server suite. Next.js App Router first, including request-scoped identity, bootstrap, first-party ingest, consent, and optional devtools. |
-| [`data-sdk-review`](./skills/data-sdk-review/) | Read-only audit of package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, and devtool exposure. |
+| [`data-sdk-install`](./skills/data-sdk-install/) | Install or upgrade the public client/server suite. Next.js App Router first, including request-scoped identity, bootstrap, first-party ingest, consent, opt-in error tracking (exceptions, breadcrumbs, releases, source maps), and optional devtools. |
+| [`data-sdk-integration`](./skills/data-sdk-integration/) | Turn product journeys into a typed event contract, instrument browser and server outcomes, preserve consent/privacy, manage the event catalogue as code, and verify complete funnels. Requires `data-sdk-install`. |
+| [`data-sdk-review`](./skills/data-sdk-review/) | Read-only audit of package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, error tracking, and devtool exposure. |
 
 ### Package install / upgrade
 
@@ -90,6 +91,7 @@ Two axes decide which skill applies:
 | Add `@reopt-ai/brandapp-sdk` to a Next.js app for the first time | `brandapp-sdk-install` |
 | Audit an existing app's SDK usage for anti-patterns | `brandapp-sdk-review` |
 | Add reopt Data analytics to a consumer app | `data-sdk-install` |
+| Design and implement the product event layer after transport setup | `data-sdk-integration` |
 | Audit an existing reopt Data SDK integration | `data-sdk-review` |
 | Adopt or upgrade an `opt-*` component package (incl. the `opt-shell` product frame) | the matching `opt-*-install` skill |
 
@@ -105,7 +107,10 @@ For a new Brandapp + Next.js consumer:
 
 `reopt-brandapp init` and `brandapp-sdk-install` are complementary, not duplicates: `init` writes the **dev-mode** files (`.env.development`, `reopt.seed.ts`, `lib/dev-server.ts`, `instrumentation.ts`, `package.json` `dev:local` script, `.gitignore` `.reopt/`); `brandapp-sdk-install` writes the **SDK app code** by routing through module docs (`.env.local`, `lib/sdk.ts`, `lib/auth*.ts`, auth route handler, optional webhook) and removes a legacy project-level registry override when present. Run both for a full local-dev-capable greenfield setup.
 
-For reopt Data, run `data-sdk-install` against an existing project and credentials, then use `data-sdk-review` as a release or upgrade gate. These public skills do not create remote Data resources and do not contain the internal SDK contributor loop.
+For reopt Data, run `data-sdk-install` against an existing project and credentials,
+then `data-sdk-integration` to design and implement product events, and use
+`data-sdk-review` as a release or upgrade gate. These public skills do not create
+remote Data resources and do not contain the internal SDK contributor loop.
 
 ## Structure
 
