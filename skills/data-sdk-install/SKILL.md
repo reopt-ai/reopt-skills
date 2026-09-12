@@ -55,6 +55,10 @@ Everything below is off by default. Turn on only what the user asked for, in thi
 
 Tell the user: events sent before the upgrade are grouped only after a one-time backfill run by the Data project owner (`POST /api/cron/backfill-exceptions`), and maps resolve frames for events arriving after the upload.
 
+## Session replay (version-gated opt-in)
+
+Check the installed client README for replay support before adding configuration; workspace implementations may precede npm. Recording requires a project setting and separate visitor consent. Keep replay out of default-granted categories, preserve masking/block selectors, restrict public asset manifests to reviewed static files (never visitor uploads or personalized resources), and never log replay bodies or upload grants. Route implementation and limits to the installed client README’s session replay section. Do not enable recording on a customer site without an explicit request.
+
 ## Docs routing
 
 Paths are relative to each installed package root.

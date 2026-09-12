@@ -11,6 +11,10 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+- Require reviewed public static files for optional replay asset manifests; exclude visitor uploads and personalized assets.
+
+- Add version-gated session replay consent/privacy guidance to Data SDK installation and review. The workspace replay implementation is pending npm release; existing compatibility floors are unchanged.
+
 ### Added
 
 - Added `data-sdk-integration`, a post-install workflow for turning product
