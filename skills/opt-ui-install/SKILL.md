@@ -40,7 +40,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 
 1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 20+, React 19+, Tailwind CSS v4. bun or npm.
+2. **Prereqs** — Node 20+, React 19+, Tailwind CSS v4. bun or npm. `next` is an optional peer (`>=16.0.0`) — from opt-ui 2.0 only the `@reopt-ai/opt-ui/next` entry (`SidebarNav`, `RouteFocusManager`) needs it; the root, `./core` and `./shells` entries resolve without Next. On 1.x those two components are re-exported from the root, so a non-Next bundler fails on `next/navigation` unless `next` is installed. The CodeMirror packages (`@codemirror/state`, `view`, `autocomplete`, `lang-sql`, `theme-one-dark`, and `commands` from 1.13) are optional peers used **only** by the SQL editor in the query workspace; install them only when that surface is used, and expect no undo/redo or line-number affordances without `@codemirror/commands`.
 
 3. **App-shell wiring** — properties of the consumer app:
    - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet (plus the `@source` directive — see getting-started).

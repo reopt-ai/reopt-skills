@@ -47,7 +47,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shel
 
 2. **Runtime / peers** — Node 20+ is required. For opt-shell's `peerDependencies`, install / run their skills first if missing:
    - **Required:** `@reopt-ai/opt-palette` (theme engine), `react` / `react-dom` 19+
-   - **Optional** (only if you use that adapter): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`
+   - **Optional** (only if you use that adapter): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`. From opt-shell 2.0 the adapters are imported from their own entries — `@reopt-ai/opt-shell/datagrid` (`ShellDataGridAdapter`), `@reopt-ai/opt-shell/editor` (`ShellEditorAdapter`, `useShellEditorAI`), `@reopt-ai/opt-shell/calendar` (`ShellCalendarAdapter`) — so the root entry never resolves an uninstalled peer. On 1.x the adapters are root exports and all three peers must be installed for the root import to build.
 
    `@reopt-ai/opt-ui` is a direct dependency of opt-shell; run `/opt-ui-install` to wire its Tailwind/theme CSS rather than adding a second package copy or source alias.
 

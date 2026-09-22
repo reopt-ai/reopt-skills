@@ -11,7 +11,14 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
-- Require reviewed public static files for optional replay asset manifests; exclude visitor uploads and personalized assets.
+### Changed
+
+- `opt-ui-install` and `opt-shell-install` document the 2.0 entry split:
+  `SidebarNav` / `RouteFocusManager` come from `@reopt-ai/opt-ui/next`, and the
+  shell adapters from `@reopt-ai/opt-shell/datagrid` / `/editor` / `/calendar`,
+  so optional peers (`next`, opt-datagrid, opt-editor, opt-calendar) are only
+  resolved by the entries that use them. The 1.x behavior (root re-exports that
+  force the peers to be installed) is called out for consumers still on 1.x.
 
 - Add version-gated session replay consent/privacy guidance to Data SDK installation and review. The workspace replay implementation is pending npm release; existing compatibility floors are unchanged.
 
