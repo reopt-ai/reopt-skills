@@ -11,9 +11,7 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
-- Require reviewed public static files for optional replay asset manifests; exclude visitor uploads and personalized assets.
-
-- Add version-gated session replay consent/privacy guidance to Data SDK installation and review. The workspace replay implementation is pending npm release; existing compatibility floors are unchanged.
+## [2.3.0] — 2026-09-27
 
 ### Added
 
@@ -25,6 +23,143 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
   mutations behind their existing authorization boundaries.
 
 ### Changed
+
+**Sibling-repo drift round — 2026-09-26, with upstream follow-up on 2026-09-27**
+(`reopt`, `reopt-design`, `reopt-data` re-checked against source, the public npm
+`latest` tag and unpacked tarballs; `COMPATIBILITY.md` verification block records
+the details, including corrections to the 2026-09-13 round's findings)
+
+- **`@reopt-ai/brandapp-sdk` 4.5.0 → 4.6.0** (`brandapp-sdk-install` /
+  `brandapp-sdk-review` `targetMinVersion` → 4.6.0). The `better-auth ^1.7.4`
+  peer and the inert `accountIssuer` shipped in **4.6.0** (4.5.0's peer is still
+  `^1.7.1`). better-auth 1.7.3+ keys accounts by
+  `providerId` / `accountId`, so the shared `brandapp-sdk-agent-rules` fallback,
+  the install safety rule and review pattern **Cfg7** now limit the "keep
+  `REOPT_ID_BASE_URL` stable" rule to lockfiles on 1.7.0–1.7.2, and tell
+  projects with a self-hosted Better Auth database to make `account.issuer`
+  nullable before moving to 1.7.3+. Review adds a `< 4.6.0` version gate.
+- **Design: `@reopt-ai/opt-ui` 1.16.0 shipped without `dist/docs/`.**
+  `opt-ui-install` names it (see the 1.16.1 follow-up below), points at
+  `opt component` / `opt catalog` (opt-cli ≥ 1.3.3) and `COMPONENT_CATALOG.md`
+  when the directory is absent, and inlines the Tailwind `@source` line.
+  It also states that `CriteriaBuilder` and the SQL helpers are
+  **root-only** exports (importing them from `/shells` fails with TS2305), and
+  on every published release both the root and `./shells` import `next/*`, so
+  only `./core` / `./visuals` are Next-free. The CodeMirror note now says the
+  published types reference those peers. The `opt component` snapshot warning
+  moves to opt-cli 1.3.3, whose catalog was built against opt-ui 1.16.0.
+- **Upstream follow-up — `@reopt-ai/opt-ui` 1.16.1 and `@reopt-ai/opt-chat`
+  1.1.1** (published 2026-09-27 at this round's request). opt-ui 1.16.1
+  restores `dist/docs/` with 1.16.0's code unchanged, and 1.16.0 is deprecated,
+  so `opt-ui-install`'s `targetMinVersion` moves **1.15.0 → 1.16.1** and the
+  missing-docs fallback becomes an upgrade note. opt-chat 1.1.1 corrects
+  `ToolState`'s deprecation hint. `opt-chat-install` records that in 1.1.x
+  `ToolState` is the **public** (`@deprecated`) export and `ConfirmationState`
+  the unexported one, and recommends `ConfirmationProps["state"]` (exported
+  since 1.1.0 and identical to the future `ConfirmationState`) for new code,
+  with the floor unchanged.
+- **opt-ui / opt-shell 2.0 subpath entries are pending, not shipped.** Commit
+  `bb66e16` (on `main` since 2026-09-23) documented `@reopt-ai/opt-ui/next` and
+  `@reopt-ai/opt-shell/datagrid` / `/editor` / `/calendar` as a 2.0 that no
+  published version has, and the opt-shell fallback forbade the root import that
+  is the only working path on 1.1.0. `opt-ui-install` and `opt-shell-install`
+  now say to use those entries only once the installed `package.json` exports
+  them. `opt-shell-install` adds that the 1.1.0 root needs all three adapter
+  peers plus `zod` and `next`, because `./core` carries no components.
+- **Data SDK: session replay ships from `@reopt-ai/data-sdk-client` 0.5.0**
+  (floors unchanged at 0.2.0). `data-sdk-install`, `data-sdk-review` and the
+  shared `data-sdk-agent-rules` fallback replace "no published client carries
+  replay" with guidance gated on client ≥ 0.5.0. They add two consent traps:
+  `defaultConsent` defaults to `true` for every listed category, and
+  `setAllConsent(true)` grants `replay` once it is known. They also note that
+  `flushReplay` is an instance method, and that the shipped README still reads
+  "npm release pending", so support is judged by version or types. Other
+  changes: the data-cli command list includes the `tools [--json]` and `mcp`
+  commands 0.1.0 ships; the Apps-in-Toss adapter's client peer follows client minors
+  (0.2.2 for client 0.6.x); server errors get `$release_id` through
+  `beforeCapture`; server ≥ 0.6.0 `./ai` telemetry gets routing plus a
+  content-capture safety rule; review adds an **AI telemetry** category.
+  `data-sdk-integration` names the **eleven criterion kinds** of segment
+  definition v2, fixes a duplicated step number, and adds `track({ eventId })` dedup
+  for outbox retries (client/server 0.6.0+).
+- `COMPATIBILITY.md`: new 2026-09-26 verification block (with corrections to the
+  2026-09-13 round), matrix rows re-dated, tracked-package versions updated, and
+  three new drift-checklist items (publish time vs round date, tarball
+  `fileCount`, attributing a change to the version that published it).
+- `reopt-cli`, `reopt-brandapp`, `reopt-eav`, `opt-datagrid-install` and
+  `opt-editor-install` were re-verified and are unchanged.
+
+**Sibling-repo drift round — 2026-09-13** (`reopt`, `reopt-design`, `reopt-data`
+re-checked against source, the public npm `latest` tag and unpacked tarballs;
+`COMPATIBILITY.md` verification block records the details)
+
+- **`@reopt-ai/cli` 0.7.0 → 0.8.0** (`reopt-cli` `targetMinVersion` → 0.8.0).
+  0.8.0's headline is `reopt workspace` (Platform as Code, RFC-0030), which is
+  **operator-only**: it needs an OAuth client scoped `workspace:admin`, issued
+  only in Reopt's internal superadmin console, and RFC-0030 names external
+  customers and agencies as explicit non-goals. Because the commands are
+  nonetheless visible in `reopt --help` on the public package, `reopt-cli` gains
+  a short step that names the surface, says it cannot be completed from a
+  consumer project, and redirects to `reopt brandapp` / `reopt brandapp eav` /
+  Studio; the shared `cli-agent-rules` fallback carries the same rule. The
+  fifth stdio MCP tool `reopt_workspace_plan` is described as part of that
+  operator surface rather than as a usable local tool. **`reopt-eav` now tells
+  agents to ignore the 0.8.0 `eav sync` deprecation for consumer projects** —
+  its stated replacement is the operator-only surface, so `eav sync` remains
+  the supported path outside the monorepo. `reopt-eav` also adds the 100-row
+  `--limit` cap. `reopt-brandapp` is unchanged.
+- **`@reopt-ai/brandapp-sdk` 4.2.0 → 4.5.0** (`brandapp-sdk-install` /
+  `brandapp-sdk-review` `targetMinVersion` → 4.5.0 in this round; 4.6.0 after
+  the 2026-09-26 round). Install routes the new `docs/workspace.md`, adds `zod`
+  as the optional peer of the `workspace` subpath, and adds safety rules for the
+  4.4 page limit and the server-only platform client. Review adds `< 4.5.0` /
+  `< 4.4.0` / `< 4.3.0` version gates, patterns **P13** (over-limit page
+  request) and **P14** (hand-written page-size constant), and a new
+  **Platform / workspace client** category (**Plat1–Plat6**: hand-rolled
+  platform calls, browser-reachable credentials, hardcoded `allowDestructive`,
+  persisted secrets, swallowed lock errors, `works:write` used where
+  `workspace:admin` is required). The shared fallback adds the 4.3 `resolved`
+  feedback status, the 4.4 `RECORDS_PAGE_LIMIT_MAX` rule (a `limit` above 100
+  is a `BadRequestError`, and `cms.posts.list` shares the cap), and the 4.5
+  platform-client, fail-closed-destructive and one-shot-secret rules.
+- **Design: `@reopt-ai/opt-ui` 1.12.5 → 1.15.0** (`opt-ui-install`
+  `targetMinVersion` → 1.15.0 in this round; 1.16.1 after the 2026-09-26
+  round). 1.13–1.15 are additive; the skill names the SQL query workspace
+  shells, `CriteriaBuilder` and the replay player shells, notes that the subpath
+  export list is unchanged, documents the optional CodeMirror peers
+  (`@codemirror/commands` supplies undo/redo and line numbers), and warns that
+  `opt component` reads a **snapshot** catalog bundled with opt-cli. The
+  `dist/docs/` routing was re-verified against the published tarballs for
+  opt-ui, opt-datagrid and opt-editor and is unchanged. `opt-chat-install` gains
+  a note that the `ToolState` → `ConfirmationState` rename is **unreleased**,
+  and that `ToolPartState` is not a valid substitute (two of seven members).
+  `opt-datagrid` / `opt-editor` / `opt-shell` targets unchanged.
+- **Data SDK: floors unchanged; unreleased upstream work explicitly refused.**
+  Replay code stays out of projects on client ≤ 0.4.x (the 2026-09-26 round
+  adds the guidance for 0.5.0, the first release that ships replay), keeping
+  the consent, masking and public-asset rules. Both install and review now say the published `@reopt-ai/data-cli` `0.1.0`
+  is much smaller than its upstream README (`login` / `account`, `segment *`,
+  `org usage`, `sourcemap list|delete|*-platform` and the whole Project-as-Code
+  group are absent) and to trust `reopt-data --help`. Review adds a **Quota**
+  category (a 402 / `quota_exceeded` preserves the batch; the rejection line is
+  purchased quota plus platform grace, not the 80%/100% notice) and packages
+  checks for the new adapter. Install adds `@reopt-ai/data-adapter-apps-in-toss`
+  0.2.0 with its required client peer and its "turn reopt auto-capture off"
+  rule. `data-sdk-integration` states that segment definitions have no create
+  surface by design and names contract v2's scopes and criterion kinds. The
+  shared `data-sdk-agent-rules` fallback carries all five rules and stays
+  byte-identical across both skills. Verified companions move to contract
+  `0.12.0`.
+- `COMPATIBILITY.md`: new verification block, matrix rows dated 2026-09-13,
+  `reopt-brandapp` / `reopt-eav` rows added, the new
+  `brandapp-sdk` `docs/workspace.md` recorded in the doc-layout note, and
+  tracked-table rows for `data-adapter-apps-in-toss` 0.2.0, `studio-catalog`
+  4.1.0, `opt-charts` 1.7.0, `opt-cli` 1.3.2, plus the two **restricted**
+  packages (`legal`, `superadmin-cli`) that must never be routed as installs.
+
+- Session replay guidance first landed in this cycle as a version-gated opt-in
+  with a reviewed-public-asset rule for replay manifests; the 2026-09-26 round
+  gates it on client 0.5.0, the first published release that ships replay.
 
 **Sibling-repo drift round — 2026-09-05** (`reopt`, `reopt-design`, `reopt-data`
 re-checked; `COMPATIBILITY.md` verification block records the details)

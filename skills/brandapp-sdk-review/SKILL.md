@@ -1,17 +1,17 @@
 ---
 name: brandapp-sdk-review
-description: Review consumer project code for @reopt-ai/brandapp-sdk anti-patterns across Auth, EAV (incl. 4.2 concurrency / TTL), Plans, Files, analytics bridge, and webhooks. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit", "checkout review", "Files API review", "subscription webhook audit".
+description: Review consumer project code for @reopt-ai/brandapp-sdk anti-patterns across Auth, EAV (incl. 4.2 concurrency / TTL and the 4.4 page limit), Plans, Files, analytics bridge, webhooks, and the 4.5 platform/workspace client. Triggers on "brandapp-sdk review", "SDK review", "improve SDK usage", "EAV optimization", "brandapp-sdk audit", "checkout review", "Files API review", "subscription webhook audit", "platform client review".
 target: "@reopt-ai/brandapp-sdk"
-targetMinVersion: "4.2.0"
+targetMinVersion: "4.6.0"
 ---
 
 # Brandapp SDK Review
 
-> This is NOT the SDK you know. Read `node_modules/@reopt-ai/brandapp-sdk/docs/` before judging any usage (the package ships docs at top-level `docs/`, not `dist/docs/`). Anti-pattern remedies live there; this skill is grep keys + categories only. **Two surfaces are not in `docs/`:** Better Auth wiring lives in the package `README.md`, and 3.1–4.0 breaking detail lives in `CHANGELOG.md` (`migration.md` stops at `2.x → 3.0.0`).
+> This is NOT the SDK you know. Read `node_modules/@reopt-ai/brandapp-sdk/docs/` before judging any usage (the package ships docs at top-level `docs/`, not `dist/docs/`). Anti-pattern remedies live there; this skill is grep keys + categories only. **Two surfaces are not in `docs/`:** Better Auth wiring lives in the package `README.md`, and 3.1–4.6 breaking detail lives in `CHANGELOG.md` (`migration.md` stops at `2.x → 3.0.0`).
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 4.2.0). Fallback: `agent-rules.md` bundled with this skill. Wrap the source between `<!-- BEGIN:reopt/brandapp-sdk-agent-rules -->` and `<!-- END:reopt/brandapp-sdk-agent-rules -->`.
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/brandapp-sdk` does not, as of 4.6.0). Fallback: `agent-rules.md` bundled with this skill. Wrap the source between `<!-- BEGIN:reopt/brandapp-sdk-agent-rules -->` and `<!-- END:reopt/brandapp-sdk-agent-rules -->`.
 
 Markers are shared with `brandapp-sdk-install` — same module, one block. If the block already exists from install, leave it alone (replace only when stale).
 
@@ -21,8 +21,12 @@ Inspect the installed version with `grep '"@reopt-ai/brandapp-sdk"' package.json
 
 Also read the installed `better-auth` version — 4.0 and 1.7 move together.
 
+- `< 4.6.0` — the `better-auth` peer is `^1.7.1` and the SDK still forwards `accountIssuer`; 4.6 requires `^1.7.4` and makes the option inert. Check the lockfile, not the range: 1.7.0–1.7.2 key accounts by `issuer` (Cfg7 applies), 1.7.3+ by `providerId` / `accountId`.
+- `< 4.5.0` — no `@reopt-ai/brandapp-sdk/workspace` platform client. Only relevant to code that already holds operator credentials; an app calling `platform.reopt.ai` through hand-written `fetch` is Plat1.
+- `< 4.4.0` — `records.list` / `cms.posts.list` accepted an over-limit `limit` and the server answered 400 with nothing in the SDK to explain it; `RECORDS_PAGE_LIMIT_MAX` does not exist. Any literal `limit: 200` (or anything > 100) is EAV4 regardless of version.
+- `< 4.3.0` — `FeedbackStatus` has no `resolved`; a status union or filter written against 4.3+ will not typecheck, and one written before it silently omits resolved threads.
 - `< 4.2.0` — no record `version` / `ifVersion`, `increments`, or `expiresAt`, and no 422 `QUERY_TOO_BROAD` (broad filters were silently truncated). P10–P12 below assume 4.2; below it, flag the hand-rolled pattern and recommend the bump. `< 4.1.0` also has no `sdk.analytics` / `startBrandappAnalytics`.
-- `>= 4.0.0` — **Better Auth 1.7 wiring is mandatory.** `better-auth < 1.7.1` in `package.json` is a broken install. Run Auth5/Auth8; the 1.6 client plugin, `signIn.oauth2`, and the `/api/auth/oauth2/callback/reopt` path no longer exist.
+- `>= 4.0.0` — **Better Auth 1.7 wiring is mandatory.** `better-auth < 1.7.1` in `package.json` is a broken install (on 4.6+, anything below 1.7.4 is outside the peer range). Run Auth5/Auth8; the 1.6 client plugin, `signIn.oauth2`, and the `/api/auth/oauth2/callback/reopt` path no longer exist.
 - `< 4.0.0` — the app is on the 1.6 flow. Before recommending the bump, check that any **self-registered** redirect URI has `${BETTER_AUTH_URL}/api/auth/callback/reopt` added in the studio (exact match) — upgrading first breaks sign-in. Then Auth8 lists the call-site rewrites.
 - `< 3.6.0` — no EAV record-list `select` projection (wide list views must fetch all values; recommend 3.6 before applying Perf2); `< 3.5.0` also has no Files folders, rename/move, `readContent`, `usage`, or matching React hooks (recommend 3.5 for file-manager work).
 - `< 3.4.0` — no subscription lifecycle webhooks, live Paddle hosted checkout/unified live cancellation result, or two-way feedback; `< 3.1.0` has no `plans` hosted checkout at all (`createCheckout` / `getCheckout` / `cancel`). For any subscription / checkout UI recommend 3.4+ and run Err5/W3.
@@ -47,6 +51,8 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **P10 Hand-rolled optimistic lock (4.2)** — a custom `version` / `revision` attribute compared in app code, or `records.get` → `records.update` without `ifVersion` on a contended entity — pass `ifVersion: record.version`, catch `PreconditionFailedError`
 - **P11 Client-side counter math (4.2)** — `values: { [attr]: current + n }` / `- n` on a number attribute — use `increments`
 - **P12 Home-made TTL / lease cleanup (4.2)** — a cron or `delete-where` sweep over an `expires_at` attribute, or claim/lock entities cleaned by hand — set `expiresAt` and let the server expire them
+- **P13 Over-limit page request (4.4)** — a literal `limit:` above 100 (or a `limit` from config with no clamp) on `records.list` / `listAll` / `cms.posts.list` — the SDK rejects it with `BadRequestError` before the request; use `RECORDS_PAGE_LIMIT_MAX` and `listAll()`
+- **P14 Hand-written page-size constant** — a local `const PAGE_SIZE = 100` / `50` beside a records loop instead of importing `RECORDS_PAGE_LIMIT_MAX` from `@reopt-ai/brandapp-sdk/eav`
 
 ### Auth wiring → package `README.md` (Better Auth wiring) + `docs/api-reference.md` (`sdk.auth`, session helpers)
 - **Auth1 No error boundary on `useSession`** — `authClient.useSession()` without try/catch or ErrorBoundary nearby
@@ -57,6 +63,15 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **Auth6 No session cache strategy** — repeated `getSession()` calls per request
 - **Auth7 Re-implementing cross-subdomain session verification** — manual cookie parsing for `*.reopt.ai`; use `verifySession` / `getSessionFromCookies`
 - **Auth8 **Removed 1.6 auth surface (4.0 breaks these)**** — `createReoptOAuthClient`, `genericOAuthClient`, `signIn.oauth2(`, `oauth2.link(`, the literal `/api/auth/oauth2/callback/reopt`, or `better-auth` pinned `<1.7.1` — rewrite to `signInWithReopt` / `linkReoptAccount`, or plain `signIn.social({ provider: "reopt" })` / `linkSocial()`
+
+### Platform / workspace client (4.5) → `docs/workspace.md`
+**Operator-only surface.** `workspace:admin` is issued in Reopt superadmin, so a consumer project cannot adopt this. Review it only where it already exists; never recommend Plat1’s fix as an adoption.
+- **Plat1 Hand-rolled platform API calls** — `fetch(` against `platform.reopt.ai`, or a bespoke `client_credentials` token cache, instead of `createPlatformClient` from `@reopt-ai/brandapp-sdk/workspace`
+- **Plat2 Platform credentials reachable from the browser** — `createPlatformClient` in a `"use client"` file, or its `clientSecret` in `NEXT_PUBLIC_*` — the subpath is server-only
+- **Plat3 `allowDestructive` hardcoded** — the flag passed unconditionally in application or CI code rather than gated on a human decision; the server still returns 409 `DESTRUCTIVE_BLOCKED`, but the intent is wrong
+- **Plat4 Issued OAuth secret persisted or logged** — a create/rotate response written to a log, a non-0600 file, or version control; plaintext exists only in that response
+- **Plat5 Lock errors treated as retryable failures** — `LOCK_HELD` (409) / `LOCK_UNAVAILABLE` (503) swallowed in a retry loop instead of surfaced; it is the same advisory lock as the EAV migration runner
+- **Plat6 Scope confusion** — `works:write` credentials used for structural change (brands, brandapps, OAuth clients, EAV schema, pipelines), which needs `workspace:admin`
 
 ### Error handling → `docs/errors.md`
 - **Err1 Generic `catch` instead of SDK error classes** — `catch (e)` without `isReoptSDKError` / class check
@@ -73,7 +88,7 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **Cfg5 `clientSecret` reachable in the browser (3.0 throws `CONFIG_BROWSER_SECRET`)** — `NEXT_PUBLIC_BRANDAPP_CLIENT_SECRET`, or `clientSecret:` in a `"use client"` file / `createBrandappProvider` — mint a server token, pass `{ token }`
 - **Cfg6 Removed type/error aliases (3.0)** — `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` — rename to `ReoptSDKConfig` / `ReoptSDKError`
 - **Cfg8 Analytics bridge misuse (4.1)** — `@reopt-ai/brandapp-sdk/analytics` imported without the `@reopt-ai/data-sdk` peer installed, `@reopt-ai/data-sdk-client` substituted for it, or `startBrandappAnalytics` result used without a `null` guard
-- **Cfg7 Per-environment `REOPT_ID_BASE_URL` (4.0)** — the var set to different hosts across `.env*` / deploy configs — 4.0 namespaces accounts by the discovered `issuer`, so a moved host resolves existing users as new accounts
+- **Cfg7 Per-environment `REOPT_ID_BASE_URL` on better-auth 1.7.0–1.7.2** — the var set to different hosts across `.env*` / deploy configs while the lockfile resolves 1.7.0–1.7.2, which namespace accounts by the discovered `issuer` (a moved host forks existing users). On 1.7.3+ it is not a finding; instead flag a self-hosted `account.issuer` column still `NOT NULL`
 - **D1 Custom SDK request logging** — bespoke `fetch` wrapper instead of `BRANDAPP_SDK_DEBUG` / `BRANDAPP_SDK_LOG_FORMAT`
 
 ### Schema / types → `docs/api-reference.md`
@@ -116,7 +131,7 @@ For each finding emit `[pattern-id] pattern-name`, `file:line`, one-line `why` f
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/P11/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/P10/P12/Auth*/Err3/Err5/Cfg1–Cfg5/Cfg7/Cfg8/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/P11/P13/P14/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/P10/P12/Auth*/Err3/Err5/Cfg1–Cfg5/Cfg7/Cfg8/Plat1–Plat6/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
 
 ## Safety
 

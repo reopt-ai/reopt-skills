@@ -8,7 +8,220 @@ The **Target** column lists the single primary package (matches the skill's
 `target` / `targetMinVersion` frontmatter, which `pnpm validate` cross-checks).
 Per-version detail lives in each package's docs; this table stays terse.
 
-> **Verification level (2026-09-05 round):** every target re-checked against
+> **Verification level (2026-09-26 round):** every target re-checked against the
+> three sibling monorepos (`reopt`, `reopt-design`, `reopt-data`) and the public
+> npm `latest` tag (scoped `--@reopt-ai:registry=` flag). The moved packages'
+> tarballs were unpacked and diffed against the prior verified version, and the
+> claims that changed were type-checked (`tsc`) or run (`opt`, `reopt-data
+> --help`) against a scratch install. Moved since the prior round:
+> `brandapp-sdk` **4.5.0 → 4.6.0**, `opt-ui` **1.15.0 → 1.16.0**, `opt-cli`
+> **1.3.2 → 1.3.3**, `opt-charts` **1.7.0 → 1.8.2**, `data-sdk-client` **0.4.0 →
+> 0.6.1**, `data-sdk-server` **0.5.0 → 0.7.0**, `data-contract` **0.12.0 →
+> 0.15.0**, `data-adapter-apps-in-toss` **0.2.0 → 0.2.2**, `studio-catalog`
+> **4.1.0 → 4.2.2**. Unchanged: `cli` 0.8.0, `opt-datagrid` 1.6.1, `opt-editor`
+> 2.0.0, `opt-chat` 1.1.0, `opt-shell` 1.1.0, `data-sdk-devtool` 0.2.0,
+> `data-cli` 0.1.0. No live ingest, upload, replay or platform call was run.
+>
+> — **brandapp-sdk 4.6.0:** the `better-auth` peer moves `^1.7.1` →
+> **`^1.7.4`** and the SDK stops forwarding `accountIssuer` (kept for source
+> compatibility, `@deprecated`, inert). better-auth 1.7.3+ keys accounts by
+> `providerId` / `accountId` instead of the discovered `issuer`, so the "keep
+> `REOPT_ID_BASE_URL` stable" rule now applies only to lockfiles pinned at
+> 1.7.0–1.7.2. A self-hosted Better Auth database whose schema came from
+> 1.7.0–1.7.2 must make `account.issuer` nullable first — Reopt's own migration
+> (`20260912T0754_better_auth_174_account_provider_key`) drops that column's
+> NOT NULL and the issuer unique index. 4.6 also adds the operator-only
+> `platformCustomerUpsertInputSchema` (RFC-0029 §13, schema only). `docs/`,
+> `README.md`, exports and engines are unchanged, and every routed path exists.
+> The `platform` dist-tag (`4.5.0-platform.0`) is a stale prerelease.
+>
+> — **cli 0.8.0 (unchanged):** remote MCP 30 tools and stdio 15, matching the
+> tarball. On `main` but unpublished, and not adopted: the MCP server 2.1.0
+> bump, dropping `tools.listChanged`, the `plugin.json` version fix (the 0.8.0
+> tarball still says `0.7.0`), name-keyed `eav_record_bulk_update` values, and
+> the remote `insufficient_scope` step-up challenge.
+>
+> — **Design:** 🔴 **opt-ui 1.16.0 was published without `dist/docs/`**
+> (registry `fileCount` 57 vs 71 for 1.15.0), so every `dist/docs/*` route and
+> `opt guide` fail on a fresh 1.16.0 install. `opt-ui-install` now falls back to
+> `opt component` / `opt catalog` (opt-cli ≥ 1.3.3), `COMPONENT_CATALOG.md` and
+> `README.md`. 1.16.0 itself is a fix release (`SummaryRow` passes
+> `sparklineData`) plus opt-charts `^1.8.0` (`TraceWaterfall`, `TimeSeriesChart`
+> bands), so the 1.15.0 docs still apply otherwise. The bundled `CHANGELOG.md` of
+> opt-ui 1.16.0 and opt-cli 1.3.3 lacks its own version's section. **Import-path
+> correction:** `CriteriaBuilder` (+ `criteriaBuilder*`), `splitSqlStatements`
+> and the SQL placeholder helpers are **root-only** exports — importing them from
+> `/shells` fails with TS2305; the query workspace and replay shells resolve from
+> both. In every published release the root and `./shells` import `next/link` /
+> `next/navigation` (only `./core` / `./visuals` are Next-free), and the
+> published `.d.ts` references `@codemirror/*` types, so `skipLibCheck: false`
+> fails without those peers. opt-cli 1.3.3 rebuilds its catalog against opt-ui
+> 1.16.0 + opt-charts 1.8.2 (`opt component CriteriaBuilder` resolves) and adds
+> `opt catalog`. opt-shell 1.1.0's root — the only entry with components —
+> statically imports all three adapter peers, `zod` (via `opt-editor/ai-sdk`) and
+> `next` (via the opt-ui root); `./core` is contracts and helpers only. opt-chat
+> 1.1.0 exports `ToolState` (`@deprecated`) and declares `ConfirmationState`
+> without exporting it. **Pending upstream majors, deliberately not adopted:**
+> opt-ui `./next` (with `SqlEditor` types that no longer import CodeMirror),
+> opt-shell `./datagrid` / `./editor` / `./calendar`, the opt-chat `ToolState`
+> removal, and opt-datagrid `./evaluation` / `./jev`. reopt-skills commit
+> `bb66e16` had described the opt-ui / opt-shell entries as a shipped 2.0; this
+> round rewrites them as pending.
+>
+> — **Data SDK:** 🔴 **session replay ships from `data-sdk-client` 0.5.0**
+> (published 2026-09-13, hours after the prior round read 0.4.0): `sessionReplay`
+> config, a `"replay"` consent category, instance `flushReplay()`, and a lazy
+> `@rrweb/record` chunk (`@rrweb/*` are now hard dependencies). The shipped README
+> still heads the section "npm release pending", so the skills gate on the
+> installed version or types instead. `consent.defaultConsent` is `true` for each
+> listed category and `setAllConsent(true)` flips every known category — both
+> grant replay unless the integration keeps it out. Client/server 0.6.0 add
+> `track({ eventId })` ingest dedup; server 0.6.0 adds `./ai`
+> (`createReoptAiTelemetry` for `ai@7`; content off by default, error messages on
+> by default); the server 0.7.0 README is English with `README.ko.md` alongside.
+> `createOnRequestError` still has no `release` key — return `{ $release_id }`
+> from `beforeCapture`. The Apps-in-Toss adapter's client peer tracks client
+> minors (0.2.1 adds `^0.5.0`, 0.2.2 adds `^0.6.0`). Contract 0.13–0.15 add
+> `./replay`, `./ai`, `./ai-schema` and an `ai_metric` alert condition; segment
+> definitions are unchanged. Floors stay at 0.2.0 — replay is gated in the text.
+> Unreleased and not adopted: the larger data-cli (`login`, `segment *`,
+> Project-as-Code, …) and its MCP result bounding.
+>
+> — **Upstream follow-up (2026-09-27, requested from this round):** reopt-design
+> published **opt-ui 1.16.1** — 71 files, `dist/docs/` restored (same 14-file
+> tree as 1.15.0), `dist` code byte-identical to 1.16.0, bundled `CHANGELOG.md`
+> carrying `[1.16.1]` and `[1.16.0]`, still no `./next` — and **deprecated
+> 1.16.0** ("Published without dist/docs (opt guide fails)"). `opt-ui-install`'s
+> floor moves to **1.16.1** and the docs workaround shrinks to an upgrade note.
+> **opt-chat 1.1.1** changes only d.ts JSDoc + CHANGELOG: `ToolState`'s
+> deprecation now points at `ConfirmationProps["state"]` (exported since 1.1.0,
+> the future `ConfirmationState`, a superset of `ToolState` — checked with
+> `tsc`), which `opt-chat-install` now recommends for new code; floor stays
+> 1.1.0. Both hotfixes were cut from their release tags (`@reopt-ai/opt-ui@1.16.1`
+> → `e2f7ec71`, `@reopt-ai/opt-chat@1.1.1` → `10a233c1`, pushed), so none of
+> `main`'s unreleased breaking work is in them. The **opt-datagrid 1.6.1**
+> tarball `CHANGELOG.md` still has no `[1.6.1]` section; `main` has it, so the
+> next datagrid release carries it (the skill does not route there). reopt-design
+> added publish guards in `b838d39a` (missing `dist/docs/index.md`,
+> CHANGELOG/version mismatch, >10% tarball shrink vs npm `latest`) — committed
+> but not yet pushed at the time of writing. The 2.0 majors remain unscheduled;
+> until then `main`'s workspace 1.16.1 (with breaking changes) differs from the
+> npm 1.16.1.
+>
+> — **Corrections to the 2026-09-13 round** (its text below is left as
+> recorded): (1) the `better-auth ^1.7.4` peer and the inert `accountIssuer`
+> shipped in **4.6.0**, not 4.5.0 — 4.5.0 is `^1.7.1` and still forwards the
+> option; (2) segment definition v2 has **eleven** criterion kinds, not seven;
+> (3) data-cli 0.1.0 **does** ship `tools [--json]` and `mcp` — only `completion`
+> of that group is absent; (4) `opt block remove` and the `-c` shorthand removal
+> are in published opt-cli 1.3.3; (5) `CriteriaBuilder` and the SQL helpers were
+> never exported from `./shells`.
+
+> **Prior round (2026-09-13):** every target re-checked against the
+> three sibling monorepos (`reopt`, `reopt-data`, `reopt-design`) and the public
+> npm `latest` tag (scoped `--@reopt-ai:registry=` flag). Published tarballs were
+> unpacked and read for the packages whose claims changed. Moved since the prior
+> round: `cli` **0.7.0 → 0.8.0**, `brandapp-sdk` **4.2.0 → 4.5.0**, `opt-ui`
+> **1.12.5 → 1.15.0**, `opt-cli` **1.3.1 → 1.3.2**, `opt-charts` **1.5.0 →
+> 1.7.0**, `data-contract` **0.10.0 → 0.12.0**, `studio-catalog` **2.0.0 →
+> 4.1.0**, and a new public **`@reopt-ai/data-adapter-apps-in-toss` 0.2.0**.
+> Unchanged: `opt-datagrid` 1.6.1, `opt-editor` 2.0.0, `opt-chat` 1.1.0,
+> `opt-shell` 1.1.0, `data-sdk-client` 0.4.0, `data-sdk-server` 0.5.0,
+> `data-sdk-devtool` 0.2.0, `data-cli` 0.1.0. Source-checked (CHANGELOGs,
+> READMEs, `package.json` exports/peers/bins/engines, `src/`) **and** tarball-checked;
+> **not** re-run through the full consumer install → `tsc --noEmit` → runtime
+> smoke procedure, and no live platform `workspace apply`, ingest, or upload was
+> executed. One `docs/` path is new (`brandapp-sdk` `docs/workspace.md`); every
+> other routed path was confirmed present in the published tarball.
+>
+> — **cli 0.8.0 (Platform as Code, RFC-0030):** `reopt workspace plan | apply |
+> import | export | drift | rotate-secret` declares six resource kinds in
+> `reopt.workspace.ts` (`defineWorkspace` from the new `@reopt-ai/cli/workspace`
+> subpath) and reconciles them through the platform API under scope
+> `workspace:admin`. Apply order is `brand` → `brandapp` → `oauth-client` →
+> `eav.schema` → `works.pipeline` → `webhook`, deletes in reverse and last.
+> Destructive changes exit `7` without `--allow-destructive`; a stale saved
+> `--plan` exits `9`; the advisory lock (shared with the EAV migration runner)
+> exits `10`; a needed prompt with no TTY exits `3`. Brands and brandapps have
+> **no delete path**. An uncreated-by-code resource is `import-required`, never
+> overwritten. Issued OAuth secrets are written `0600` via `--secrets-out` and
+> masked in human output. **`reopt brandapp eav sync` is deprecated** in favour
+> of declaring `eav: { schema }`. The local stdio MCP server grew to **15** tools
+> — `reopt_workspace_plan` is the fifth local-only tool and is read-only;
+> `apply` / `import` are deliberately not exposed on either surface. The remote
+> connector stays at 30. The `plugin.json` version now matches the release (the
+> 0.6.0-vs-0.7.0 cosmetic mismatch is fixed). Requires `brandapp-sdk` >= 4.5.0.
+> 🔴 **The whole `workspace` surface is operator-only and no skill teaches it.**
+> `workspace:admin` is issued only in Reopt's internal superadmin console
+> (`/brandapp/platform-clients`, RFC-0029 §9); RFC-0030 names external customers,
+> agencies and user-delegated tokens as explicit non-goals and records the two
+> supporting migrations as **not yet deployed to production**. Because the
+> commands are still visible in `reopt --help` on the public package, `reopt-cli`
+> carries a short step that names the surface and redirects, and `reopt-eav`
+> tells agents to **ignore the `eav sync` deprecation** for consumer projects —
+> the replacement path is unreachable outside the monorepo.
+>
+> — **brandapp-sdk 4.3 / 4.4 / 4.5:** 4.3 adds `FeedbackStatus` `resolved`
+> (distinct from `responded`). 4.4 is the one with a consumer-visible sharp edge:
+> `records.list({ limit })` above **100** is now a `BadRequestError` raised
+> before the request rather than a silent clamp (`RECORDS_PAGE_LIMIT_MAX` is
+> exported from `@reopt-ai/brandapp-sdk/eav`; use `listAll()` for more), and the
+> same 100 cap applies to `cms.posts.list` — the older sitemap/RSS examples
+> teaching `limit: 200` are wrong. Production 2026-08-30~09-05 lost five days of
+> credit dead-letter settlement to exactly this. 4.5 adds the server-only
+> `@reopt-ai/brandapp-sdk/workspace` platform client — **operator-only, same
+> credential gate as the CLI surface above** — (`createPlatformClient`,
+> `client_credentials` against `platform.reopt.ai`, RFC 8707 `resource` audience
+> pinning, token cache with 60s-early renewal and one 401 retry) plus the
+> declarative resource surface behind `workspace:admin`, all documented in the
+> **new `docs/workspace.md`**. Destructive resource changes are refused with 409
+> `DESTRUCTIVE_BLOCKED` and roll back the whole transaction; the apply lock
+> answers `LOCK_HELD` (409) / `LOCK_UNAVAILABLE` (503). An OAuth secret is
+> plaintext only in the response that creates or rotates it. `zod >= 4.0.0` is a
+> new optional peer used only by that subpath, and the `better-auth` peer moved
+> to **`^1.7.4`** with a forwarded `accountIssuer` now inert.
+>
+> — **Design:** opt-ui 1.13 / 1.14 / 1.15 are additive (`05-migration/01-breaking-changes.md`
+> still has no entry past 1.5): 1.13 the nine SQL query workspace shells plus
+> `SqlEditor`'s imperative handle and the SQL-splitting helpers, 1.14
+> `CriteriaBuilder` and a `labels` prop on `ConditionBuilder`, 1.15 the session
+> replay player shells. All come from the `./shells` entry point — the subpath
+> export list is unchanged. `@codemirror/commands` joined the optional CodeMirror
+> peers (undo/redo + line numbers in `SqlEditor`). The four chart types dropped
+> from `lib/types.ts` were byte-identical duplicates and still resolve through
+> `export * from "@reopt-ai/opt-charts"`. `dist/docs/` survived the "untrack dist
+> docs copies" commit — the build regenerates it and the tarball still carries
+> the full tree for opt-ui, opt-datagrid and opt-editor. opt-cli 1.3.2 only
+> regenerated the catalog **against opt-ui 1.13.0**, so `opt component` misses the
+> 1.14/1.15 additions; its command surface is unchanged. 26 registry blocks moved
+> from the deprecated `SurfaceLayout` to `BlockLayout` (the alias remains public).
+> **Unreleased and deliberately not adopted:** opt-chat's `ToolState` →
+> `ConfirmationState` rename (npm latest is still 1.1.0 and its `[Unreleased]`
+> section does not even log it), opt-cli's `-c` shorthand removal and `opt block
+> remove`, and opt-charts' legend-toggle / waterfall-total fixes.
+>
+> — **Data SDK:** the only published movement is `data-contract` **0.10.0 →
+> 0.12.0** (new subpaths `./segment`, `./definition`, `./integration`,
+> `./integration-client`, `./cli`; segment definition **v2** — five attribute
+> scopes, three time windows, seven condition kinds, nesting depth 3, per-type
+> operator sets, and no create surface anywhere by design) and the new adapter
+> package. Client, server, devtool and data-cli did not move. Two large bodies of
+> upstream work are **unreleased and must not be written into a consumer
+> project**: session replay (`sessionReplay` config, `setConsent("replay")`,
+> `flushReplay()` — absent from the 0.4.0 tarball, whose README has no replay
+> section at all) and the data-cli growth beyond published `0.1.0` (`login` /
+> `account`, `segment *`, `org usage`, `sourcemap list|delete|*-platform`, and the
+> whole Project-as-Code group). Published `0.1.0` is `config`, `event`, `org`,
+> `project`, `query`, `sourcemap inject|upload` — nothing more. Quota metering
+> gained a grace band: the rejection threshold is purchased quota **plus**
+> platform grace, the 80%/100% notices are a different line, and a 402 /
+> `quota_exceeded` preserves the batch rather than tripping the breaker. The
+> Stripe removal touched only web and db — no published package references it.
+> Every data package's npm tarball does carry its `README.md` despite a
+> `files: ["dist"]` field (npm always includes it), so README routing is intact;
+> none ships a `docs/` directory.
+
+> **Prior round (2026-09-05):** every target re-checked against
 > the three sibling monorepos (`reopt`, `reopt-design`, `reopt-data`) and the
 > public npm `latest` tag (scoped `--@reopt-ai:registry=` flag). Moved since the
 > prior rounds: `cli` **0.6.0 → 0.7.0**, `brandapp-sdk` **4.0.0 → 4.2.0**,
@@ -256,7 +469,7 @@ Per-version detail lives in each package's docs; this table stays terse.
 > (`opt-datagrid` 1.4.2, `opt-editor` 1.0.3, `opt-chat` 0.3.1); unchanged this
 > round.
 
-## Current state — 2026-09-05
+## Current state — 2026-09-26
 
 All targets in the tables below are public npm packages. A GitHub Packages
 token or scoped `.npmrc` entry is neither required nor supported by the install
@@ -266,39 +479,43 @@ skills.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `reopt-cli` | `@reopt-ai/cli` | **0.7.0** | 2026-09-05 (src+npm) |
+| `reopt-cli` | `@reopt-ai/cli` | **0.8.0** | 2026-09-26 (src+npm+tarball, unchanged) |
+| `reopt-brandapp` | `@reopt-ai/cli` (via `requires`) | — | 2026-09-26 (src+npm, unchanged) |
+| `reopt-eav` | `@reopt-ai/cli` (via `requires`) | — | 2026-09-26 (src+npm, unchanged) |
 
 ### BrandApp SDK
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **4.2.0** | 2026-09-05 (src+npm) |
-| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **4.2.0** | 2026-09-05 (src+npm) |
+| `brandapp-sdk-install` | `@reopt-ai/brandapp-sdk` | **4.6.0** | 2026-09-26 (src+npm+tarball) |
+| `brandapp-sdk-review` | `@reopt-ai/brandapp-sdk` | **4.6.0** | 2026-09-26 (src+npm+tarball) |
 
 ### Data SDK
 
 The public skills treat `@reopt-ai/data-sdk-client` as the primary target and
 version-gate the companion suite during execution. Verified companions:
-`@reopt-ai/data-sdk-server` 0.5.0 (**no bin** from 0.5.0), `@reopt-ai/data-cli`
-0.1.0 (bin `reopt-data`, Node 22+ — source maps, event catalogue, query, MCP),
-`@reopt-ai/data-sdk-devtool` 0.2.0, and `@reopt-ai/data-contract` 0.10.0.
+`@reopt-ai/data-sdk-server` 0.7.0 (**no bin** from 0.5.0; `./ai` from 0.6.0),
+`@reopt-ai/data-cli` 0.1.0 (bin `reopt-data`, Node 22+ — source maps, event
+catalogue, query, and the `tools [--json]` / `mcp` agent surface),
+`@reopt-ai/data-sdk-devtool` 0.2.0, and `@reopt-ai/data-contract` 0.15.0.
+Session replay needs client **0.5.0+**.
 `@reopt-ai/data-sdk` (0.2.3) is a deprecated meta-package the skills refuse.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `data-sdk-install` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-09-05 (src+npm; 0.2.0 example run on 2026-08-29) |
-| `data-sdk-integration` | `@reopt-ai/data-sdk-client` (via `requires`) | — | 2026-09-05 (src+npm; catalogue commands from data-cli 0.1.0) |
-| `data-sdk-review` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-09-05 (src+npm; 0.2.0 example run on 2026-08-29) |
+| `data-sdk-install` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-09-26 (src+npm+tarball+`tsc` against 0.6.1; 0.2.0 example run on 2026-08-29) |
+| `data-sdk-integration` | `@reopt-ai/data-sdk-client` (via `requires`) | — | 2026-09-26 (src+npm+tarball; catalogue commands from data-cli 0.1.0, contract 0.15.0) |
+| `data-sdk-review` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-09-26 (src+npm+tarball+`tsc` against 0.6.1; 0.2.0 example run on 2026-08-29) |
 
 ### Design / UI packages
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `opt-ui-install` | `@reopt-ai/opt-ui` | **1.12.5** | 2026-09-05 (src+npm) |
-| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.6.1** | 2026-09-05 (src+npm) |
-| `opt-editor-install` | `@reopt-ai/opt-editor` | **2.0.0** | 2026-09-05 (src+npm, unchanged) |
-| `opt-chat-install` | `@reopt-ai/opt-chat` | **1.1.0** | 2026-09-05 (src+npm, unchanged) |
-| `opt-shell-install` | `@reopt-ai/opt-shell` | **1.1.0** | 2026-09-05 (src+npm, unchanged) |
+| `opt-ui-install` | `@reopt-ai/opt-ui` | **1.16.1** | 2026-09-27 (src+npm+tarball; 1.16.0 is deprecated — published without `dist/docs/`) |
+| `opt-datagrid-install` | `@reopt-ai/opt-datagrid` | **1.6.1** | 2026-09-26 (src+npm+tarball, unchanged) |
+| `opt-editor-install` | `@reopt-ai/opt-editor` | **2.0.0** | 2026-09-26 (src+npm+tarball, unchanged) |
+| `opt-chat-install` | `@reopt-ai/opt-chat` | **1.1.0** | 2026-09-27 (src+npm+tarball+`tsc` against 1.1.1; the `ConfirmationState` rename is unreleased) |
+| `opt-shell-install` | `@reopt-ai/opt-shell` | **1.1.0** | 2026-09-26 (src+npm+tarball, unchanged; the 2.0 adapter entries are unreleased) |
 
 > **Doc-layout note (routing-critical — skills point at literal paths):**
 > - `@reopt-ai/data-sdk-client`, `data-sdk-server`, `data-sdk-devtool`, and
@@ -313,13 +530,17 @@ version-gate the companion suite during execution. Verified companions:
 > - `@reopt-ai/brandapp-sdk` ships docs at top-level **`docs/`** (NOT
 >   `dist/docs/`) — flat files `api-reference.md`, `cms.md`, `dev-server.md`,
 >   `environment.md`, `errors.md`, `files.md`, `logout.md`, `migration.md`,
->   `testing.md`.
+>   `testing.md`, and **`workspace.md`** (new in 4.5.0 — the platform client,
+>   credential/audience rules, declarative resources, fail-closed contract).
 >   No `index.md`; `api-reference.md` is the combined auth/EAV/webhook/React
 >   surface.
 > - `@reopt-ai/opt-ui` / `opt-datagrid` / `opt-editor` ship **`dist/docs/`**
 >   with a numeric-prefixed tree (`01-…`, `02-api/` or `02-components/`,
 >   `03-recipes/`, `0N-migration/`, `0N-troubleshooting.md`) and an `index.md`
 >   hub. Route to the directory + `index.md`, not to guessed flat filenames.
+>   🔴 **Exception: opt-ui 1.16.0 shipped without `dist/docs/`** and is now
+>   deprecated; the skill's floor is 1.16.1, which restores the tree. Check the
+>   registry `dist.fileCount` on every release.
 > - `@reopt-ai/cli`, `opt-chat`, `opt-palette`, `opt-devtool` ship **no docs
 >   dir** — route to `README.md` (and the CLI `--help` for `cli`).
 >   `@reopt-ai/opt-shell` ships **`shell-llms.txt`** (agent guide) + `README.md`.
@@ -329,10 +550,13 @@ version-gate the companion suite during execution. Verified companions:
 
 ### Design CLI (used by the UI skills)
 
-`@reopt-ai/opt-cli` (bin `opt`, current **1.3.1**, public npm) is the unified
-design CLI. Primary surfaces: `opt block add|update|remove|diff|doctor` (`surface`
-is deprecated), `opt component`, `opt project link|pull|status|push`, and
-`opt harness check|test|doctor`. There is no top-level `opt doctor` or `opt check`.
+`@reopt-ai/opt-cli` (bin `opt`, current **1.3.3**, public npm) is the unified
+design CLI. Primary surfaces: `opt block add|list|view|info|update|remove|diff|doctor`
+(`surface` is deprecated), `opt component`, `opt catalog`, `opt ids`,
+`opt project link|pull|status|push`, and `opt harness check|test|doctor`.
+Its component catalog is a build-time snapshot: 1.3.3 was generated against
+opt-ui **1.16.0** + opt-charts 1.8.2 (1.3.2 against 1.13.0, missing the 1.14/1.15
+additions). `opt catalog` (1.3.3) searches packages, modules, components and blocks. There is no top-level `opt doctor` or `opt check`.
 The binary runs under Node; opt-shell is an optional, lazy-loaded peer needed by
 harness commands, not block/component commands. There is no `opt-ui-cli` or
 `opt-editor-cli` package.
@@ -341,14 +565,17 @@ harness commands, not block/component commands. There is no `opt-ui-cli` or
 
 | Package | Current version | Status |
 |---|---|---|
-| `@reopt-ai/studio-catalog` | 2.0.0 | public npm (versioned customer-facing product/plan/AI catalog; no installer skill) |
+| `@reopt-ai/studio-catalog` | 4.2.2 | public npm (versioned customer-facing product/plan/AI/usage/credit metadata; no installer skill) |
 | `@reopt-ai/opt-ui-primitives` | 1.5.2 | public npm (native HTML/browser-API a11y primitives; dependency of opt-ui/opt-chat) |
 | `@reopt-ai/opt-palette` | 1.0.0 | public npm (stable OKLCH color engine; required peer of opt-shell) |
 | `@reopt-ai/opt-devtool` | 1.0.1 | public npm (stable; renamed from `@reopt-ai/opt-inspect`) |
-| `@reopt-ai/opt-charts` | 1.5.0 | public npm (stable Recharts adapters + SVG viz / chart frames + shells) |
+| `@reopt-ai/opt-charts` | 1.8.2 | public npm (Recharts adapters + SVG viz / chart frames + shells; 1.6 `PathFlowChart` + `FunnelChart` variants, 1.7 area-proportional `VennDiagram`, 1.8 `TraceWaterfall` + `TimeSeriesChart` bands; re-exported from the opt-ui root. No docs dir — README only) |
 | `@reopt-ai/opt-meta` | 0.1.0 | public npm (new; framework-free component metadata contracts shared by design packages) |
-| `@reopt-ai/data-cli` | 0.1.0 | public npm (bin `reopt-data`; companion of the Data SDK skills — no installer skill of its own) |
+| `@reopt-ai/data-cli` | 0.1.0 | public npm (bin `reopt-data`, Node 22+; companion of the Data SDK skills — no installer skill of its own. The published command set is far smaller than the upstream README, but does include `tools` / `mcp`: see the round notes) |
 | `@reopt-ai/data-sdk` | 0.2.3 | public npm, **deprecated** meta-package (use `data-sdk-client` / `data-sdk-server`); still the optional peer name `brandapp-sdk/analytics` imports |
+| `@reopt-ai/data-adapter-apps-in-toss` | 0.2.2 | public npm (Apps-in-Toss WebView adapter — fans behaviour events to Toss Analytics and reopt-data; required peer `@reopt-ai/data-sdk-client ^0.4.0 \|\| ^0.5.0 \|\| ^0.6.0` (0.2.0 was `^0.4.0` only), Toss `send` injected rather than importing the Toss SDK. Korean README) |
+| `@reopt-ai/legal` | 1.6.2 | npm **restricted** (not publicly installable) — never route an install here |
+| `@reopt-ai/superadmin-cli` | 0.3.1 | GitHub Packages, **restricted** — internal operator tool, never route an install here |
 | `@reopt-ai/opt-calendar` | 1.0.0 | public npm (stable events + booking/availability, drag/resize, recurrence, timezones) |
 | `@reopt-ai/opt-filemanager` | 0.1.0 | public npm (connector-based file manager; first consumer of brandapp-sdk 3.5 Files APIs) |
 | `@reopt-ai/opt-doc-kit` | 0.1.0 | internal, **not on npm** (`private: true`) — metadata-driven docs kit, apps/web workspace |
@@ -405,9 +632,19 @@ Run every time a new `@reopt-ai/*` package ships:
       plain `--registry=` does not override a `@reopt-ai:registry` line in the
       user `.npmrc`, and GitHub Packages serves far older versions, so the check
       reads as "no drift" when a major release has already shipped.
+- [ ] Compare each package's publish **time** (`npm view <pkg> time`) with the
+      previous round's date, not just `latest` — data-sdk-client 0.5.0 shipped
+      hours after the 2026-09-13 round read 0.4.0, and that round missed it.
+- [ ] Did the tarball shrink? Compare `npm view <pkg>@<v> dist.fileCount` with
+      the previous version — opt-ui 1.16.0 dropped from 71 to 57 files because
+      `dist/docs/` was not built.
 - [ ] Does the package's docs dir (`docs/` **or** `dist/docs/`) cover the new
       API surface? Confirm the **exact path + filenames** — skills route to
-      literal paths, so a renamed file silently breaks routing.
+      literal paths, so a renamed file silently breaks routing. Do not trust a
+      README heading about release status (client 0.5.0–0.6.1 still say replay is
+      "npm release pending"); check the installed types.
+- [ ] Attribute a change to the version that **published** it: read
+      `npm view <pkg>@<v> peerDependencies` / the tarball, not `main`.
 - [ ] Does the package ship `dist/agent-rules.md`? — if not, keep the skill's
       fallback `agent-rules.md` current (and its doc map pointing at real paths).
 - [ ] Bump `Min version` + `Last verified` cells above **and** mirror

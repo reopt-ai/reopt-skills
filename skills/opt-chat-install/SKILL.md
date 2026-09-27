@@ -36,7 +36,7 @@ Consumer project depends on `@reopt-ai/opt-chat`. Triggers: "install", "init", "
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 1.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat` does not, as of 1.1.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-chat-agent-rules -->
@@ -58,6 +58,8 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-chat
    - Default Chat component composition (Conversation > Message[] > PromptInput).
 
 4. **1.1 upgrade scan** — `PromptInput` now renders a native `<form>` (never nest it in another form); replace removed StickToBottom-era Conversation props (`initial`, `resize`) with `autoScroll`, `scrollEdgeThreshold`, `scrollPreviousItemPeek`, or `scrollMargin`. Pass native AI SDK tool-part approval states/objects rather than maintaining a parallel status model.
+
+5. **Pending rename — do not pre-apply.** In published 1.1.x, `ToolState` is a public root export marked `@deprecated`, and `ConfirmationState` is declared but **not exported**; upstream 2.0 removes `ToolState` and exports `ConfirmationState` (unreleased — npm latest is 1.1.1). For new code use **`ConfirmationProps["state"]`**: exported since 1.1.0, it is exactly the future `ConfirmationState` and a superset of `ToolState`'s seven members, so it survives the 2.0 bump (1.1.1's deprecation hint points there too). Existing `ToolState` code keeps working on 1.1.x. Never substitute `ToolPartState` — it holds only two of the seven members. A consumer importing `ConfirmationState` is on a prerelease or workspace link, not the registry.
 
 ## Step 3 — Route to module docs
 
