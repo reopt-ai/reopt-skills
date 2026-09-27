@@ -20,6 +20,8 @@ requires:
 - file-based migrations (`eav plan` → `migrate` → `history` / `verify`)
 - reading, counting, or pruning **records** for operational debugging (`eav records`, CLI 0.7.0+)
 
+**CLI 0.8.0 marks `eav sync` deprecated — ignore that for consumer projects.** Its stated replacement is declaring `eav: { schema }` in `reopt.workspace.ts` and applying it with `reopt workspace`, which needs an OAuth client scoped `workspace:admin` that only Reopt's internal superadmin console issues. RFC-0030 lists external customers as a non-goal. So for any project outside the Reopt monorepo, `eav sync` is still the supported path: keep using it, and do not migrate anyone onto `workspace plan` / `apply`. Mention the deprecation only if the user asks why `--help` says so.
+
 Load `reopt-cli` and `reopt-brandapp` first. Their shared agent-rules block (`<!-- BEGIN:reopt/cli-agent-rules -->`) covers this skill too — skip Step 1 if already pinned.
 
 ## Step 1 — Pin agent rules (only if upstream skills haven't)
@@ -31,7 +33,7 @@ Same source/fallback/marker as `reopt-cli`. Idempotent: leave the block alone if
 | Command | Purpose | Mutates server | Status |
 |---|---|---|---|
 | `eav status` (alias `st`) | Diff local schema vs server | – | stable |
-| `eav sync` (alias `up`) | Apply diff + generate types | ✓ | stable |
+| `eav sync` (alias `up`) | Apply diff + generate types | ✓ | stable — CLI 0.8.0 marks it deprecated, but see the note below |
 | `eav pull` | Generate schema file from server | – | stable |
 | `eav diff` | Render schema diff vs server as a markdown report (preview) | – | stable |
 | `eav plan <name>` | Scaffold a new migration file (`--from-diff` auto-fills `up()` from the live diff) | – | stable |
@@ -80,7 +82,7 @@ File-based migrations under `./eav-migrations/` (override with `--dir <path>`). 
 
 ## Step 5b — Records (data, not schema; CLI 0.7.0+)
 
-`eav records` is the only `eav` group that touches **data**. `--entity` and each filter's `attributeId` take an attribute **name or UUID** (the CLI resolves names and lists the known ones on a miss), so the generated `ATTRIBUTE_IDS` map is not needed by hand. Operators: `eq`, `neq`, `contains`, `gt`, `lt`, `gte`, `lte`, `is_null`, `is_not_null`, `after`, `before`, `in`, `not_in` (`in` / `not_in` need a non-empty array of ≤100 scalars — an empty list is rejected, never read as "match all"; drop the filter instead). Requests whose filter cannot narrow via an index (e.g. `neq` / `not_in` over a large entity) are refused with 422 `QUERY_TOO_BROAD` — lead with `eq` / `in` / `--auth-user`.
+`eav records` is the only `eav` group that touches **data**. `--entity` and each filter's `attributeId` take an attribute **name or UUID** (the CLI resolves names and lists the known ones on a miss), so the generated `ATTRIBUTE_IDS` map is not needed by hand. `--limit` is capped at **100** (default 50) by the server and by `@reopt-ai/brandapp-sdk` 4.4+, which rejects a larger value before the request instead of silently truncating — page with `--page` / `--page-all` rather than asking for 200. Operators: `eq`, `neq`, `contains`, `gt`, `lt`, `gte`, `lte`, `is_null`, `is_not_null`, `after`, `before`, `in`, `not_in` (`in` / `not_in` need a non-empty array of ≤100 scalars — an empty list is rejected, never read as "match all"; drop the filter instead). Requests whose filter cannot narrow via an index (e.g. `neq` / `not_in` over a large entity) are refused with 422 `QUERY_TOO_BROAD` — lead with `eq` / `in` / `--auth-user`.
 
 ```bash
 reopt brandapp eav records count -e sessions -f '[{"attributeId":"expires_at","operator":"before","value":"2026-01-01"}]'

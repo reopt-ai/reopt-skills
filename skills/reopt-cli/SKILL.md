@@ -1,8 +1,8 @@
 ---
 name: reopt-cli
-description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, and exit codes. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
+description: Baseline guidance for the reopt CLI — authentication, login, global flags, security rules, exit codes, and the MCP surface. Use before other reopt CLI skills or whenever a task involves `reopt login`, `reopt status`, brandapp credentials, or CI automation.
 target: "@reopt-ai/cli"
-targetMinVersion: "0.7.0"
+targetMinVersion: "0.8.0"
 ---
 
 # reopt CLI
@@ -17,7 +17,7 @@ targetMinVersion: "0.7.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.7.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.8.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -48,6 +48,7 @@ Prefer `--help` as the live source of truth. The CLI ships **no** `dist/docs/`; 
 | Service-token issuance (CI/CD) | `reopt token mint --help` |
 | Brandapp ops (`link`, `doctor`, `init`, `dev`, `env`, …) | `reopt brandapp --help` + see `reopt-brandapp` skill |
 | EAV schema ops (`status`, `sync`, `pull`, `diff`, `plan`, `migrate`, `history`, `verify`) and record ops (`eav records list` / `get` / `count` / `delete-where`, 0.7.0) | `reopt brandapp eav --help` + see `reopt-eav` skill |
+| `reopt workspace *` (0.8.0) — **operator-only, not usable from a consumer project** | Step 5 below. Do not start this workflow; it cannot be completed without credentials only Reopt can issue |
 | Schema-as-Code, completion, config | relevant `--help`; installed CLI `README.md` §§ Schema-as-Code, Shell completion, Preferences |
 | MCP — which server, which tools, CRM handling | **Step 4 below** + installed CLI `README.md` § "Agent plugin (skills + MCP server)". No `--help` output states that two Reopt MCP servers exist or that their tool names collide |
 | Global flags, output formats, pagination | `reopt --help`; installed CLI `README.md` § Output and global flags |
@@ -60,7 +61,7 @@ Quick global-flag reminders (subset; full list in `--help`):
 - `--no-interactive` — required for unattended scripts (fail instead of prompt).
 - `--dry-run` — preview only (EAV sync, brandapp link/unlink).
 
-Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal. EAV migrate/verify add `6` drift-detected, `7` destructive-blocked (safe-mode `sync`, and `eav records delete-where` without `--force`), `8` checksum-mismatch, `9` checksum-conflict, `10` lock-held.
+Exit code summary: `0` ok, `1` API/network, `2` auth, `3` validation, `4` config, `5` internal. EAV migrate/verify add `6` drift-detected, `7` destructive-blocked (safe-mode `sync`, and `eav records delete-where` without `--force`), `8` checksum-mismatch, `9` checksum-conflict, `10` lock-held. The `workspace` group reuses `6` / `7` / `9` / `10` for its own cases, but see Step 5 — it is not a surface a consumer project reaches.
 
 ## Step 4 — MCP: two servers share one tool namespace
 
@@ -70,10 +71,10 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 |---|---|---|
 | Address | `https://mcp.reopt.ai` (streamable-http; staging `mcp.reopt.io`) | `reopt mcp` |
 | Auth | OAuth / dynamic client registration, handled by the client | the CLI's own session — `reopt login` first |
-| Tools | **30** — 10 shared + EAV (6) + CRM (14, incl. 4 feedback/proposal) | **14** — the same 10 + 4 local-only |
+| Tools | **30** — 10 shared + EAV (6) + CRM (14, incl. 4 feedback/proposal) | **15** — the same 10 + 5 local-only |
 
 - **Prefer remote.** It is the near-superset and needs no CLI login. The stdio server's 10 shared tools all fail before `reopt login`, so an unauthenticated install presents a half-broken tool list. Since 0.6.0 the installed package **is** an Agent Plugins 1.0.0 bundle: `plugin.json` + `mcp.json` (remote server only — a repo guard rejects declaring both) + `skills/` (`reopt-shared`, `reopt-brandapp`, `reopt-eav`). A client that speaks the standard discovers the remote server from `node_modules/@reopt-ai/cli` with no manual wiring; those bundled skills are the CLI's own copies and do not replace this repo's marker-pinning skills.
-- **Add stdio only for its 4 local-only tools** — `reopt_status`, `reopt_brandapp_doctor`, `reopt_schema_validate`, `reopt_sdk_inspect`. They read local project files and are meaningless outside a checkout.
+- **Add stdio only for its local-only tools** — `reopt_status`, `reopt_brandapp_doctor`, `reopt_schema_validate`, `reopt_sdk_inspect`. They read local project files and are meaningless outside a checkout. A fifth, `reopt_workspace_plan` (0.8.0), is advertised but belongs to the operator-only surface in Step 5; it is read-only and will fail without operator credentials.
 - **Call `reopt_workspace_list` first, always.** A guessed `workspaceId` returns an **empty result, not an error** — the one failure mode a model cannot diagnose on its own. A workspace-bound connector sees only its bound workspace there.
 - Since 0.6.0 both surfaces advertise `title` + `readOnlyHint` / `destructiveHint` / `idempotentHint` / `openWorldHint` on every tool, so approval-gating clients can auto-allow reads. A 0.5.0 `reopt mcp` still ships **no annotations** (everything is "ask"). The stdio server speaks MCP 2026-07-28 and still accepts 2025-era clients.
 
@@ -87,6 +88,16 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 - **`customData` keys are attribute UUIDs.** `reopt_customer_get` attaches labels (orphaned key → `label: null`); `reopt_customer_field_list` returns the workspace definitions, and segment `customAttribute` conditions take the same ids — without it those filters are unreachable.
 
 Writes on this surface are `reopt_customer_note_add` plus two **proposals** — `reopt_customer_feedback_propose_reply` and `reopt_customer_propose_note` (0.6.0). A proposal sends nothing and changes no CRM state: it queues a `WorkspaceProposal` for a workspace member to edit, approve, or dismiss in Studio. Check `reopt_customer_feedback_get.pendingProposals` before proposing to avoid duplicates. `reopt_customer_feedback_list` / `_get` (read, `customer:read`) expose the full thread and linked tasks. Creating customers, editing attributes, sending messages, and deleting were left off deliberately — do not simulate one through the CLI or SDK unless the user asks for it directly.
+
+
+## Step 5 — `reopt workspace` is operator-only; do not start it
+
+CLI 0.8.0 added `reopt workspace plan | apply | import | export | drift | rotate-secret` (Platform as Code, RFC-0030). It is visible in `reopt --help` on the public npm package, so an agent will find it. **It is not a surface a consumer project can use**, and starting the workflow wastes the user's time:
+
+- It needs an OAuth client with scope **`workspace:admin`**, issued and managed only in Reopt's internal superadmin console. There is no self-serve path, and a normal brandapp credential is refused.
+- RFC-0030 names its audience as Reopt's own operators building internal sub-products, and lists external customers, agencies, and user-delegated tokens as explicit non-goals.
+
+If a user asks for it, say that plainly and stop. The thing they can act on is whatever they were trying to achieve underneath — linking a brandapp, syncing an EAV schema, registering a webhook — through `reopt brandapp`, `reopt brandapp eav`, or Reopt Studio. Reopt staff working inside the monorepo should read the installed CLI `README.md` § "Workspace as code (RFC-0030)" and `@reopt-ai/brandapp-sdk/docs/workspace.md` directly.
 
 ## Safety
 

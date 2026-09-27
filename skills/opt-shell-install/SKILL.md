@@ -47,7 +47,7 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shel
 
 2. **Runtime / peers** — Node 20+ is required. For opt-shell's `peerDependencies`, install / run their skills first if missing:
    - **Required:** `@reopt-ai/opt-palette` (theme engine), `react` / `react-dom` 19+
-   - **Optional** (only if you use that adapter): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`. From opt-shell 2.0 the adapters are imported from their own entries — `@reopt-ai/opt-shell/datagrid` (`ShellDataGridAdapter`), `@reopt-ai/opt-shell/editor` (`ShellEditorAdapter`, `useShellEditorAI`), `@reopt-ai/opt-shell/calendar` (`ShellCalendarAdapter`) — so the root entry never resolves an uninstalled peer. On 1.x the adapters are root exports and all three peers must be installed for the root import to build.
+   - **Declared optional** (adapter peers): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`. **But** in every published release (≤ 1.1.0) the adapters (`ShellDataGridAdapter`, `ShellEditorAdapter`, `useShellEditorAI`, `ShellCalendarAdapter`) are root exports, so importing the root — the only entry with components (workspace recipes, `ShellProvider`) — statically resolves all three peers, plus `zod` (via `@reopt-ai/opt-editor/ai-sdk`) and `next` (via the opt-ui root). Install all of them; `./core` pulls no optional peer but carries only framework-free contracts and helpers. Per-adapter entries (`/datagrid`, `/editor`, `/calendar`) are a **pending 2.0** change — do not import them until the installed `package.json` exports them.
 
    `@reopt-ai/opt-ui` is a direct dependency of opt-shell; run `/opt-ui-install` to wire its Tailwind/theme CSS rather than adding a second package copy or source alias.
 
@@ -78,7 +78,7 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | 1 | Detect current state (incl. legacy `opt-harness` dep) | ✓ | ✓ |
 | 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ |
-| 4 | Dependency/peer check (opt-ui direct; opt-palette required; adapters optional) | ✓ | ✓ |
+| 4 | Dependency/peer check (opt-ui direct; opt-palette required; adapter peers + `zod` + `next` needed by the 1.x root) | ✓ | ✓ |
 | 5 | Shell manifest / policy config | ✓ | – |
 | 6 | First workspace recipe | ✓ | – |
 | 7 | Breaking-change edits | – | ✓ |

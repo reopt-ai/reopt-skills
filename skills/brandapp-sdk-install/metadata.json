@@ -1,7 +1,7 @@
 {
-  "version": "2.1.0",
+  "version": "2.3.0",
   "organization": "reopt",
-  "updatedAt": "2026-08-22",
+  "updatedAt": "2026-09-27",
   "abstract": "Install public npm package @reopt-ai/brandapp-sdk. Pins the agent-rules marker block, clears legacy registry overrides, writes the env 3-tier namespace, and routes to module docs/.",
   "references": [
     "https://github.com/reopt-ai/reopt-skills"

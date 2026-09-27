@@ -1,14 +1,14 @@
 ---
 name: opt-ui-install
 description: |
-  Install or upgrade @reopt-ai/opt-ui in a consumer project, wire app.css, or add a Block/Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui app.css", "opt-ui block", "opt-cli block add", "opt-ui surface", "add Surface".
+  Install or upgrade @reopt-ai/opt-ui in a consumer project, wire app.css, or add a Block/Surface page template. Auto-branches by current install state. Triggers on "opt-ui install", "opt-ui init", "opt-ui setup", "opt-ui upgrade", "opt-ui update", "opt-ui app.css", "opt-ui block", "opt-cli block add", "opt-ui surface", "add Surface", "SQL query workspace", "CriteriaBuilder", "session replay player".
 target: "@reopt-ai/opt-ui"
-targetMinVersion: "1.12.5"
+targetMinVersion: "1.16.1"
 ---
 
 # opt-ui Install
 
-> This is NOT the opt-ui you know. Read `node_modules/@reopt-ai/opt-ui/dist/docs/` before writing code.
+> This is NOT the opt-ui you know. Read `node_modules/@reopt-ai/opt-ui/dist/docs/` before writing code. **1.16.0 is deprecated** — it was published without that directory; install 1.16.1+.
 
 ## When to apply
 
@@ -26,7 +26,7 @@ Consumer project depends on `@reopt-ai/opt-ui`. Triggers: "install", "init", "se
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.12.5). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` does not, as of 1.16.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-ui-agent-rules -->
@@ -40,28 +40,29 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-ui` 
 
 1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 20+, React 19+, Tailwind CSS v4. bun or npm. `next` is an optional peer (`>=16.0.0`) — from opt-ui 2.0 only the `@reopt-ai/opt-ui/next` entry (`SidebarNav`, `RouteFocusManager`) needs it; the root, `./core` and `./shells` entries resolve without Next. On 1.x those two components are re-exported from the root, so a non-Next bundler fails on `next/navigation` unless `next` is installed. The CodeMirror packages (`@codemirror/state`, `view`, `autocomplete`, `lang-sql`, `theme-one-dark`, and `commands` from 1.13) are optional peers used **only** by the SQL editor in the query workspace; install them only when that surface is used, and expect no undo/redo or line-number affordances without `@codemirror/commands`.
+2. **Prereqs** — Node 20+, React 19+, Tailwind CSS v4. bun or npm. `next` is an optional peer (`>=16.0.0`), but in every published release (≤ 1.16.1) the root **and** `./shells` entries statically import `next/link` / `next/navigation` (`SidebarNav`, `RouteFocusManager`); outside Next.js, install `next` or import only from `./core` / `./visuals`. `@reopt-ai/opt-ui/next` is a **pending 2.0** entry — do not import it until the installed `package.json` exports it. The CodeMirror packages (`@codemirror/state`, `view`, `autocomplete`, `lang-sql`, `theme-one-dark`, and `commands` from 1.13) are optional peers loaded **only** by the SQL editor at runtime, but the published `.d.ts` references their types — without them, `tsc` needs `skipLibCheck: true`. Expect no undo/redo or line numbers without `@codemirror/commands`.
 
 3. **App-shell wiring** — properties of the consumer app:
-   - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet (plus the `@source` directive — see getting-started).
+   - Tailwind CSS v4: `@import "tailwindcss";` then `@import "@reopt-ai/opt-ui/tailwind.css";` in the root stylesheet plus `@source "../node_modules/@reopt-ai/opt-ui/dist";` (relative to the CSS file) so Tailwind scans the package.
    - Optional app-frame base layer (1.6+): `@import "@reopt-ai/opt-ui/app.css";` for focus-visible, cursor, reduced-motion, text-scale, shortcut-hint, and skip-link behavior. It is required when opt-shell policies should affect the whole document.
    - `<OptThemeProvider>` at the app root (Next.js: `app/layout.tsx` outermost).
-   - Block CLI: `npx @reopt-ai/opt-cli block add <slug>` vendors page-template Surfaces from the signed public registry. `block diff` bulk-checks drift (`--json` / `--exit-code` for CI); `block remove` safely uninstalls. `opt surface …` is a deprecated alias.
-   - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and example code. opt-cli **1.3.1** regenerated that catalog for the 1.10–1.12 opt-ui additions; an older opt-cli will not list them.
-   - 1.7 → 1.12.5 are **additive** releases (detail primitives such as `DescriptionList` / `Identity` / `EventTimeline` / `Flyout`, catalog-screen components such as `Callout` / `SegmentedControl` / `CatalogFrame` / `InspectorLayout` / `QueryFilterBar`, plus `FieldToken` / `Facet` / `InlineEdit` and friends). `05-migration/01-breaking-changes.md` has no entry past 1.5, so an upgrade from 1.6+ is a version bump plus a `tsc` run; do not invent breaking-change edits.
+   - Block CLI: `npx @reopt-ai/opt-cli block add <slug>` vendors page-template Blocks from the signed public registry (26 registry blocks moved from the deprecated `SurfaceLayout` to `BlockLayout`; the `SurfaceLayout` alias itself remains public API). `block diff` bulk-checks drift (`--json` / `--exit-code` for CI); `block remove` safely uninstalls. `opt surface …` is a deprecated alias.
+   - Component lookup: `npx @reopt-ai/opt-cli component [name]` (opt-cli 1.2+) prints bundled opt-ui / opt-charts metadata, props, and the exact import line; `opt catalog --query <text>` (1.3.3+) searches packages, modules, components and blocks. Both read a **snapshot** bundled with opt-cli, not the installed package: use opt-cli **≥ 1.3.3** (built against opt-ui 1.16.0 + opt-charts 1.8.2) — 1.3.2 was built against 1.13.0 and misses `CriteriaBuilder` and the replay shells.
+   - 1.7 → 1.16.1 are **additive** releases (detail primitives such as `DescriptionList` / `Identity` / `EventTimeline` / `Flyout`, catalog-screen components such as `Callout` / `SegmentedControl` / `CatalogFrame` / `InspectorLayout` / `QueryFilterBar`, plus `FieldToken` / `Facet` / `InlineEdit`; 1.13 nine SQL query workspace shells plus `splitSqlStatements` / SQL placeholder helpers, 1.14 `CriteriaBuilder` plus a `labels` prop on `ConditionBuilder`, 1.15 the replay player shells `ReplayScrubber` / `ReplayTransport` / `ReplayPlayerLayout`, 1.16 a `SummaryRow` sparkline fix and opt-charts `^1.8.0` — `TraceWaterfall`, `TimeSeriesChart` bands — through the root re-export; 1.16.1 re-ships 1.16.0's code with the docs). **Import paths differ:** the query workspace and replay shells come from `@reopt-ai/opt-ui/shells`, but `CriteriaBuilder` (+ `criteriaBuilder*` helpers), `splitSqlStatements` and the placeholder helpers are **root-only** — `/shells` fails with TS2305. `05-migration/01-breaking-changes.md` has no entry past 1.5, so an upgrade from 1.6+ is a version bump plus a `tsc` run; do not invent breaking-change edits.
 
 4. **CLI checks** — run `npx @reopt-ai/opt-cli block doctor` when Blocks are installed. Run `npx @reopt-ai/opt-cli harness doctor` only when the project has a harness config. There is no top-level `opt doctor`. opt-shell is an optional, lazy-loaded opt-cli peer; do not install it for block/component commands alone.
 
 ## Step 3 — Route to module docs
 
-Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`.
+Real layout is a numeric-prefixed tree under `dist/docs/`; start at `index.md`. If `dist/docs/` is absent the project is on the deprecated **1.16.0** (`opt guide` fails with "Could not find @reopt-ai/opt-ui documentation"): upgrade to 1.16.1, which is byte-identical code plus the docs. Until then `npx @reopt-ai/opt-cli component <Name>` (opt-cli ≥ 1.3.3) and the package's `COMPONENT_CATALOG.md` cover the same components.
 
 | Task signal | Read |
 |---|---|
-| Start here — doc index | `dist/docs/index.md`, or `npx @reopt-ai/opt-cli guide` (lists every shipped doc with component counts; `opt guide <slug>` prints one — present in opt-cli 1.3.1) |
+| Start here — doc index | `dist/docs/index.md`, or `npx @reopt-ai/opt-cli guide` (lists every shipped doc with component counts; `opt guide <slug>` prints one; needs `dist/docs/`) |
 | Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
 | Component API & props (core / visuals / shells / surfaces) | `dist/docs/02-components/`; `npx @reopt-ai/opt-cli component <Name>` for one component's contract, `opt ids list|show|stats` for the `data-opt-id` registry |
 | Surface components | `dist/docs/02-components/04-surfaces.md` |
+| Shells added in 1.13–1.15 — the SQL query workspace (`QueryWorkspace`, `SchemaTree`, `SqlEditor` imperative handle, `QueryResultsTable`), `CriteriaBuilder`, and the replay player (`ReplayScrubber` / `ReplayTransport` / `ReplayPlayerLayout`) | `dist/docs/02-components/03-shells.md`; query + replay shells from `/shells`, `CriteriaBuilder` + SQL helpers from the root only |
 | Recipes (forms, dashboards, layouts) | `dist/docs/03-recipes/` |
 | Theme, styling, design tokens | `dist/docs/04-theming.md` |
 | Breaking changes by version | `dist/docs/05-migration/01-breaking-changes.md` |

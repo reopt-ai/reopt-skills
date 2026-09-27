@@ -42,13 +42,19 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
    delivery in development and cover required-property rules with tests.
 2. Build one privacy sanitizer and event-envelope builder. Fan the same payload
    to existing providers and remove provider-only fields at adapter boundaries.
-3. Once the real project ID is known, initialize `reopt-data.events.json` with
+3. Segment definitions are **not** part of this flow. The published contract
+   (`@reopt-ai/data-contract/segment`, v2 since contract 0.12.0) exposes no
+   create surface on any client or CLI because a definition needs catalogue
+   validation — they are authored in the console. Design event names and
+   properties so the five attribute scopes (event, profile, device, session,
+   first_touch) and the eleven criterion kinds can address them.
+4. Once the real project ID is known, initialize `reopt-data.events.json` with
    `reopt-data event init` (or `event pull` from an existing server catalogue).
    Mark only true business outcomes as conversions and select at most the
    low-cardinality properties needed for recurring rollups. Commit the
    catalogue and `reopt-data.events.lock.json`; run `event diff`, then `event
    push` (plan) before `event push --apply --yes`; gate CI with `event verify`.
-4. Generate `reopt-data event types --out src/reopt-events.d.ts` and type the
+5. Generate `reopt-data event types --out src/reopt-events.d.ts` and type the
    shared `track()` wrapper with `ReoptEventName` / `ReoptEventProperties` so
    undeclared events fail at compile time.
 
@@ -73,7 +79,9 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
   schedule delivery using the installed server SDK semantics; analytics failure
   must not roll back the host operation.
 - For delayed jobs, persist the SDK device ID with the outbox record. Never trust
-  a browser-supplied profile or session ID.
+  a browser-supplied profile or session ID. On server/client `0.6.0`+, also
+  persist a UUID and send it as `track({ name, properties, eventId })` so an
+  outbox retry is deduplicated at ingest instead of counted twice.
 
 ## 6. Resolve identity, consent, and rendering deliberately
 
