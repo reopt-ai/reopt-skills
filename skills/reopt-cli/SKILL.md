@@ -17,7 +17,7 @@ targetMinVersion: "0.8.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.8.0 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the CLI's own agent-rules file once it ships one (`@reopt-ai/cli` does not, as of 0.8.1 — its `skills/` bundle is a different thing, see Step 4). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/cli-agent-rules -->
@@ -71,8 +71,9 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 |---|---|---|
 | Address | `https://mcp.reopt.ai` (streamable-http; staging `mcp.reopt.io`) | `reopt mcp` |
 | Auth | OAuth / dynamic client registration, handled by the client | the CLI's own session — `reopt login` first |
-| Tools | **30** — 10 shared + EAV (6) + CRM (14, incl. 4 feedback/proposal) | **15** — the same 10 + 5 local-only |
+| Tools | **39** (2026-10-20) — 10 shared + EAV (6) + CRM (14, incl. 4 feedback/proposal) + social (9, incl. 3 proposals) | **15** — the same 10 + 5 local-only |
 
+- **The remote catalog ships with Reopt's web app, not the npm package.** It went from 30 to 39 tools on 2026-10-20 with no CLI release, so trust the client's `tools/list` over any count here; the stdio list is fixed per installed version.
 - **Prefer remote.** It is the near-superset and needs no CLI login. The stdio server's 10 shared tools all fail before `reopt login`, so an unauthenticated install presents a half-broken tool list. Since 0.6.0 the installed package **is** an Agent Plugins 1.0.0 bundle: `plugin.json` + `mcp.json` (remote server only — a repo guard rejects declaring both) + `skills/` (`reopt-shared`, `reopt-brandapp`, `reopt-eav`). A client that speaks the standard discovers the remote server from `node_modules/@reopt-ai/cli` with no manual wiring; those bundled skills are the CLI's own copies and do not replace this repo's marker-pinning skills.
 - **Add stdio only for its local-only tools** — `reopt_status`, `reopt_brandapp_doctor`, `reopt_schema_validate`, `reopt_sdk_inspect`. They read local project files and are meaningless outside a checkout. A fifth, `reopt_workspace_plan` (0.8.0), is advertised but belongs to the operator-only surface in Step 5; it is read-only and will fail without operator credentials.
 - **Call `reopt_workspace_list` first, always.** A guessed `workspaceId` returns an **empty result, not an error** — the one failure mode a model cannot diagnose on its own. A workspace-bound connector sees only its bound workspace there.
@@ -82,12 +83,16 @@ Reopt exposes **two** MCP servers. Ten tool names are identical between them, so
 
 `reopt_customer_*` / `reopt_segment_*` / `reopt_journey_*` (remote only) are the only tools that emit names, emails, phones, and addresses. Four independent layers guard them — treat each as load-bearing:
 
-- **Scope** — `customer:read` / `customer:write`, not `workspace:read`, and deliberately excluded from connector defaults. A connector that never asked is refused rather than silently granted; an existing connector needs re-consent.
+- **Scope** — `customer:read` / `customer:write`, not `workspace:read`, and deliberately excluded from connector defaults. A connector that never asked is refused rather than silently granted; an existing connector needs re-consent. The refusal is a `403` with `WWW-Authenticate: Bearer error="insufficient_scope"`, so a standards-aware client starts that re-consent itself.
 - **Workspace binding is mandatory** here, while other tools tolerate an unbound consent. Consents granted before 2026-08-21 are unbound (unrestricted).
 - **Masking is the tool shape, not a flag.** `reopt_customer_list` / `reopt_segment_preview` have **no unmask parameter at all** — a roster cannot leave in one call. Raw values open only in single-record `reopt_customer_get`, which spends the **write** quota (10/min vs 100/min read) and is audit-flagged. Read each response's `pii: "masked" | "raw"` rather than treating a masked value as a real address.
 - **`customData` keys are attribute UUIDs.** `reopt_customer_get` attaches labels (orphaned key → `label: null`); `reopt_customer_field_list` returns the workspace definitions, and segment `customAttribute` conditions take the same ids — without it those filters are unreachable.
 
 Writes on this surface are `reopt_customer_note_add` plus two **proposals** — `reopt_customer_feedback_propose_reply` and `reopt_customer_propose_note` (0.6.0). A proposal sends nothing and changes no CRM state: it queues a `WorkspaceProposal` for a workspace member to edit, approve, or dismiss in Studio. Check `reopt_customer_feedback_get.pendingProposals` before proposing to avoid duplicates. `reopt_customer_feedback_list` / `_get` (read, `customer:read`) expose the full thread and linked tasks. Creating customers, editing attributes, sending messages, and deleting were left off deliberately — do not simulate one through the CLI or SDK unless the user asks for it directly.
+
+### Social tools stop at a proposal
+
+`reopt_social_*` (remote only, 2026-10-20) cover manual publishing — **Reopt never posts to any platform**. Five reads (`account_list`, `post_list`, `post_get`, `board`, `insights`) need `workspace:read`. `reopt_social_review_run` writes a review verdict and spends the workspace's AI credits (`rulesOnly` skips the model pass) but never changes the post's status. Approve, mark-published, and cancel exist **only** as proposals (`reopt_social_post_propose_approve` / `_mark_published` / `_cancel`) that a member applies in Studio's approval inbox; pass `expectedVersion` from `reopt_social_post_get`, and only propose mark-published with the URL the person says they posted at. A queued proposal is not a published post — never report it as one. The marketing hub is a Pro feature: lower plans are refused and demo workspaces are read-only.
 
 
 ## Step 5 — `reopt workspace` is operator-only; do not start it

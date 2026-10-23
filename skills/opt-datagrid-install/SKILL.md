@@ -3,7 +3,7 @@ name: opt-datagrid-install
 description: |
   Install, upgrade, tune, or migrate to @reopt-ai/opt-datagrid in a consumer project. Auto-branches by current install state. Migrate mode converts glide-data-grid / ag-grid / react-data-grid / MUI DataGrid. Triggers on "opt-datagrid install", "opt-datagrid init", "opt-datagrid setup", "datagrid install", "datagrid setup", "grid setup", "opt-datagrid upgrade", "datagrid upgrade", "datagrid update", "grid update", "opt-datagrid migrate", "datagrid migrate", "grid migration", "replace glide-data-grid", "replace ag-grid", "datagrid performance", "valueCacheMaxRows", "datagrid ai-stream".
 target: "@reopt-ai/opt-datagrid"
-targetMinVersion: "1.6.1"
+targetMinVersion: "1.7.0"
 ---
 
 # opt-datagrid Install
@@ -31,7 +31,7 @@ Consumer project depends on `@reopt-ai/opt-datagrid`, or is migrating away from 
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-datagrid` does not, as of 1.6.1). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-datagrid` does not, as of 1.7.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-datagrid-agent-rules -->
@@ -49,6 +49,8 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-data
 4. **Theme** — opt-datagrid reads opt-ui CSS tokens when present and has standalone fallbacks. Run `/opt-ui-install` only when the project wants the shared design-system theme; do not make opt-ui a requirement for a standalone grid.
 5. **Chrome (1.6+)** — column visibility, row density, and fullscreen ship as `DataGridToolbar` / `useDataGridToolbar` from the dedicated `@reopt-ai/opt-datagrid/toolbar` entry point (controlled or uncontrolled, with locked identity columns). Wire it instead of hand-building toolbar state; column hooks cover resize / reorder / visibility chrome.
 6. **Sizing** — `height` defaults to `420` and the grid does **not** fill its container when it is omitted; pass an explicit height or a measured container size. Row backgrounds from `getRowThemeOverride` are plain CSS applied through the `--opt-surface` custom property, not `DataGridTheme` keys (docs corrected in 1.6.1 — older getting-started text said the opposite).
+7. **Row evaluation (1.7+)** — `useDataGridRowEvaluation` comes from the client entry `@reopt-ai/opt-datagrid/evaluation`. `createDataGridJevEvaluator` from `/jev` is **server-only** (it throws `configuration` in a browser and calls an external evaluation API): call it from a route handler or server action behind `import "server-only"`, keep its API key in server env — never in grid props, row data or a client bundle — and ask before wiring a third-party evaluation call into a customer app.
+8. **opt-shell 2.0 needs this package at `^1.7.0`** (optional peer) — with opt-shell 2.0 installed, upgrade both together or npm fails with `ERESOLVE`.
 
 ## Step 3 — Route to module docs
 
@@ -57,12 +59,14 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-data
 | Start here — doc index | `dist/docs/index.md` |
 | Getting started / install / upgrade | `dist/docs/01-getting-started.md` |
 | API reference (props, columns, editors, hooks, types; every `DataGridProps` field described since 1.6.1) | `dist/docs/02-api/` |
-| Toolbar chrome (`@reopt-ai/opt-datagrid/toolbar`) | `dist/docs/index.md` → "Chrome" + `dist/docs/02-api/04-hooks.md` |
+| Toolbar chrome (`@reopt-ai/opt-datagrid/toolbar`) | `dist/docs/index.md` → "Toolbar" (`02-api/04-hooks.md` does not cover it) |
 | Column patterns | `dist/docs/02-api/02-columns.md` |
 | Recipes (basic / editable / remote-data) | `dist/docs/03-recipes/` |
 | Migration (from glide-data-grid, etc.) | `dist/docs/04-migration/` |
 | Troubleshooting | `dist/docs/05-troubleshooting.md` |
-| Large-grid performance / bounded value cache (`valueCacheMaxRows`) | `dist/docs/06-performance.md` |
+| Large-grid performance / value caching (`valueCache`, `valueCacheStrategy`) | `dist/docs/06-performance.md`; `valueCacheMaxRows` is only in `dist/docs/02-api/01-props.md` |
+| Row evaluation (`/evaluation` client hook, server-only `/jev`; 1.7+, docs in Korean) | `dist/docs/03-recipes/13-evaluation-quickstart.md` → `dist/docs/02-api/06-evaluation.md`, `dist/docs/03-recipes/12-…15-*.md` |
+| Embedded list look (`DataGridTheme` `frameBorderColor` / `columnBorderColor` / `borderRadius` / `boxShadow`; 1.7+) | `README.md` § "Embedded list appearance" — not in `dist/docs/` |
 | Future row-source / columnar-source design boundary | `dist/docs/07-design-columnar-source.md` |
 | Theme integration (opt-ui tokens) | opt-ui `dist/docs/04-theming.md` |
 

@@ -21,6 +21,8 @@ Inspect the installed version with `grep '"@reopt-ai/brandapp-sdk"' package.json
 
 Also read the installed `better-auth` version — 4.0 and 1.7 move together.
 
+- `4.7.0-rc.*` (npm `next`, not `latest`) — **outside this skill's verified range.** It adds machine credentials (`/machine`, `authorization`, `private_key_jwt`, `REOPT_CLIENT_PRIVATE_KEY_JWK`), step-up login, `/resource` / `/superadmin` / `/installation`, and requires `better-auth ^1.7.7`. Review those parts against the installed `README.md` + `docs/machine.md`, and say the patterns below were checked on 4.6.0. The rc's `docs/machine.md` example uses pre-2.0 env names and omits the required `clientId`, so do not quote it as a fix.
+
 - `< 4.6.0` — the `better-auth` peer is `^1.7.1` and the SDK still forwards `accountIssuer`; 4.6 requires `^1.7.4` and makes the option inert. Check the lockfile, not the range: 1.7.0–1.7.2 key accounts by `issuer` (Cfg7 applies), 1.7.3+ by `providerId` / `accountId`.
 - `< 4.5.0` — no `@reopt-ai/brandapp-sdk/workspace` platform client. Only relevant to code that already holds operator credentials; an app calling `platform.reopt.ai` through hand-written `fetch` is Plat1.
 - `< 4.4.0` — `records.list` / `cms.posts.list` accepted an over-limit `limit` and the server answered 400 with nothing in the SDK to explain it; `RECORDS_PAGE_LIMIT_MAX` does not exist. Any literal `limit: 200` (or anything > 100) is EAV4 regardless of version.
@@ -38,20 +40,20 @@ Also read the installed `better-auth` version — 4.0 and 1.7 move together.
 
 For each match, name the pattern, point at the file/line, then route the consumer to the relevant `docs/` section (paths relative to `node_modules/@reopt-ai/brandapp-sdk/docs/`; `api-reference.md` is the combined surface). **Do not paste before/after code into the review report — read the doc and quote the canonical fix.**
 
-### SDK init / lifecycle → `docs/api-reference.md`
+### SDK init / lifecycle → `docs/api-reference.md`; `createLazySDK` + auto-pagination → `README.md` §§ Lazy SDK Singleton, Auto-Pagination
 - **P1 Hand-rolled singleton (`new Proxy<>`)** — `new Proxy({} as` + `createReoptEavClient`
-- **P2 List-then-find on the client** — `.find((` / `.filter((` chained on `listAllRecords` / `records.list`
+- **P2 List-then-find on the client** — `.find((` / `.filter((` over `records.listAll(` / `collectAll(` / `records.list` results
 - **P3 Manual upsert (find + create/update)** — `if (existing)` + `records.create` + `records.update` in same fn
 - **P4 Manual pagination loop** — `while` + `page` + `totalPages` + `records.list`
 - **P5 Hand-rolled enum normalization** — `new Set<` + `.has(.* as`
 - **P6 Locally redefined `asString` / `asNumber` / `asBoolean` / `asDate` / `asJson`** — function names match
 - **P7 Per-item `records.delete` loop** — `Promise.all(` + `.map(` + `records.delete`
 - **P8 Per-item `records.update` loop** — `Promise.all(` + `.map(` + `records.update`
-- **P9 `.length` on `listAllRecords` for counting** — `.length` on a `listAllRecords` result
+- **P9 `.length` for counting** — `.length` on a `collectAll(records.listAll(…))` result — use `records.count`
 - **P10 Hand-rolled optimistic lock (4.2)** — a custom `version` / `revision` attribute compared in app code, or `records.get` → `records.update` without `ifVersion` on a contended entity — pass `ifVersion: record.version`, catch `PreconditionFailedError`
 - **P11 Client-side counter math (4.2)** — `values: { [attr]: current + n }` / `- n` on a number attribute — use `increments`
 - **P12 Home-made TTL / lease cleanup (4.2)** — a cron or `delete-where` sweep over an `expires_at` attribute, or claim/lock entities cleaned by hand — set `expiresAt` and let the server expire them
-- **P13 Over-limit page request (4.4)** — a literal `limit:` above 100 (or a `limit` from config with no clamp) on `records.list` / `listAll` / `cms.posts.list` — the SDK rejects it with `BadRequestError` before the request; use `RECORDS_PAGE_LIMIT_MAX` and `listAll()`
+- **P13 Over-limit page request (4.4)** — a literal `limit:` above 100 (or a `limit` from config with no clamp) on `records.list` / `listAll` / `cms.posts.list` — on `records.list` the SDK throws `BadRequestError` before the request, on `cms.posts.list` the server answers 400, and `listAll` / `backfill` clamp to 100 silently; use `RECORDS_PAGE_LIMIT_MAX` and `listAll()`
 - **P14 Hand-written page-size constant** — a local `const PAGE_SIZE = 100` / `50` beside a records loop instead of importing `RECORDS_PAGE_LIMIT_MAX` from `@reopt-ai/brandapp-sdk/eav`
 
 ### Auth wiring → package `README.md` (Better Auth wiring) + `docs/api-reference.md` (`sdk.auth`, session helpers)
@@ -75,12 +77,12 @@ For each match, name the pattern, point at the file/line, then route the consume
 
 ### Error handling → `docs/errors.md`
 - **Err1 Generic `catch` instead of SDK error classes** — `catch (e)` without `isReoptSDKError` / class check
-- **Err2 Unhandled API errors (no `handleApiError` wrapper)** — route handlers without a centralized error handler
+- **Err2 Unhandled API errors** — route handlers with no shared error mapping (the SDK ships no `handleApiError`; that name is the playground's own `lib/api-error.ts`) — route to § Error Types / § Error Diagnostic
 - **Err3 EAV mutation on `linkedTo='brandappAuthUser'` without 1.9 narrowed catches** — `records.create` / bulk on linked entity, no `AuthUserRecordExistsError` / `DuplicateAuthUserError` / `AuthUserNotFoundError` branch
 - **Err4 Legacy `e.code === 'REQUEST_ERROR'` string check** — literal string match — pre-1.9 only
-- **Err5 Stale hosted checkout (3.4+)** — custom required-terms gate before `createCheckout`, or all live payments treated as unsupported — hosted page collects consent, live Paddle works; only priced live Toss returns 409
+- **Err5 Stale hosted checkout (3.4+)** — custom required-terms gate before `createCheckout`, or all live payments treated as unsupported — hosted page collects consent, live payments work whichever provider the server picks (Paddle → Lemon Squeezy for new payments, 2026-10-14); only priced live Toss returns 409
 
-### Config / security → `docs/environment.md` (env / hosts), `docs/api-reference.md` (service token)
+### Config / security → `docs/environment.md` (env / hosts), `docs/migration.md` § `2.x → 3.0.0` (token-only config, `CONFIG_BROWSER_SECRET`)
 - **Cfg1 Hardcoded URL / stale host (`www.reopt.ai`, legacy `brand.reopt.ai` → `brandapp.reopt.ai`)** — `baseUrl:` literal containing `www.reopt.ai` / `brand.reopt.ai`
 - **Cfg2 Missing `import "server-only"`** — `createReopt*` / `createLazySDK` called in a file without server-only
 - **Cfg3 `!` non-null env assertions w/o validation** — `process.env.BRANDAPP_*!` without zod / t3-env nearby
@@ -89,9 +91,10 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **Cfg6 Removed type/error aliases (3.0)** — `ReoptAdapterConfig` / `ReoptEavConfig` / `ReoptAdapterError` — rename to `ReoptSDKConfig` / `ReoptSDKError`
 - **Cfg8 Analytics bridge misuse (4.1)** — `@reopt-ai/brandapp-sdk/analytics` imported without the `@reopt-ai/data-sdk` peer installed, `@reopt-ai/data-sdk-client` substituted for it, or `startBrandappAnalytics` result used without a `null` guard
 - **Cfg7 Per-environment `REOPT_ID_BASE_URL` on better-auth 1.7.0–1.7.2** — the var set to different hosts across `.env*` / deploy configs while the lockfile resolves 1.7.0–1.7.2, which namespace accounts by the discovered `issuer` (a moved host forks existing users). On 1.7.3+ it is not a finding; instead flag a self-hosted `account.issuer` column still `NOT NULL`
+- **Cfg9 Dev runs aimed at the unowned 4.6 default host** — SDK `≤ 4.6.0` with no `REOPT_BASE_URL` / `REOPT_ID_BASE_URL` in dev or test env, or a literal `reopt.de` anywhere (copied from the 4.6.0 docs). Those runs resolve `brand.reopt.de:3443` / `id.reopt.de:3443`, a domain Reopt does not own, with the app credential attached
 - **D1 Custom SDK request logging** — bespoke `fetch` wrapper instead of `BRANDAPP_SDK_DEBUG` / `BRANDAPP_SDK_LOG_FORMAT`
 
-### Schema / types → `docs/api-reference.md`
+### Schema / types → `README.md` §§ Type-Safe Entity Client, Schema Sync; drift → `docs/environment.md` (`NEXT_PUBLIC_BRANDAPP_EAV_HASH`) + `/eav` declaration JSDoc
 - **Sch1 Type-safe entity client unused** — `sdk.eav.entity(` w/o `schema` passed at SDK init
 - **Sch2 Hand-rolled schema resolution cache** — manual Map of entityName → entityId
 - **Sch3 Hardcoded `attributeId` literals** — UUID-shaped strings in attribute lookups
@@ -103,9 +106,9 @@ For each match, name the pattern, point at the file/line, then route the consume
 - **Perf2 Over-fetching attributes (3.6+)** — `records.list` / `listAll` without `select:` on a wide entity when the view reads a known subset
 
 ### React → `docs/api-reference.md`
-- **R1 Manual `useEffect` + `useState` for EAV fetching** — replace with `useRecords` / `useRecord`
+- **R1 Manual `useEffect` + `useState` for EAV fetching** — replace with `useEavRecords` / `useEavRecord`
 - **R2 Manual invalidation after mutation** — replace with `useUpsertRecord` etc. (auto-invalidate)
-- **R3 Manual infinite-scroll** — replace with `useInfiniteRecords`
+- **R3 Manual infinite-scroll** — replace with `useEavRecordsInfinite`
 
 ### Files (3.5+) → `docs/files.md`
 - **F1 Parallel file-manager client** — custom `/files` / `/folders` REST wrappers while `sdk.files` is absent — use the SDK's file/folder CRUD
@@ -131,7 +134,7 @@ For each finding emit `[pattern-id] pattern-name`, `file:line`, one-line `why` f
 
 ## Step 5 — Offer auto-fix
 
-Patterns P5/P6/P7/P8/P9/P11/P13/P14/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/P10/P12/Auth*/Err3/Err5/Cfg1–Cfg5/Cfg7/Cfg8/Plat1–Plat6/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
+Patterns P5/P6/P7/P8/P9/P11/P13/P14/Sch3/R1/R2/W1/W2/Cfg6/CMS2/CMS3 are mechanical rewrites — offer to apply directly. P1/P3/P10/P12/Auth*/Err3/Err5/Cfg1–Cfg5/Cfg7–Cfg9/Plat1–Plat6/Sch1/Sch4/Sch5/F1/F2/T1/T2/W3 require human judgment — propose, don't apply.
 
 ## Safety
 

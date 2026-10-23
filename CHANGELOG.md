@@ -11,6 +11,121 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Changed
+
+**Sibling-repo drift round — 2026-10-23** (`reopt`, `reopt-data` and
+`reopt-design` re-checked against source, the public npm `latest` tag and
+unpacked tarballs; `COMPATIBILITY.md` verification block records the details)
+
+- **Remote MCP catalog 30 → 39 tools** (`reopt-cli` + the shared
+  `cli-agent-rules` fallback). The 9 `reopt_social_*` tools (RFC-0037, live on
+  `https://mcp.reopt.ai` since 2026-10-20) ship with Reopt's web app, not with
+  `@reopt-ai/cli`, so the skill now says to trust `tools/list` over a count.
+  New rules: social reads need `workspace:read`; `reopt_social_review_run`
+  spends AI credits but never changes a post's status; approve /
+  mark-published / cancel exist only as `reopt_social_post_propose_*`
+  proposals a member applies in Studio, and a queued proposal must never be
+  reported as a published post. A missing CRM scope now answers with a `403`
+  `insufficient_scope` step-up challenge.
+- **`@reopt-ai/cli` 0.8.0 → 0.8.1** (fix release; floor stays 0.8.0). The stdio
+  server stops advertising `tools.listChanged`, `@modelcontextprotocol/server`
+  moves to 2.1.0, `plugin.json` carries the real version, the dependency floor
+  is `@reopt-ai/brandapp-sdk ^4.6.0`, and the stdio tool list is still 15.
+  Still no `dist/agent-rules.md`.
+- **Data SDK: client 0.7.0, server 0.8.0, contract 0.16.0, devtool 0.2.1**
+  (floors unchanged). Exports, peers, engines and bins are unchanged; the
+  behaviour changes are documented. Client 0.7.0 re-keys the offline queue
+  per write key, so events still queued under ≤ 0.6.x are dropped on upgrade.
+  Withdrawing consent now purges that category's queue, and `flush()` can
+  return `skipped` when another tab owns delivery. A batch that hits the quota
+  partway now comes back in `deferred[]` and stays queued. Server 0.8.0 makes a
+  `getProfileId` answer of `null` final (no profile-cookie fallback). Install,
+  review and the shared `data-sdk-agent-rules` fallback cover each change.
+- **Apps-in-Toss adapter gap.** `@reopt-ai/data-adapter-apps-in-toss` 0.2.2
+  (still latest) peers `^0.4.0 || ^0.5.0 || ^0.6.0`, so no published adapter
+  accepts client 0.7.0: npm refuses the pair (`ERESOLVE`), pnpm only warns.
+  `data-sdk-install` now keeps adapter projects on client `^0.6` / server 0.7.0
+  and forbids forcing the peer, and `data-sdk-review` flags it.
+- **Correction:** the quota refusal is **HTTP 429** `quota_exceeded`, which is
+  distinct from the `rate_limited` 429. It is not 402: 402 was only the SDK's
+  internal transport status. Fixed in the agent-rules fallback and in
+  `data-sdk-review`.
+- **`@reopt-ai/brandapp-sdk` 4.6.0 — routing and naming corrections**
+  (`brandapp-sdk-install` / `brandapp-sdk-review` + the shared
+  `brandapp-sdk-agent-rules` fallback; the package itself did not change).
+  `createLazySDK`, the typed `entity()` client, auto-pagination and schema sync
+  now route to `README.md`. Token-only config, `token/mint` and
+  `CONFIG_BROWSER_SECRET` route to `docs/migration.md` § `2.x → 3.0.0`.
+  `docs/api-reference.md` covers none of them. React hooks are named
+  `useEavRecords` / `useEavRecord` / `useEavRecordsInfinite` (review R1 / R3).
+  The non-existent `listAllRecords` and `handleApiError` are gone (P2 / P9 /
+  Err2). P13 now says only `records.list` throws before the request:
+  `listAll` / `backfill` clamp to 100, and `cms.posts.list` gets a server 400.
+  The health-check reference points at the `reopt-ai/brandapp-playground` repo.
+  Checkout text no longer says "live Paddle works": Reopt moved new payments
+  to Lemon Squeezy on 2026-10-14 (server-side, SDK call unchanged), so the
+  skills say live payments work whichever provider the server picks.
+- **New safety rule — the 4.6.0 dev default host is `brand.reopt.de:3443`, a
+  domain Reopt does not own.** Any run without `NODE_ENV=production` sends the
+  app credential there unless overridden. Install, the agent-rules fallback and
+  the new review pattern **Cfg9** tell dev/test runs to set `REOPT_BASE_URL` /
+  `REOPT_ID_BASE_URL` explicitly, and never to copy the `reopt.de` hosts from
+  the 4.6.0 docs.
+- **`4.7.0-rc.*` on the `next` tag is recorded, not adopted.** It brings machine
+  credentials, step-up login, the `/resource` / `/superadmin` / `/installation`
+  subpaths and the `better-auth ^1.7.7` peer. Install says to stay on `latest`
+  unless asked. Review adds a version-gate line that treats an rc install as
+  outside the verified range, and warns that the rc's `docs/machine.md` example
+  is broken. `COMPATIBILITY.md` also records the upstream risk that a stable
+  4.7.0 would break `@reopt-ai/cli` 0.8.1: `/workspace` would then import the
+  uninstalled optional peer `@better-auth/core`.
+- **Design: `@reopt-ai/opt-ui` 1.16.1 → 3.0.0** (`opt-ui-install`
+  `targetMinVersion` → **3.0.0**). 2.0 moved `SidebarNav` / `RouteFocusManager`
+  to `./next`, and 3.0 moved `SqlEditor` and its types to `./sql-editor`. From
+  3.0 the root, `./core`, `./shells`, `./visuals` and `./query` import neither
+  `next` nor CodeMirror, and `skipLibCheck: false` works. The skill drops the
+  "pending 2.0" and `skipLibCheck: true` text and adds an "Upgrading 1.x → 3.0"
+  step. That step routes to `05-migration/01-breaking-changes.md` § opt-ui
+  2.0.0 / 3.0.0, covers both import moves, and says to move opt-shell to 2.0 in
+  the same change. The skill also covers opt-cli 1.4.0: its catalog and 32
+  blocks target opt-ui 3.0, so 1.x projects pin `opt-cli@1.3.3`, and it needs
+  Node ≥ 22.12 (since 1.3.4). The remote block registry currently answers 404,
+  and the CLI falls back to its bundled copy.
+- **Design: `@reopt-ai/opt-chat` 1.1.1 → 2.0.0** (`opt-chat-install`
+  `targetMinVersion` → **2.0.0**). Node 22+ is now required. `ToolState` is
+  removed, so code uses `ConfirmationState` (identical to
+  `ConfirmationProps["state"]`). The JSXPreview family moved to
+  `./jsx-preview`. `styles.css` is now required whenever code blocks render;
+  opt-ui CSS is not a substitute. The obsolete "pending rename" step became a
+  2.0 upgrade scan, with new routes for lazy Streamdown plugins and
+  `ToolGroup`.
+- **Design: `@reopt-ai/opt-shell` 1.1.0 → 2.0.0** (`opt-shell-install`
+  `targetMinVersion` → **2.0.0**). Adapters now ship from `./datagrid` /
+  `./editor` / `./calendar`, and root imports fail with TS2305. The root no
+  longer pulls the adapter peers, `zod` or `next`. Floors rise to opt-ui
+  `^3.0.0`, opt-palette `^1.2.0`, opt-datagrid `^1.7.0` and opt-editor
+  `^2.1.0`. The skill notes that `./dev` does not exist (contrary to the
+  CHANGELOG), and that `landing` takes `header={null}`. Because opt-cli 1.4.0
+  still peers `opt-shell ^1.0.0`, the skill runs it through `npx`.
+- **Design: `@reopt-ai/opt-datagrid` 1.6.1 → 1.7.0** (`targetMinVersion` →
+  **1.7.0**, which opt-shell 2.0 requires). New `./evaluation` client hook, plus
+  a server-only `./jev` evaluator that throws in a browser and must never see
+  its API key client-side. New theme keys. Corrected routes: toolbar →
+  `index.md` "Toolbar", and `valueCacheMaxRows` → `02-api/01-props.md`.
+- **Design: `@reopt-ai/opt-editor` 2.0.0 → 2.1.0** (`targetMinVersion` →
+  **2.1.0**, which opt-shell 2.0 requires). `useEditorAI` is now available from
+  the root without the `ai` / `zod` peers. **Correction (true since 2.0.0):**
+  `/ai-sdk` is `"use client"`, so route handlers import `createEditorHandler` /
+  `createEditorTools` / `defineCatalog` from `/server`. The root entry is
+  `"use client"` too, so RSC rendering uses `/server`'s `specToHtml` /
+  `specToMarkdown`; the root `StaticRenderer` is not the RSC path the skill
+  claimed. The migration-script name was updated.
+- `COMPATIBILITY.md`: the Design CLI section now describes opt-cli 1.4.0.
+  Tracked rows were updated for opt-charts 1.10.0, opt-palette 1.2.0 and
+  opt-ui-primitives 1.6.1, and opt-devtool's hard `opt-ui ^1.6.0` dependency
+  is noted. New rows cover `opt-deck` 1.0.0 (not yet on npm), `builder-ui`
+  and `tool-ui` (private).
+
 ## [2.3.0] — 2026-09-27
 
 ### Added
