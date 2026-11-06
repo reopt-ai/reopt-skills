@@ -11,6 +11,10 @@ Each release is tagged `vX.Y.Z` in git; consumers can pin to a tag via the
 
 ## [Unreleased]
 
+### Added
+
+- Add `data-event-catalog` for consumer-owned event/property specifications, catalogue synchronization, conflict recovery, and type generation. Route install/integration guidance and review remediation to the dedicated skill.
+
 ### Changed
 
 **Sibling-repo drift round — 2026-10-23** (`reopt`, `reopt-data` and

@@ -63,6 +63,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | 스킬 | 다루는 내용 |
 | --- | --- |
 | [`data-sdk-install`](./skills/data-sdk-install/) | 공개 client/server 제품군 설치·업그레이드. Next.js App Router를 우선 지원하며 요청 스코프 identity, bootstrap, first-party ingest, consent, 선택적 devtool을 연결합니다. |
+| [`data-event-catalog`](./skills/data-event-catalog/) | Manage event/property specifications, catalogue and lock files, synchronization, drift, and generated types independently of SDK installation. |
 | [`data-sdk-review`](./skills/data-sdk-review/) | package version, credential boundary, Next.js proxy/bootstrap, identity, consent, delivery, devtool 노출을 읽기 전용으로 감사합니다. |
 
 ### 패키지 설치 / 업그레이드
