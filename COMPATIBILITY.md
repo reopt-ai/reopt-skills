@@ -132,6 +132,59 @@ Per-version detail lives in each package's docs; this table stays terse.
 > and host uploads use the org key and are unaffected); MCP result bounding; the
 > larger command set.
 >
+> — **Data SDK addendum (2026-11-06; the 10-23 round missed two publishes).**
+> **2026-10-25:** `data-sdk-client` **0.7.0 → 0.8.0**, `data-sdk-server` **0.8.0
+> → 0.9.0**, `data-sdk-devtool` **0.2.1 → 0.3.0**, `data-contract` **0.16.0 →
+> 0.17.0**, `data-cli` **0.1.0 → 0.2.0**, `data-adapter-apps-in-toss` **0.2.2 →
+> 0.2.3** (`86ce19c8`, "the 2026-10-24 review fixes"). Client 0.8.0 / server
+> 0.9.0 are named upstream as the releases that fix the 0.7.0 page-hide flush
+> regression (the unload flush waited behind the Web Lock) and the `waitUntil`
+> detection defect. Client 0.8.0: quota refusal holds every send until
+> `Retry-After`; `close()` final (`client_closed`); `identify()` validated at the
+> call; `reset()` keeps init properties + release; `__REOPT_RELEASE__` read as a
+> bare identifier; `credentials: "omit"`; `reopt-sdk` header on every batch;
+> consent re-read from the shared cookie on every check; a default-only refusal
+> holds restored events instead of deleting them. Server 0.9.0: `reoptProxy`
+> strips `Cookie` / `Authorization` / `Proxy-Authorization` and forwards only
+> `/api/track` + the two replay paths (`INGEST_PROXY_PATHS`); `@vercel/functions`
+> peer removed (request-context symbols instead); missing write key → no-op
+> client + `null` bootstrap; per-category consent on server events;
+> `onRequestError` bounded by `ON_REQUEST_ERROR_FLUSH_TIMEOUT_MS`; Node
+> `identify()` no longer process-wide. Contract 0.17.0: `/replay` no longer
+> exports `replay*Schema` (now `/replay-schema`); gateway 5xx/429 retried before
+> the contract header is consulted; `quota_exceeded` never retried. Devtool
+> 0.3.0 shows `deferred[]` rows and falls back to the plain transport when its
+> recorder chunk fails. **data-cli 0.2.0** ships the whole upstream README
+> (verified by installing the tarball and reading every `event *` `--help` and
+> `tools --json`): `login` / `status` / `logout`, `account show`, `completion`,
+> `org usage`, `segment *`, `sourcemap list|delete|*-platform`, `definition
+> pull|diff|verify|push|import|unlink` (+ top-level aliases), catalogue **v2**
+> (`properties.event` / `properties.profile` — the only two scopes; v2 landed
+> in contract 0.10.0 on 2026-09-02 but no CLI before 0.2.0 reads it), `event
+> types --with-types`, `event diff|verify --strict-properties|--strict-observed`,
+> `event pull --include-discovered`, partial-write exit 6 (`propertyFailure`);
+> `@reopt-ai/brandapp-sdk` moved from dependency to optional peer
+> `^4.7.0-rc.6` (+ `@better-auth/core` for the machine-credential path; exit 4
+> otherwise); `--delete-after-upload` also removes maps the server already
+> stores. Running the bin straight from an unpacked tarball fails (missing
+> `@reopt-ai/data-contract`) — install it. **2026-11-02:** `data-sdk-client`
+> **0.8.0 → 0.9.0**, `data-sdk-server` **0.9.0 → 0.10.0**, adapter **0.2.3 →
+> 0.2.4** (`3e4194e8` + `64412a2f`): events filtered before memory / offline
+> storage (credential keys dropped recursively; `url` / `href` / `referrer` /
+> `filename` and embedded HTTP(S) URLs lose credentials, query, fragment),
+> `privacy.redactKeys` / `privacy.beforePersist`, `maxQueueBytes` (2,000,000) /
+> `maxEventAgeMs` (7 d), `getDeliveryState()` / `subscribeDelivery()` /
+> `onDeliveryStateChange` / `useDeliveryState()` (payload-free), automatic
+> recovery after transient failures without a new event, provider creates the
+> SDK after commit (`useReoptClient()` initially `null`, 1,000-call buffer), and
+> `ReoptPageView searchParamsAllowList` — automatic Next page views no longer
+> copy the query into `search`. All names confirmed in the published d.ts of
+> both packages and compiled with `tsc` (client `/next`, server root + `/node`). Unreleased on `main` after 0.10.0 / 0.2.0 and not adopted:
+> `refactor(contract)!` `5edf7ba2` (`PlatformAuth` becomes `{ authorize(request) }`,
+> `PLATFORM_KEY_HEADER` removed — the next contract publish is breaking for
+> platform callers) and the data-cli credential / machine / sourcemap-upload
+> rework that goes with it (14 files). No live ingest, push or upload was run.
+>
 > — **Design: the pending majors all shipped.** **opt-ui 2.0.0** adds `./next`
 > (`SidebarNav`, `RouteFocusManager` removed from the root and `/shells`), makes
 > the `SqlEditor*` types structural and bumps the `@codemirror/commands` peer to
@@ -689,20 +742,23 @@ skills.
 
 The public skills treat `@reopt-ai/data-sdk-client` as the primary target and
 version-gate the companion suite during execution. Verified companions:
-`@reopt-ai/data-sdk-server` 0.8.0 (**no bin** from 0.5.0; `./ai` from 0.6.0;
-authoritative `getProfileId` from 0.8.0),
-`@reopt-ai/data-cli` 0.1.0 (bin `reopt-data`, Node 22+ — source maps, event
-catalogue, query, and the `tools [--json]` / `mcp` agent surface),
-`@reopt-ai/data-sdk-devtool` 0.2.1, and `@reopt-ai/data-contract` 0.16.0.
-Session replay needs client **0.5.0+**. The Apps-in-Toss adapter (0.2.2) does
-not accept client 0.7.0 — adapter projects stay on client `^0.6`.
+`@reopt-ai/data-sdk-server` 0.10.0 (**no bin** from 0.5.0; `./ai` from 0.6.0;
+authoritative `getProfileId` from 0.8.0; credential-stripping, path-restricted
+proxy from 0.9.0; privacy filter + delivery diagnostics from 0.10.0),
+`@reopt-ai/data-cli` 0.2.0 (bin `reopt-data`, Node 22+ — the full README
+command tree, catalogue v2, `--with-types`; published 0.1.0 is a subset),
+`@reopt-ai/data-sdk-devtool` 0.3.0, `@reopt-ai/data-contract` 0.17.0 and
+`@reopt-ai/data-adapter-apps-in-toss` 0.2.4 (client peers `^0.4.0 … ^0.9.0`).
+Session replay needs client **0.5.0+**; client 0.8.0 / server 0.9.0 fix the
+0.7.0 page-hide flush and `waitUntil` regressions.
 `@reopt-ai/data-sdk` (0.2.3) is a deprecated meta-package the skills refuse.
 
 | Skill | Target | Min version | Last verified |
 |---|---|---|---|
-| `data-sdk-install` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-10-23 (src+npm+tarball+`tsc` against 0.7.0 / server 0.8.0; 0.2.0 example run on 2026-08-29) |
-| `data-sdk-integration` | `@reopt-ai/data-sdk-client` (via `requires`) | — | 2026-10-23 (src+npm+tarball; catalogue commands from data-cli 0.1.0, contract 0.16.0; unchanged) |
-| `data-sdk-review` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-10-23 (src+npm+tarball+`tsc` against 0.7.0 / server 0.8.0; 0.2.0 example run on 2026-08-29) |
+| `data-sdk-install` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-11-06 (src+npm+tarball+`tsc` against client 0.9.0 / server 0.10.0 — privacy, queue-bound, delivery-state and `searchParamsAllowList` names compiled; 0.2.0 example run on 2026-08-29) |
+| `data-sdk-integration` | `@reopt-ai/data-sdk-client` (via `requires`) | — | 2026-11-06 (src+npm; catalogue work routed to `data-event-catalog`) |
+| `data-event-catalog` | `@reopt-ai/data-cli` (read at run time, no `target`) | — | 2026-11-06 (src+npm+tarball; published 0.2.0 installed and every `event *` `--help` / `tools --json` read; 0.1.0 bundle diffed for v2 / `--with-types`; no remote push run) |
+| `data-sdk-review` | `@reopt-ai/data-sdk-client` | **0.2.0** | 2026-11-06 (src+npm+tarball+`tsc` against client 0.9.0 / server 0.10.0 — privacy, queue-bound, delivery-state and `searchParamsAllowList` names compiled) |
 
 ### Design / UI packages
 
@@ -777,9 +833,9 @@ fails with npm `ERESOLVE` (run it through `npx`). There is no `opt-ui-cli` or
 | `@reopt-ai/opt-devtool` | 1.0.1 | public npm (stable; renamed from `@reopt-ai/opt-inspect`). Hard-depends on opt-ui `^1.6.0`, so beside opt-ui 3.0 it installs a second, nested opt-ui |
 | `@reopt-ai/opt-charts` | 1.10.0 | public npm (Recharts adapters + SVG viz / chart frames + shells; 1.6 `PathFlowChart` + `FunnelChart` variants, 1.7 area-proportional `VennDiagram`, 1.8 `TraceWaterfall` + `TimeSeriesChart` bands; 1.9 funnel / legend features and `TraceWaterfall` keyboard support, 1.10 `showLegend` on only for 2+ series, an empty state instead of `null`, declaration-order tooltips; re-exported from the opt-ui root. No docs dir — README only. `main` has unreleased filled `dot` markers) |
 | `@reopt-ai/opt-meta` | 0.1.0 | public npm (new; framework-free component metadata contracts shared by design packages) |
-| `@reopt-ai/data-cli` | 0.1.0 | public npm (bin `reopt-data`, Node 22+; companion of the Data SDK skills — no installer skill of its own. The published command set is far smaller than the upstream README, but does include `tools` / `mcp`: see the round notes) |
+| `@reopt-ai/data-cli` | 0.2.0 | public npm (bin `reopt-data`, Node 22+; companion of the Data SDK skills, run-time target of `data-event-catalog`. 0.2.0 (2026-10-25) ships the whole README command tree — `login`, `account`, `segment *`, `org usage`, `sourcemap list|delete|*-platform`, `definition *`, catalogue v2, `--with-types`; platform commands need the optional peers brandapp-sdk `^4.7.0-rc.6` + `@better-auth/core`. Published 0.1.0 is the small subset described in the 10-23 notes) |
 | `@reopt-ai/data-sdk` | 0.2.3 | public npm, **deprecated** meta-package (use `data-sdk-client` / `data-sdk-server`); still the optional peer name `brandapp-sdk/analytics` imports |
-| `@reopt-ai/data-adapter-apps-in-toss` | 0.2.2 | public npm (Apps-in-Toss WebView adapter — fans behaviour events to Toss Analytics and reopt-data; required peer `@reopt-ai/data-sdk-client ^0.4.0 \|\| ^0.5.0 \|\| ^0.6.0` (0.2.0 was `^0.4.0` only) — **does not accept client 0.7.0** (2026-10-20), and `reopt-data` main has no fix yet; Toss `send` injected rather than importing the Toss SDK. Korean README) |
+| `@reopt-ai/data-adapter-apps-in-toss` | 0.2.4 | public npm (Apps-in-Toss WebView adapter — fans behaviour events to Toss Analytics and reopt-data; required peer `@reopt-ai/data-sdk-client` — 0.2.2 `^0.4.0 \|\| ^0.5.0 \|\| ^0.6.0`, 0.2.3 (2026-10-25) adds `^0.7.0 \|\| ^0.8.0`, 0.2.4 (2026-11-02) adds `^0.9.0`; runtime dependencies unchanged. Toss `send` injected rather than importing the Toss SDK. Korean README, with a delivery-fault test section from 0.2.3) |
 | `@reopt-ai/legal` | 1.6.2 | npm **restricted** (not publicly installable) — never route an install here |
 | `@reopt-ai/superadmin-cli` | 0.3.1 | GitHub Packages, **restricted** — internal operator tool, never route an install here |
 | `@reopt-ai/opt-calendar` | 1.0.0 | public npm (stable events + booking/availability, drag/resize, recurrence, timezones) |

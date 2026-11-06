@@ -63,7 +63,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | 스킬 | 다루는 내용 |
 | --- | --- |
 | [`data-sdk-install`](./skills/data-sdk-install/) | 공개 client/server 제품군 설치·업그레이드. Next.js App Router를 우선 지원하며 요청 스코프 identity, bootstrap, first-party ingest, consent, 선택적 devtool을 연결합니다. |
-| [`data-event-catalog`](./skills/data-event-catalog/) | Manage event/property specifications, catalogue and lock files, synchronization, drift, and generated types independently of SDK installation. |
+| [`data-event-catalog`](./skills/data-event-catalog/) | 이벤트·속성 명세, 카탈로그·lock 파일, 서버 동기화, drift·충돌 복구, 생성 타입을 관리합니다. SDK 설치와 독립적으로 동작합니다. |
 | [`data-sdk-review`](./skills/data-sdk-review/) | package version, credential boundary, Next.js proxy/bootstrap, identity, consent, delivery, devtool 노출을 읽기 전용으로 감사합니다. |
 
 ### 패키지 설치 / 업그레이드
@@ -93,6 +93,7 @@ npx skills add reopt-ai/reopt-skills/reopt-eav
 | Next.js 앱에 `@reopt-ai/brandapp-sdk` 를 처음 도입 | `brandapp-sdk-install` |
 | 이미 SDK 를 쓰는 앱의 안티패턴 감사 | `brandapp-sdk-review` |
 | 컨슈머 앱에 reopt Data 분석 도입 | `data-sdk-install` |
+| reopt Data 이벤트 카탈로그 명세·동기화 관리 | `data-event-catalog` |
 | 기존 reopt Data SDK 통합 감사 | `data-sdk-review` |
 | `opt-*` 컴포넌트 패키지 (opt-shell 제품 프레임 포함) 도입 또는 업그레이드 | 해당 `opt-*-install` 스킬 |
 

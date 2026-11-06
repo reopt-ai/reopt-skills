@@ -2,7 +2,8 @@
 
 Plan and implement a complete reopt Data event layer after the SDK transport is
 installed: measurement design, typed contracts, browser and server events,
-consent, catalogue-as-code, and end-to-end verification.
+consent, and end-to-end verification; catalogue files, synchronization and
+generated types are handed to `data-event-catalog`.
 
 ## Use when
 

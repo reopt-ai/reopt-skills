@@ -18,8 +18,11 @@ measurement planning or instrumentation, only when that work is requested.
 - Resolve `@reopt-ai/data-cli` in the consumer workspace (pnpm may not hoist it).
   Read its installed README, especially "Event catalogue as code", and the
   installed `reopt-data event --help` plus relevant subcommand help. Do not infer
-  published capabilities from the upstream source tree. If installation is
-  needed, use the project's package manager and check the package's Node engine.
+  published capabilities from the upstream source tree. Published `0.1.0`
+  (2026-08-30) reads only `version: 1` files and has no `--with-types`,
+  `--strict-properties` / `--strict-observed`, `--include-discovered` or
+  partial-write recovery; `0.2.0` (2026-10-25, contract `0.17.0`) has them all.
+  If installation is needed, use the project's package manager (Node 22+).
 - Confirm the API origin, environment, actual project ID, and catalogue file as
   one target. Prefer an existing configuration; never invent a project ID or
   rewrite the production file to point at a test project. Multiple projects need
@@ -44,16 +47,19 @@ and avoid duplicate blocks. Read-only inspection does not modify markers.
    fresh partial file to silently take ownership of an existing full catalogue.
 2. Follow the installed file schema for supported fields and versions. Events
    carry display metadata, status, conversion intent, and rollup dimensions;
-   v2 also declares property type, description, and visibility by event/profile
-   scope. Properties are project-wide by scope/name, not per-event schemas.
+   v2 (data-cli `0.2.0`+) also declares `propertyType`, `description` and
+   `hidden` per property under `properties.event` / `properties.profile` — the
+   only two scopes. Properties are project-wide by scope/name, not per-event
+   schemas; `event pull` writes only curated ones unless `--include-discovered`.
 3. Keep names stable, reserve conversions for actual business outcomes, and
    choose bounded dimensions for rollups. Avoid personal data in examples and
    high-cardinality IDs, timestamps, or free text in rollup dimensions.
 4. Review `event diff` and the non-applying `event push` plan. Explain creations,
    updates, archives, server-side changes, and rollup rebuild implications.
    Omitted event fields reset to defaults; removing an event archives it.
-   In v2, unmentioned properties remain untouched, while omitted fields inside
-   a declared property use defaults. Check these semantics against installed docs.
+   In v2, unmentioned properties remain untouched (and unreported unless
+   `--strict-properties` / `--strict-observed` is passed to `diff` / `verify`),
+   while omitted fields inside a declared property use defaults.
 5. Apply with `event push --apply` only within the user's authorized target and
    scope; add `--yes` when the reviewed plan requires it. Existing authorization
    suffices. If authorization is missing, finish the local files and plan before
@@ -69,9 +75,10 @@ and avoid duplicate blocks. Read-only inspection does not modify markers.
 ## Types and verification
 
 - Use `event types` for generated declarations and connect them to the existing
-  typed `track()` wrapper when requested. Prefer the installed generator's
-  names and options; `--with-types`, when supported, reads observed properties
-  remotely. File-declared v2 types may work offline depending on the version.
+  typed `track()` wrapper when requested. `types` runs offline from the file;
+  v2 declarations type the values and a key the file never names stays
+  `unknown`. `--with-types` (`0.2.0`+, org key) adds the server's observed
+  property keys; the file's declared type still wins over the observation.
 - Catalogue types are not a complete payload validator: required fields, enums,
   nested shapes, and per-event property membership need a separate consumer
   contract. Do not promise runtime ingest rejection or strict unknown-key checks.
