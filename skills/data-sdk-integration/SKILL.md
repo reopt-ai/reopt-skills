@@ -1,7 +1,7 @@
 ---
 name: data-sdk-integration
 description: |
-  Design and implement production-grade product event instrumentation with the reopt Data SDK in a consumer app, from journey discovery and measurement planning through typed contracts, browser/server delivery, consent, catalogue-as-code, tests, and live verification. Use for "instrument events", "analytics measurement plan", "reopt event taxonomy", "data SDK integration", "이벤트 설계", "이벤트 심기", "데이터 SDK 연동". Use data-sdk-review instead for a read-only audit.
+  Design and implement production-grade product event instrumentation with the reopt Data SDK in a consumer app, from journey discovery and measurement planning through typed contracts, browser/server delivery, consent, tests, and live verification. Use for "instrument events", "analytics measurement plan", "reopt event taxonomy", "data SDK integration", "이벤트 설계", "이벤트 심기", "데이터 SDK 연동". Use data-sdk-review instead for a read-only audit.
 requires:
   - data-sdk-install
 ---
@@ -16,10 +16,9 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
    analytics providers, event helpers, consent owner, server-confirmed outcomes,
    and tests. Preserve useful existing contracts instead of creating a parallel
    taxonomy.
-2. Read installed client/server READMEs before choosing APIs. The catalogue
-   commands come from `@reopt-ai/data-cli` (bin `reopt-data`, Node 22+, dev
-   dependency); read its README and the live `reopt-data event --help` before
-   using them. Never import the deprecated `@reopt-ai/data-sdk` meta-package.
+2. Read installed client/server READMEs before choosing APIs. Use
+   `data-event-catalog` when the work includes catalogue files, synchronization,
+   or generated event types. Never import the deprecated `@reopt-ai/data-sdk`.
 3. Identify the Data project and credentials. Do not invent IDs, commit live
    placeholders, or provision remote resources without user authorization.
 
@@ -48,15 +47,10 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
    validation — they are authored in the console. Design event names and
    properties so the five attribute scopes (event, profile, device, session,
    first_touch) and the eleven criterion kinds can address them.
-4. Once the real project ID is known, initialize `reopt-data.events.json` with
-   `reopt-data event init` (or `event pull` from an existing server catalogue).
-   Mark only true business outcomes as conversions and select at most the
-   low-cardinality properties needed for recurring rollups. Commit the
-   catalogue and `reopt-data.events.lock.json`; run `event diff`, then `event
-   push` (plan) before `event push --apply --yes`; gate CI with `event verify`.
-5. Generate `reopt-data event types --out src/reopt-events.d.ts` and type the
-   shared `track()` wrapper with `ReoptEventName` / `ReoptEventProperties` so
-   undeclared events fail at compile time.
+4. Use [data-event-catalog](../data-event-catalog/SKILL.md) to persist the
+   event/attribute metadata, reconcile it with the server, and generate event
+   types. Connect those types to the shared `track()` wrapper; keep required
+   properties and runtime validation in the consumer contract above.
 
 ## 4. Instrument browser journeys
 

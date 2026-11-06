@@ -1,0 +1,10 @@
+{
+  "version": "2.3.0",
+  "organization": "reopt",
+  "updatedAt": "2026-11-06",
+  "abstract": "Manage a consumer project's reopt Data event catalogue as code with @reopt-ai/data-cli: event and property metadata (v1 / v2 files), lock files, three-way diff, console-conflict recovery, authorized push, CI drift verification, and generated TypeScript event types. Independent of SDK installation.",
+  "references": [
+    "https://github.com/reopt-ai/reopt-skills",
+    "https://github.com/reopt-ai/reopt-data"
+  ]
+}

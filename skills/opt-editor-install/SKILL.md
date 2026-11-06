@@ -3,7 +3,7 @@ name: opt-editor-install
 description: |
   Install, upgrade, or migrate @reopt-ai/opt-editor in a consumer project. Auto-branches by current install state. Triggers on "opt-editor install", "opt-editor init", "opt-editor setup", "editor install", "editor init", "opt-editor upgrade", "opt-editor update", "editor upgrade", "editor update", "opt-editor 2 migration", "editor schema migration", "migrate EditorSpec".
 target: "@reopt-ai/opt-editor"
-targetMinVersion: "2.0.0"
+targetMinVersion: "2.1.0"
 ---
 
 # opt-editor Install
@@ -25,7 +25,7 @@ Consumer project depends on `@reopt-ai/opt-editor`. Triggers: "install", "init",
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 2.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-editor` does not, as of 2.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-editor-agent-rules -->
@@ -39,14 +39,14 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-edit
 
 1. **Public npm registry** — no token or scoped `.npmrc` entry is required. Inspect the project `.npmrc` and `npm config get @reopt-ai:registry`; if the scope still resolves to GitHub Packages, remove only the legacy project entry `@reopt-ai:registry=https://npm.pkg.github.com`. Preserve unrelated registry/auth settings, and ask before changing user/global npm config.
 
-2. **Prereqs** — Node 20+, React 19+, bun or npm. AI integration uses optional peers `ai >= 7` and `zod >= 3`; do not install them for a non-AI editor.
+2. **Prereqs** — Node 20+, React 19+, bun or npm. AI integration uses optional peers `ai >= 7` and `zod >= 3`; do not install them for a non-AI editor. Since 2.1 a client that needs only `useEditorAI` imports it from the package root without either peer. opt-shell 2.0 peers on this package at `^2.1.0` — upgrade both together or npm fails with `ERESOLVE`.
 
 3. **App wiring** — properties of the consumer app:
    - `import "@reopt-ai/opt-editor/styles.css"` at the app root.
    - Catalog file (`catalog.ts` or similar) — block-definition registry.
    - AI endpoint (when `--with-ai`): a Vercel AI SDK–compatible route.
 
-4. **2.0 upgrade gate** — move runtime Zod schema values (`patchOpSchema`, `patchOpsArraySchema`, `createEditorOperationSchema`, catalog schema builders) from `@reopt-ai/opt-editor/server` to `/schemas`; type-only imports may stay on `/server`, and `/ai-sdk` imports are unchanged. Before loading persisted V1 JSON, migrate `props` → `attrs` and rich-text `attrs.text` → canonical `content`, with a backup and a data-level dry run. The README's `bun run migrate:v1-to-v2` is a source-repo script and is not shipped in the npm tarball; do not invoke it as a consumer command.
+4. **2.0 upgrade gate** — move runtime Zod schema values (`patchOpSchema`, `patchOpsArraySchema`, `createEditorOperationSchema`, catalog schema builders) from `@reopt-ai/opt-editor/server` to `/schemas`; type-only imports may stay on `/server`. `/ai-sdk` is a `"use client"` bundle for client hooks only — route handlers import `createEditorHandler` / `createEditorTools` / `defineCatalog` from `/server` (the 2.0.0 recipes that import them from `/ai-sdk` were wrong; 2.1.0 docs fix them). Before loading persisted V1 JSON, migrate `props` → `attrs` and rich-text `attrs.text` → canonical `content`, with a backup and a data-level dry run. The README's `bun packages/opt-editor/scripts/migrate-spec-v1-to-v2.ts` is a maintainer script run from a checkout of the source repo and is not shipped in the npm tarball; do not invoke it as a consumer command.
 
 ## Step 3 — Route to module docs
 

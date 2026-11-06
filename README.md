@@ -61,7 +61,8 @@ For consumer projects that send browser and server analytics to reopt Data. Inte
 | Skill | What it covers |
 | --- | --- |
 | [`data-sdk-install`](./skills/data-sdk-install/) | Install or upgrade the public client/server suite. Next.js App Router first, including request-scoped identity, bootstrap, first-party ingest, consent, opt-in error tracking (exceptions, breadcrumbs, releases, source maps), and optional devtools. |
-| [`data-sdk-integration`](./skills/data-sdk-integration/) | Turn product journeys into a typed event contract, instrument browser and server outcomes, preserve consent/privacy, manage the event catalogue as code, and verify complete funnels. Requires `data-sdk-install`. |
+| [`data-sdk-integration`](./skills/data-sdk-integration/) | Turn product journeys into a typed event contract, instrument browser and server outcomes, preserve consent/privacy, and verify complete funnels. Requires `data-sdk-install`. |
+| [`data-event-catalog`](./skills/data-event-catalog/) | Manage event/property specifications, catalogue and lock files, drift/conflicts, server synchronization, and generated types. Independent of SDK installation. |
 | [`data-sdk-review`](./skills/data-sdk-review/) | Read-only audit of package versions, credential boundaries, Next.js proxy/bootstrap, identity, consent, delivery, error tracking, and devtool exposure. |
 
 ### Package install / upgrade
@@ -92,6 +93,7 @@ Two axes decide which skill applies:
 | Audit an existing app's SDK usage for anti-patterns | `brandapp-sdk-review` |
 | Add reopt Data analytics to a consumer app | `data-sdk-install` |
 | Design and implement the product event layer after transport setup | `data-sdk-integration` |
+| Manage reopt Data event catalogue specifications and synchronization | `data-event-catalog` |
 | Audit an existing reopt Data SDK integration | `data-sdk-review` |
 | Adopt or upgrade an `opt-*` component package (incl. the `opt-shell` product frame) | the matching `opt-*-install` skill |
 

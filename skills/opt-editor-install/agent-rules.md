@@ -17,9 +17,9 @@
 - Node 20+ and React 19+ required.
 - AI SDK integration requires optional peers `ai >= 7` and `zod >= 3`; do not require them for non-AI editor usage.
 - `EditorSpec` is the canonical content schema — do not hand-parse the stored JSON. Rich text lives in each element's `content` field, not `attrs`.
-- In 2.0, import runtime Zod schema values from `@reopt-ai/opt-editor/schemas`; `/server` is zod-free and retains only related type exports. `/ai-sdk` re-exports remain valid.
-- Persist canonical V2 only. Migrate V1 `props` / rich-text `attrs.text` with a backup and dry run before upgrade; the README's `migrate:v1-to-v2` package script is not present in the published tarball.
-- `<Editor>` uses browser APIs (contentEditable/Selection) — it must live in a `"use client"` component (Next.js App Router). `StaticRenderer` / `specToHtml` are the RSC-safe read-only path. Don't swap them.
+- In 2.0, import runtime Zod schema values from `@reopt-ai/opt-editor/schemas`; `/server` loads no zod at runtime and retains only related type exports (its `.d.ts` still imports `zod`, so `skipLibCheck: false` needs zod installed). `/ai-sdk` is client-only (`"use client"`): route handlers import `createEditorHandler` / `createEditorTools` / `defineCatalog` from `/server`.
+- Persist canonical V2 only. Migrate V1 `props` / rich-text `attrs.text` with a backup and dry run before upgrade; the README's `migrate-spec-v1-to-v2.ts` is a source-repo maintainer script, not present in the published tarball.
+- `<Editor>` uses browser APIs (contentEditable/Selection) — it must live in a `"use client"` component (Next.js App Router). For RSC or server code call `specToHtml` / `specToMarkdown` from `@reopt-ai/opt-editor/server`; the root entry is a `"use client"` module, so the root `StaticRenderer` renders as a client component and the root `specToHtml` cannot be called from a Server Component (the README's "works as RSC" line is wrong). Don't swap them.
 - `EditorMode` is `"stream" | "edit" | "diff"` — any exhaustive mode handling (e.g. `switch (mode)`) must cover the review-only `"diff"` branch or it silently breaks.
 - Catalog block IDs are stable identifiers — renaming them is a breaking change for stored content.
 - AI streaming requires a Vercel AI SDK–compatible endpoint. Don't roll your own SSE protocol.

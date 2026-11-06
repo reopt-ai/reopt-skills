@@ -3,7 +3,7 @@ name: opt-shell-install
 description: |
   Install or upgrade @reopt-ai/opt-shell — the runtime product-frame layer for workspace recipes, document policy, persisted preferences, shortcuts, adapters, and state boundaries. Formerly @reopt-ai/opt-harness. Auto-branches by current install state. Triggers on "opt-shell install", "opt-shell init", "opt-shell setup", "shell install", "app shell setup", "workspace recipe", "opt-shell upgrade", "opt-shell update", "shell preferences", "shortcut registry", "document policy", plus legacy "opt-harness install", "harness install", "harness setup".
 target: "@reopt-ai/opt-shell"
-targetMinVersion: "1.1.0"
+targetMinVersion: "2.0.0"
 ---
 
 # opt-shell Install
@@ -17,9 +17,9 @@ targetMinVersion: "1.1.0"
 | Workspace recipes | `DashboardWorkspace`, `ListWorkspace`, `DetailWorkspace`, `EditorWorkspace`, landing — pick via the decision tree in `shell-llms.txt` |
 | Non-recipe surface | `ShellFullscreenToolSurface` (full-viewport tools — code editor, canvas) |
 | Policy | density, contentWidth, navigationMode, motionPolicy, textScale, sidebarMode, shortcutHints |
-| Adapters | data-engine wrappers supplying loading / empty / error chrome |
-| State UX | shared state boundaries; every recipe requires `header` + `content` slots |
-| Authoring audit | `@reopt-ai/opt-cli/audit` + `opt harness` commands; published opt-shell 1.1.0 has no `./audit` export |
+| Adapters | data-engine wrappers supplying loading / empty / error chrome — from 2.0 each on its own entry (`/datagrid`, `/editor`, `/calendar`) |
+| State UX | shared state boundaries; every recipe requires `content`, and all but `landing` require `header` (`header={null}` there) |
+| Authoring audit | `@reopt-ai/opt-cli/audit` + `opt harness` commands; opt-shell (1.1.0, 2.0.0) exports neither `./audit` nor `./dev` |
 
 ## Invocation
 
@@ -31,7 +31,7 @@ targetMinVersion: "1.1.0"
 
 ## Step 1 — Pin agent rules into AGENTS.md / CLAUDE.md
 
-Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shell` ships `shell-llms.txt`, an agent guide, but not a marker-block file as of 1.1.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
+Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shell` ships `shell-llms.txt`, an agent guide, but not a marker-block file as of 2.0.0). Fallback: `agent-rules.md` bundled with this skill. Wrap content between:
 
 ```
 <!-- BEGIN:reopt/opt-shell-agent-rules -->
@@ -47,12 +47,14 @@ Source: the module's own agent-rules file once it ships one (`@reopt-ai/opt-shel
 
 2. **Runtime / peers** — Node 20+ is required. For opt-shell's `peerDependencies`, install / run their skills first if missing:
    - **Required:** `@reopt-ai/opt-palette` (theme engine), `react` / `react-dom` 19+
-   - **Declared optional** (adapter peers): `@reopt-ai/opt-datagrid` (`/opt-datagrid-install`), `@reopt-ai/opt-editor` (`/opt-editor-install`), `@reopt-ai/opt-calendar`. **But** in every published release (≤ 1.1.0) the adapters (`ShellDataGridAdapter`, `ShellEditorAdapter`, `useShellEditorAI`, `ShellCalendarAdapter`) are root exports, so importing the root — the only entry with components (workspace recipes, `ShellProvider`) — statically resolves all three peers, plus `zod` (via `@reopt-ai/opt-editor/ai-sdk`) and `next` (via the opt-ui root). Install all of them; `./core` pulls no optional peer but carries only framework-free contracts and helpers. Per-adapter entries (`/datagrid`, `/editor`, `/calendar`) are a **pending 2.0** change — do not import them until the installed `package.json` exports them.
+   - **Required:** `@reopt-ai/opt-palette` **`^1.2.0`** in 2.0 (1.1.0: `^1.0.0` — npm `ERESOLVE` on 1.0.x).
+   - **Optional, each needed only by its entry (2.0):** `@reopt-ai/opt-datagrid ^1.7.0` → `@reopt-ai/opt-shell/datagrid` (`ShellDataGridAdapter`); `@reopt-ai/opt-editor ^2.1.0` → `/editor` (`ShellEditorAdapter`, `useShellEditorAI` — uses opt-editor 2.1's root `useEditorAI`, so no `ai` / `zod`); `@reopt-ai/opt-calendar ^1.0.0` → `/calendar` (`ShellCalendarAdapter`, undocumented in README / `shell-llms.txt`). The root and `./core` reach none of them, nor `zod` or `next`. npm rejects an installed peer outside its range, so bump datagrid / editor with opt-shell. **On 1.1.x** the adapters are root exports and the root statically needs all three peers plus `zod` and `next`.
+   - **1.x → 2.0 upgrade:** move every adapter import from the root to its entry (a root import fails with TS2305). The only migration note is the adapter-subpath bullet in `CHANGELOG.md` § `[2.0.0]`; the rest of that section is stale pre-0.2 text (it advertises a `./dev` entry that does not exist).
 
-   `@reopt-ai/opt-ui` is a direct dependency of opt-shell; run `/opt-ui-install` to wire its Tailwind/theme CSS rather than adding a second package copy or source alias.
+   `@reopt-ai/opt-ui` is a direct dependency of opt-shell — **`^3.0.0` in 2.0** (1.1.0: `^1.6.0`). An app whose own opt-ui is 1.x / 2.x ends up with a second, nested copy, so upgrade opt-ui to 3.x first (`/opt-ui-install`) rather than adding a source alias.
 
 3. **App wiring** — properties of the consumer app:
-   - A workspace recipe at the screen root (`header` + `content` slots are mandatory).
+   - A workspace recipe at the screen root (`content` is mandatory; `header` too, except `landing`, which takes `header={null}`).
    - A shell manifest / policy config (density, contentWidth, navigationMode, motionPolicy, textScale, sidebarMode, shortcutHints).
    - `@reopt-ai/opt-ui/app.css` in global CSS when 1.1 document policies (motion, text scale, shortcut hints) should take effect.
    - Adapters wired to your data engines wherever loading / empty / error chrome is needed.
@@ -65,10 +67,10 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | Task signal | Read |
 |---|---|
 | Recipe decision tree, slot rules, policy | `shell-llms.txt` |
-| Component / prop API, exports (`.`, `./core`, `./meta`) | `README.md` §§ "Module map", "Which component do I need?", "Hooks" |
+| Component / prop API, exports (`.`, `./core`, `./meta`, `./datagrid`, `./editor`, `./calendar`) | `README.md` §§ "Module map", "Which component do I need?", "Hooks" — its "Entry points" list still shows three entries; trust the installed `package.json` |
 | Slot rules, z-index, theme wiring | `README.md` §§ "Slot contract", "z-index scale", "Theme configuration" |
-| Agent-facing protocol + lint rules | `README.md` §§ "AI Agent Protocol", "ESLint Plugin" |
-| Authoring audit / scoring | `@reopt-ai/opt-cli/audit`; `npx @reopt-ai/opt-cli harness check|test|doctor` |
+| Import-path and surface changes for code-suggesting agents | `shell-llms.txt` § "0.2.0 — Import-path & surface changes" (the README's "AI Agent Protocol" / "ESLint Plugin" sections are gone in 2.0; its "Oxlint Plugin" names an unpublished package) |
+| Authoring audit / scoring | `@reopt-ai/opt-cli/audit`; `npx @reopt-ai/opt-cli harness check|test|doctor` (opt-cli 1.4.0 needs Node ≥ 22.12 and still peers `opt-shell ^1.0.0`, so a local devDependency beside opt-shell 2.0 fails with `ERESOLVE` — run it through `npx` instead) |
 | Breaking changes per version | `CHANGELOG.md` |
 
 ## Pipeline (auto-branch)
@@ -78,7 +80,7 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 | 1 | Detect current state (incl. legacy `opt-harness` dep) | ✓ | ✓ |
 | 2 | Public-registry preflight + legacy override cleanup | ✓ | ✓ |
 | 3 | Install / update package | ✓ | ✓ |
-| 4 | Dependency/peer check (opt-ui direct; opt-palette required; adapter peers + `zod` + `next` needed by the 1.x root) | ✓ | ✓ |
+| 4 | Dependency/peer check (opt-ui `^3` direct; opt-palette `^1.2` required; adapter peers only for the matching entry in 2.0 — all three + `zod` + `next` on 1.x) | ✓ | ✓ |
 | 5 | Shell manifest / policy config | ✓ | – |
 | 6 | First workspace recipe | ✓ | – |
 | 7 | Breaking-change edits | – | ✓ |
@@ -96,4 +98,4 @@ opt-shell ships **no** `dist/docs/`. Route to `shell-llms.txt` (agent guide) and
 
 1. `npx tsc --noEmit` passes.
 2. App boots into the chosen workspace recipe (`header` + `content` slots filled); policy applies, including expected `<html>` `data-density` / `data-motion` / `data-text-scale` / `data-shortcut-hints` attributes.
-3. (If an adapter is used) the data-grid or editor adapter renders the peer's content with shell chrome (loading / empty / error states).
+3. (If an adapter is used) the data-grid or editor adapter, imported from `/datagrid` / `/editor` / `/calendar`, renders the peer's content with shell chrome (loading / empty / error states).
