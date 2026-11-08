@@ -30,6 +30,18 @@ measurement planning or instrumentation, only when that work is requested.
 - Remote operations use the CLI's documented credentials (normally an
   organization key), not a browser write key. Keep credentials outside the
   catalogue, lock, source control, output, and browser bundles.
+- The organization key is shown once, when issued. Issuing another one rotates
+  it: every existing key for that organization is revoked at once. Never rotate
+  to obtain a key, and never ask another agent session for one — ask the user
+  for the stored copy (CI/server only). `reopt-data login` grants account reads
+  only; it does not authorize catalogue writes.
+- Without a key, finish the file locally and hand it to the user to import in
+  the console at `/dashboard/<orgId>/<projectId>/events?panel=import` (accepts
+  v1 and v2 files; a project member's sign-in is enough). Choose **overwrite**
+  to apply every entry (**add missing** only creates absent events). Unlike
+  `push`, an import never archives events the file omits, and it does not update
+  the lock; refresh the lock with `event pull` once a key exists, and report CLI
+  sync and `verify` as not run until then.
 
 ## Persist consumer guidance
 
@@ -54,6 +66,10 @@ and avoid duplicate blocks. Read-only inspection does not modify markers.
 3. Keep names stable, reserve conversions for actual business outcomes, and
    choose bounded dimensions for rollups. Avoid personal data in examples and
    high-cardinality IDs, timestamps, or free text in rollup dimensions.
+   `conversion` marks a whole event — it cannot filter on a property — so an
+   outcome event that also records failures needs a success-only companion
+   event to carry the conversion. Mark diagnostic or delivery-health events
+   `status: "internal"`; metrics leave them out unless a query opts in.
 4. Review `event diff` and the non-applying `event push` plan. Explain creations,
    updates, archives, server-side changes, and rollup rebuild implications.
    Omitted event fields reset to defaults; removing an event archives it.

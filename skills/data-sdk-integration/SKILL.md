@@ -21,6 +21,8 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
    or generated event types. Never import the deprecated `@reopt-ai/data-sdk`.
 3. Identify the Data project and credentials. Do not invent IDs, commit live
    placeholders, or provision remote resources without user authorization.
+   Missing credentials go back to the user through the `data-sdk-install`
+   checklist, never to another agent session; instrument fail-open meanwhile.
 
 ## 2. Write the measurement plan before call sites
 
@@ -31,7 +33,9 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
   counts, durations, and bounded categories; reject free text, full URLs with
   sensitive query parameters, direct PII, and high-cardinality rollup keys.
 - Record attempts and outcomes separately. Emit authoritative outcomes only
-  after the server or durable store confirms them.
+  after the server or durable store confirms them. A `*_result` event carrying
+  success and failure is for diagnosis; the conversion is a separate
+  success-only event, emitted from exactly one place (prefer the server).
 - Give page views, web vitals, and lifecycle events one owner to prevent duplicates.
 
 ## 3. Make the contract executable
@@ -75,12 +79,21 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
 - For delayed jobs, persist the SDK device ID with the outbox record. Never trust
   a browser-supplied profile or session ID. On server/client `0.6.0`+, also
   persist a UUID and send it as `track({ name, properties, eventId })` so an
-  outbox retry is deduplicated at ingest instead of counted twice.
+  outbox retry is deduplicated at ingest instead of counted twice. Any UUID
+  version is accepted; deriving it from the business key (a UUIDv5 of the
+  order or job ID) keeps a re-enqueued job idempotent too.
+- Write the outbox row in the same transaction as the business change. Compute
+  the server event's profile ID with the same function the client passes to
+  `identify()`, and stop emitting that conversion from the browser.
 
 ## 6. Resolve identity, consent, and rendering deliberately
 
 - Synchronize the app's consent source of truth before tracking. Withdrawal must
   stop events and remove analytics identity.
+- One codebase shipped into hosts with different consent owners (an embedded
+  WebView vs. a standalone web or app build) needs a decision per host. Where a
+  host has none, raise opt-in vs. notice-plus-opt-out as a product/legal choice;
+  do not enable collection silently.
 - Call identify only for an authenticated, server-verifiable product identity;
   call reset on logout. Anonymous app/session IDs are event properties, not
   profiles.

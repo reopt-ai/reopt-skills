@@ -12,6 +12,7 @@ The Data SDK is a suite. Read the installed READMEs before changing code:
 ## Hard rules
 
 - Install `@reopt-ai/*` from public npm. Never add a GitHub Packages token or scope; remove only the exact legacy project-level override.
+- Credentials come from the user. Never ask another agent session to look up, mint or rotate Data keys, and never ask for secrets in chat; when values are missing, leave analytics disabled and give the user the console checklist from `data-sdk-install` (project settings → API client; production `data.reopt.ai` and staging `data.reopt.io` hold separate keys). Rotating a write key or reissuing a client secret breaks every deployment that uses the current one — only on the user's explicit decision.
 - Browser/client components may receive a write key. `clientId` and `clientSecret` are server-only and must never cross an RSC boundary, enter a client bundle, or appear in logs.
 - Use `@reopt-ai/data-sdk-client` for browser/React/Next client components and `@reopt-ai/data-sdk-server` for Server Components, Route Handlers, Server Actions, proxy, instrumentation and Node.
 - Create the request-scoped server factory once at module scope. Let its request cache and resolved-credential engine cache work; do not construct it per request.

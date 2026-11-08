@@ -5,3 +5,4 @@
 - Review the diff before applying. Event removal archives it; omitted fields reset to defaults. Property omission semantics differ in v2; read the installed contract before editing.
 - Reconcile console conflicts without automatic force. Keep local edits when pull refuses them, and inspect partial writes before retrying.
 - Verify drift after sync and regenerate types after declaration changes. Generated types do not replace a runtime payload schema.
+- Remote writes need the organization key (CI/server only). Issuing a new one revokes every existing key, so never rotate to get one; without it, hand the file to the user for the console import (`/dashboard/<orgId>/<projectId>/events?panel=import`) and report CLI sync as not run.
