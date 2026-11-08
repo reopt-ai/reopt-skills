@@ -82,9 +82,11 @@ Load `data-sdk-install` first; this skill owns product instrumentation after tra
   outbox retry is deduplicated at ingest instead of counted twice. Any UUID
   version is accepted; deriving it from the business key (a UUIDv5 of the
   order or job ID) keeps a re-enqueued job idempotent too.
-- Write the outbox row in the same transaction as the business change. Compute
-  the server event's profile ID with the same function the client passes to
-  `identify()`, and stop emitting that conversion from the browser.
+- Write the outbox row in the same transaction as the business change, with
+  the device ID, the visitor's analytics consent at that moment, and a
+  `profileId` computed by the same function the client passes to `identify()`.
+  Skip delivery when consent was denied, and stop emitting that conversion from
+  the browser.
 
 ## 6. Resolve identity, consent, and rendering deliberately
 

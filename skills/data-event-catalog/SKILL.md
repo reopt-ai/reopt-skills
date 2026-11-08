@@ -30,11 +30,12 @@ measurement planning or instrumentation, only when that work is requested.
 - Remote operations use the CLI's documented credentials (normally an
   organization key), not a browser write key. Keep credentials outside the
   catalogue, lock, source control, output, and browser bundles.
-- The organization key is shown once, when issued. Issuing another one rotates
-  it: every existing key for that organization is revoked at once. Never rotate
-  to obtain a key, and never ask another agent session for one — ask the user
-  for the stored copy (CI/server only). `reopt-data login` grants account reads
-  only; it does not authorize catalogue writes.
+- The organization key comes from provisioning or an operator, not the project
+  console, and is shown once. Issuing another one revokes every existing key for
+  that organization at once. Never rotate to obtain a key, and never ask another
+  agent session for one — ask the user for the stored copy (CI/server only).
+  `reopt-data login` (data-cli `0.2.0`) grants account reads only; it does not
+  authorize catalogue writes.
 - Without a key, finish the file locally and hand it to the user to import in
   the console at `/dashboard/<orgId>/<projectId>/events?panel=import` (accepts
   v1 and v2 files; a project member's sign-in is enough). Choose **overwrite**
